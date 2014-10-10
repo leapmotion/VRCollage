@@ -42,6 +42,16 @@ function matrixFromOrientation(q, inverse) {
   m[12] = m[13] = m[14] = 0;
   m[15] = 1;
 
+  // invert y so that up-down is correct
+  m[1] = -m[1];
+  m[5] = -m[5];
+  m[9] = -m[9];
+  m[13] = -m[13];
+  m[4] = -m[4];
+  m[5] = -m[5];
+  m[6] = -m[6];
+  m[7] = -m[7];
+
   return m;
 }
 
