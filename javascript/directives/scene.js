@@ -1,5 +1,5 @@
 angular.module('directives', [])
-  .directive('scene', function() {
+  .directive('scene', function(vrControls) {
     return {
       restrict: 'E',
       template: '<canvas></canvas>',
@@ -15,18 +15,25 @@ angular.module('directives', [])
         );
 
         var canvas = element.find('canvas')[0];
+        canvas.style.position = 'absolute';
+        canvas.style.top = 0;
+        canvas.style.left = 0;
 
         var renderer = new THREE.WebGLRenderer({
           antialias: true,
-          canvas: canvas
+          canvas: canvas//,
+//          preserveDrawingBuffer: true
         });
         renderer.shadowMapEnabled = true;
+//        renderer.setClearColor(0x202020, 1.0);
 
         renderer.setSize(window.innerWidth, window.innerHeight);
 
+
+        // these would be better off directed as services.  But for now, we use window for message passing.
         window.vrEffect = new THREE.VREffect(renderer);
 
-        window.vrControls = new THREE.VRControls(camera);
+        vrControls._camera = camera;
 
 
         onResize = function() {
@@ -55,8 +62,6 @@ angular.module('directives', [])
         cube.position.set(80, 0, -400);
         cube.receiveShadow = true;
         scene.add(cube);
-
-
 
         var render = function() {
           cube.rotation.x += 0.004;

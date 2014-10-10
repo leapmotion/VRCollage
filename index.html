@@ -18,7 +18,9 @@
     <script src="javascript/lib/VREffect.js"></script>
 
     <!-- Application code -->
+    <script src="javascript/factories/vrControls.js"></script>
     <script src="javascript/directives/scene.js"></script>
+    <script src="javascript/directives/vr.js"></script>
     <script src="javascript/app.js"></script>
     <script src="javascript/interface.js"></script>
 
@@ -26,20 +28,22 @@
 
   <body>
 
-  <p>
+
     I'm outside the container.
   </p>
 
   <div id="container">
 
-    <!-- Idea: this would be pretty well suited to an AngularJS directive or web component. -->
+    <!--<scene style="display: none"></scene>-->
     <scene></scene>
+
+    <img vr="true" src="http://up150.com/public/timeline/assets/img/dc3af87df9b9a6e5c5f652305977712e/ENLARGE-3-420%20oiling%209000.Tif.jpg"><p>
 
     <p>
       Press 'f' to go fullscreen
     </p>
 
-      <div id="browser" class="threed">
+      <!--<div id="browser" vr="true">
 
         <p>
           tum augue nec erat dictum venenatis. Integer consequat ante in metus accumsan, sit amet tincidunt augue imperdiet.
@@ -50,7 +54,7 @@
           Duis tempor ultrices augue at euismod. In nunc leo, scelerisque a ornare
         </p>
 
-      </div>
+      </div> -->
 
     </div>
 

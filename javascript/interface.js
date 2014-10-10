@@ -1,8 +1,6 @@
 (function() {
 
   var onkey = function(event) {
-    console.log('key');
-
     if (event.key === 'z') {
       vrControls.zeroSensor();
     }

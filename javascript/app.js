@@ -1,1 +1,1 @@
-angular.module('index', ['directives']);
+angular.module('index', ['factories', 'directives']);
