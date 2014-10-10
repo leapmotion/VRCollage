@@ -1,0 +1,59 @@
+<!doctype html>
+<html ng-app="index">
+  <head>
+    <meta charset="utf-8">
+    <title>VRCollage</title>
+
+    <link rel="stylesheet/less" href="stylesheets/index.less" />
+
+    <!-- CDN libs -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.5/less.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.js"></script>
+    <script src="//js.leapmotion.com/leap-0.6.3.min.js"></script>
+    <script src="//js.leapmotion.com/leap-plugins-0.1.8.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"></script>
+
+    <!-- Local libs -->
+    <script src="javascript/lib/VRControls.js"></script>
+    <script src="javascript/lib/VREffect.js"></script>
+
+    <!-- Application code -->
+    <script src="javascript/directives/scene.js"></script>
+    <script src="javascript/app.js"></script>
+    <script src="javascript/interface.js"></script>
+
+  </head>
+
+  <body>
+
+  <p>
+    I'm outside the container.
+  </p>
+
+  <div id="container">
+
+    <!-- Idea: this would be pretty well suited to an AngularJS directive or web component. -->
+    <scene></scene>
+
+    <p>
+      Press 'f' to go fullscreen
+    </p>
+
+      <div id="browser" class="threed">
+
+        <p>
+          tum augue nec erat dictum venenatis. Integer consequat ante in metus accumsan, sit amet tincidunt augue imperdiet.
+          Mauris in lacinia velit, ut ultricies magna. Donec imperdiet ultricies quam, a bibendum arcu molestie a. Integer
+          finibus non elit id maximus. In hac habitasse platea dictumst.
+        </p>
+        <p>
+          Duis tempor ultrices augue at euismod. In nunc leo, scelerisque a ornare
+        </p>
+
+      </div>
+
+    </div>
+
+  </body>
+
+</html>
