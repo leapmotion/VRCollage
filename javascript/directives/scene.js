@@ -21,11 +21,9 @@ angular.module('directives', [])
 
         var renderer = new THREE.WebGLRenderer({
           antialias: true,
-          canvas: canvas//,
-//          preserveDrawingBuffer: true
+          canvas: canvas
         });
         renderer.shadowMapEnabled = true;
-//        renderer.setClearColor(0x202020, 1.0);
 
         renderer.setSize(window.innerWidth, window.innerHeight);
 

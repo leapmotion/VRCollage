@@ -154,7 +154,7 @@ THREE.VREffect = function ( renderer, done ) {
 		var self = this;
 		var renderer = this._renderer;
 		var vrHMD = this._vrHMD;
-		var canvas = renderer.domElement;
+		var canvas = document.body;
 		var fullScreenChange =
 			canvas.mozRequestFullScreen? 'mozfullscreenchange' : 'webkitfullscreenchange';
 
