@@ -6,6 +6,12 @@ angular.module('directives', [])
       link: function(scope, element, attrs){
 
         var scene = new THREE.Scene();
+        Arrows.scene = scene;
+
+        // Seems weird to have this here? (don't just bung everything in scene.js)
+        Leap.loopController.use('boneHand', {
+          scene: scene
+        });
 
         var camera = new THREE.PerspectiveCamera(
           75,
@@ -63,9 +69,14 @@ angular.module('directives', [])
         cube.receiveShadow = true;
         scene.add(cube);
 
+
+        // how do we know if this is a frame removed from the render loop? -.-
+        Leap.loopController.on('hand', function(hand){
+          Arrows.show(hand.indexFinger.tipPosition, cube.position);
+        });
+
         var render = function() {
-//          cube.rotation.x += 0.004;
-//          cube.rotation.y += 0.002;
+          Arrows.update();
           vrControls.update();
           vrEffect.render(scene, camera);
 
