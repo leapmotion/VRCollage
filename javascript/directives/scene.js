@@ -58,21 +58,26 @@ angular.module('directives', [])
         scene.add(light);
 
         // units - m or mm?
-        var geometry = new THREE.CubeGeometry(100, 100, 20);
+        var geometry = new THREE.BoxGeometry(100, 100, 20);
 
         var material = new THREE.MeshPhongMaterial({
           color: 0x0000ff
         });
 
-        var cube = new THREE.Mesh(geometry, material);
-        cube.position.set(80, 0, -400);
-        cube.receiveShadow = true;
-        scene.add(cube);
+        var box = new THREE.Mesh(geometry, material);
+        box.position.set(80, 0, -400);
+        box.receiveShadow = true;
+        scene.add(box);
 
 
         // how do we know if this is a frame removed from the render loop? -.-
         Leap.loopController.on('hand', function(hand){
-          Arrows.show(hand.indexFinger.tipPosition, cube.position);
+          for (var i = 0; i < 8; i++ ){
+            Arrows.show(
+              hand.indexFinger.tipPosition,
+              box.corners()[i]
+            );
+          }
         });
 
         var render = function() {
