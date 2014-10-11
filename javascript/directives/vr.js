@@ -65,7 +65,7 @@ function cssMatrixFromOrientation(q, inverse) {
 }
 
 var cssCameraPositionTransform = (
-   "translate3d(0, 0, -1000px) rotateZ(0deg) rotateY(0deg)");
+   "translate3d(0, 0, -1000px)");
 
 
 angular.module('directives')

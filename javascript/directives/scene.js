@@ -21,9 +21,11 @@ angular.module('directives', [])
 
         var renderer = new THREE.WebGLRenderer({
           antialias: true,
+          alpha: true,
           canvas: canvas
         });
-        renderer.shadowMapEnabled = true;
+        renderer.shadowMapEnabled = false;
+        renderer.setClearColor(0x202060, 0);
 
         renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -50,7 +52,7 @@ angular.module('directives', [])
         scene.add(light);
 
         // units - m or mm?
-        var geometry = new THREE.CubeGeometry(75, 75, 16);
+        var geometry = new THREE.CubeGeometry(100, 100, 20);
 
         var material = new THREE.MeshPhongMaterial({
           color: 0x0000ff
@@ -62,8 +64,8 @@ angular.module('directives', [])
         scene.add(cube);
 
         var render = function() {
-          cube.rotation.x += 0.004;
-          cube.rotation.y += 0.002;
+//          cube.rotation.x += 0.004;
+//          cube.rotation.y += 0.002;
           vrControls.update();
           vrEffect.render(scene, camera);
 
