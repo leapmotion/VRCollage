@@ -52,7 +52,9 @@ window.Arrows = {
       if ( !arrow ){
         arrow = new THREE.ArrowHelper(
           new THREE.Vector3,
-          new THREE.Vector3
+          new THREE.Vector3,
+          1,
+          0xff0000
         );
         this.arrows.push(arrow);
         this.scene.add(arrow);

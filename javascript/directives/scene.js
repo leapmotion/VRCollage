@@ -5,6 +5,8 @@ angular.module('directives', [])
       template: '<canvas></canvas>',
       link: function(scope, element, attrs){
 
+        window.plotter = new LeapDataPlotter();
+
         var scene = new THREE.Scene();
         Arrows.scene = scene;
 
@@ -66,25 +68,15 @@ angular.module('directives', [])
 
         var box = new THREE.Mesh(geometry, material);
         box.position.set(80, 0, -400);
-        box.receiveShadow = true;
         scene.add(box);
-
-
-        // how do we know if this is a frame removed from the render loop? -.-
-        Leap.loopController.on('hand', function(hand){
-          for (var i = 0; i < 8; i++ ){
-            Arrows.show(
-              hand.indexFinger.tipPosition,
-              box.corners()[i]
-            );
-          }
-        });
+        new InteractableBox(box, Leap.loopController);
 
         var render = function() {
           Arrows.update();
           vrControls.update();
           vrEffect.render(scene, camera);
 
+//          plotter.update();
           requestAnimationFrame(render);
         };
 
