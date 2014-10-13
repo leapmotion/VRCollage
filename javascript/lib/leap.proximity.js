@@ -5,14 +5,12 @@ Leap.plugin('proximity', function(scope){
   var proximities = [];
 
   var makeVector3 = function(p){
-
     if (p instanceof THREE.Vector3){
       return p;
     } else {
       return (new THREE.Vector3).fromArray(p)
     }
-
-  }
+  };
 
   var Proximity = function(mesh, handPoints){
     this.mesh = mesh;
@@ -20,7 +18,7 @@ Leap.plugin('proximity', function(scope){
     this.inCallbacks  = [];
     this.outCallbacks = [];
     this.states = []; // one state for each handPoint, either in or out.
-  }
+  };
 
   Proximity.prototype = {
 
@@ -50,9 +48,61 @@ Leap.plugin('proximity', function(scope){
 
       }
 
+    },
+
+    check: function(hand){
+
+      var mesh, length, state,
+        handPoints, handPoint, meshWorldPosition = new THREE.Vector3,
+        displacement = new THREE.Vector3;
+
+      mesh = this.mesh;
+
+      // Handles Spheres. Planes. Boxes? other shapes? custom shapes?
+
+      // only support sphere for now
+      // Can't find a good way to test constructor name, so we test parameters for now.
+      if (!mesh.geometry.parameters.radius){
+        console.error("Unsupported geometry", mesh.geometry);
+        return
+      }
+
+      handPoints = this.handPoints(hand);
+      console.assert(handPoints instanceof Array);
+
+      for (var j = 0; j < handPoints.length; j++){
+
+        handPoint = makeVector3( handPoints[j] );
+        console.assert(!isNaN(handPoint.x));
+        console.assert(!isNaN(handPoint.y));
+        console.assert(!isNaN(handPoint.z));
+
+        meshWorldPosition.setFromMatrixPosition( mesh.matrixWorld ); // note - this is last frame's position. Should be no problem.
+        console.assert(!isNaN(meshWorldPosition.x));
+        console.assert(!isNaN(meshWorldPosition.y));
+        console.assert(!isNaN(meshWorldPosition.z));
+
+//          Arrows.show(
+//            handPoint,
+//            meshWorldPosition
+//          );
+
+        // subtract position from handpoint, compare to radius
+        displacement.subVectors(handPoint, meshWorldPosition);
+        length = displacement.length();
+
+        state = (length < mesh.geometry.parameters.radius) ? 'in' : 'out';
+
+        if (state !== this.states[j]){
+          this.emit(state, hand, handPoint, j, displacement, length / mesh.geometry.parameters.radius);
+          this.states[j] = state;
+        }
+
+      }
+
     }
 
-  }
+  };
 
   // can be a sphere or a plane.  Here we'll use an invisible sphere first
   // ideally, we would then emit events off of the object
@@ -90,61 +140,8 @@ Leap.plugin('proximity', function(scope){
 
     hand: function(hand){
 
-      var proximity, mesh, length, state,
-        handPoints, handPoint, meshWorldPosition = new THREE.Vector3,
-        displacement = new THREE.Vector3;
-
       for (var i = 0; i < proximities.length; i++){
-
-        proximity = proximities[i];
-        mesh = proximity.mesh;
-
-        // Handles Spheres. Planes. Boxes? other shapes? custom shapes?
-
-        // only support sphere for now
-        // Can't find a good way to test constructor name, so we test parameters for now.
-        if (!mesh.geometry.parameters.radius){
-          console.error("Unsupported geometry", mesh.geometry);
-          return
-        }
-
-        handPoints = proximity.handPoints(hand);
-        console.assert(handPoints instanceof Array);
-
-        for (var j = 0; j < handPoints.length; j++){
-
-          handPoint = makeVector3( handPoints[j] );
-          console.assert(!isNaN(handPoint.x));
-          console.assert(!isNaN(handPoint.y));
-          console.assert(!isNaN(handPoint.z));
-
-          meshWorldPosition.setFromMatrixPosition( mesh.matrixWorld ); // note - this is last frame's position. Should be no problem.
-          console.assert(!isNaN(meshWorldPosition.x));
-          console.assert(!isNaN(meshWorldPosition.y));
-          console.assert(!isNaN(meshWorldPosition.z));
-
-//          Arrows.show(
-//            handPoint,
-//            meshWorldPosition
-//          );
-
-
-          // subtract position from handpoint, compare to radius
-          displacement.subVectors(handPoint, meshWorldPosition);
-          length = displacement.length();
-          window.plotter.plot('length', length);
-
-          state = (length < mesh.geometry.parameters.radius) ? 'in' : 'out';
-
-          if (state !== proximity.states[j]){
-            hand.data('proximity.in', state === 'in');
-            proximity.emit(state, hand, handPoint, j, displacement, length / mesh.geometry.parameters.radius);
-            proximity.states[j] = state;
-          }
-
-        }
-
-
+        proximities[i].check(hand);
       }
 
     }

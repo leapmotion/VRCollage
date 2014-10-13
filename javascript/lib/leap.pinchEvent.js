@@ -15,7 +15,8 @@ Leap.plugin('pinchEvent', function(scope){
       if (hand.data('pinchEvent.pinching') != pinching){
 
         controller.emit(
-          pinching ? 'pinch' : 'unpinch'
+          pinching ? 'pinch' : 'unpinch',
+          hand
         );
 
         hand.data('pinchEvent.pinching', pinching)

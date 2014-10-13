@@ -34,7 +34,7 @@ window.InteractableBox = function(boxMesh, controller){
 
   this.mesh.add(this.lowerRightCorner);
 
-  this.controller.watch(
+  var proximity = this.controller.watch(
     this.lowerRightCorner,
     this.handFocalPoints
   ).in(
@@ -48,6 +48,14 @@ window.InteractableBox = function(boxMesh, controller){
   );
 
   this.controller.on('hand', this.checkResizeProximity.bind(this));
+
+  this.controller.on('pinch', function(hand){
+    hand.data('resizing', proximity.states[0] === 'in');
+  });
+
+  this.controller.on('unpinch', function(hand){
+    hand.data('resizing', false);
+  });
 
 }
 
@@ -73,15 +81,6 @@ window.InteractableBox.prototype = {
       }
 
     }
-
-    if (hand.data('pinchEvent.pinching') && hand.data('proximity.in')){
-
-      hand.data('resizing', this.lowerRightCorner);
-
-      this.handleResize(hand);
-
-
-    }
   },
 
   handleResize: function(hand){
@@ -91,7 +90,6 @@ window.InteractableBox.prototype = {
     this.mesh.setCorner(2, displacement);
 
     this.lowerRightCorner.scale.set(1,1,1).divide(this.mesh.scale);
-
 
   }
 
