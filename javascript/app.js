@@ -3,7 +3,8 @@ Leap.loop()
     position: new THREE.Vector3(0,-200,-300),
     scale: 0.75
   })
-  .use('proximity');
+  .use('proximity')
+  .use('pinchEvent');
 
 Leap.loopController.setBackground(true);
 

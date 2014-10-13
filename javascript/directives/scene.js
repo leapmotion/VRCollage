@@ -67,7 +67,7 @@ angular.module('directives', [])
         });
 
         var box = new THREE.Mesh(geometry, material);
-        box.position.set(80, 0, -400);
+        box.position.set(-20, 0, -300);
         scene.add(box);
         new InteractableBox(box, Leap.loopController);
 

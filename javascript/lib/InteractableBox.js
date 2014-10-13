@@ -9,13 +9,6 @@
 // - Mesh deformations
 // - etc?
 
-// 1: create an object-fingertip pairing to watch proximity of
-// 2: attach handlers
-
-// This could be a THREEx extension?
-
-
-
 (function() {
 
 window.InteractableBox = function(boxMesh, controller){
@@ -28,27 +21,79 @@ window.InteractableBox = function(boxMesh, controller){
 
   var interactionRadius = 20;
 
-  var lowerRightCorner = new THREE.Mesh(
+  this.lowerRightCorner = new THREE.Mesh(
     new THREE.SphereGeometry(interactionRadius, 32, 32),
     new THREE.MeshPhongMaterial({color: 0xffffff})
   );
 
-  lowerRightCorner.position.copy(
+  this.lowerRightCorner.name = "lowerRightCorner"; // convenience
+
+  this.lowerRightCorner.position.copy(
     this.mesh.corners(2)
   );
 
-  this.mesh.add(lowerRightCorner);
+  this.mesh.add(this.lowerRightCorner);
 
   this.controller.watch(
-    lowerRightCorner,
-    function(hand){
-      return [ hand.indexFinger.tipPosition ]
+    this.lowerRightCorner,
+    this.handFocalPoints
+  ).in(
+    function(hand, index, displacement, fraction){
+      this.lowerRightCorner.material.color.setHex(0x33ee22);
+    }.bind(this)
+  ).out(
+    function(){
+      this.lowerRightCorner.material.color.setHex(0xffffff);
+    }.bind(this)
+  );
+
+  this.controller.on('hand', this.checkResizeProximity.bind(this));
+
+}
+
+window.InteractableBox.prototype = {
+
+  handFocalPoints: function(hand){
+//      return [ hand.indexFinger.tipPosition ]
+//      return [ hand.palmPosition ]
+    return [
+      (new THREE.Vector3).fromArray(hand.palmPosition)
+    ]
+  },
+
+  checkResizeProximity: function(hand){
+    var resizing = hand.data('resizing');
+
+    if (resizing){
+
+      if (hand.data('pinchEvent.pinching')) {
+        this.handleResize(hand);
+      }else{
+        hand.data('resizing', false);
+      }
+
     }
-  ).in(function(){
-      lowerRightCorner.material.color.setHex(0x33ee22)
-  }).out(function(){
-      lowerRightCorner.material.color.setHex(0xffffff)
-  });
+
+    if (hand.data('pinchEvent.pinching') && hand.data('proximity.in')){
+
+      hand.data('resizing', this.lowerRightCorner);
+
+      this.handleResize(hand);
+
+
+    }
+  },
+
+  handleResize: function(hand){
+
+    // change since last frame
+    var displacement = this.handFocalPoints( hand )[0];
+    this.mesh.setCorner(2, displacement);
+
+    this.lowerRightCorner.scale.set(1,1,1).divide(this.mesh.scale);
+
+
+  }
 
 }
 

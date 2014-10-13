@@ -35,18 +35,18 @@ Leap.plugin('proximity', function(scope){
       return this
     },
 
-    emit: function(eventName, data1, data2, data3){
+    emit: function(eventName, data1, data2, data3, data4, data5){
 
       // note: not ie-compatible indexOf:
       if (['in', 'out'].indexOf(eventName) === -1) {
-        console.error("Invalid event name:", eventName)
+        console.error("Invalid event name:", eventName);
         return
       }
 
       var callbacks = this[eventName + "Callbacks"];
       for (var i = 0; i < callbacks.length; i++){
 
-        callbacks[i](data1, data2, data3);
+        callbacks[i](data1, data2, data3, data4, data5);
 
       }
 
@@ -109,6 +109,7 @@ Leap.plugin('proximity', function(scope){
         }
 
         handPoints = proximity.handPoints(hand);
+        console.assert(handPoints instanceof Array);
 
         for (var j = 0; j < handPoints.length; j++){
 
@@ -136,7 +137,8 @@ Leap.plugin('proximity', function(scope){
           state = (length < mesh.geometry.parameters.radius) ? 'in' : 'out';
 
           if (state !== proximity.states[j]){
-            proximity.emit(state, j, displacement, length / mesh.geometry.parameters.radius);
+            hand.data('proximity.in', state === 'in');
+            proximity.emit(state, hand, handPoint, j, displacement, length / mesh.geometry.parameters.radius);
             proximity.states[j] = state;
           }
 
