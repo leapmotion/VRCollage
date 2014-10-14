@@ -41,7 +41,7 @@ THREE.BoxGeometry.prototype.corners = function(){
 THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveAspectRatio){
 
 
-  if (preserveAspectRatio || true){
+  if (preserveAspectRatio){
 
     // See formulation:
     // https://s3.amazonaws.com/uploads.hipchat.com/28703/213121/yCBzmNgVxNCeqlU/scaling_box_from_corner.pdf
@@ -96,9 +96,6 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
           ).add(this.scale)
         ).divideScalar(2)
     );
-
-    var component = this.scale.length() / Math.sqrt(3);
-    this.scale.set(component, component, component);
 
     // p'
     this.position.copy(

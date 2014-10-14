@@ -69,6 +69,7 @@ var cssCameraPositionTransform = (
 
 
 angular.module('directives')
+  // Attempts to use CSS3 transforms to position the image in VR space
   .directive('vr', function(vrControls) {
     return {
       restrict: 'A',

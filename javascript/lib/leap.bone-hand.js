@@ -157,5 +157,3 @@
   });
 
 }).call(this);
-
-//# sourceMappingURL=leap.bone-hand.map
