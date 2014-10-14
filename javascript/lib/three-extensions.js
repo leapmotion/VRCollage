@@ -40,86 +40,75 @@ THREE.BoxGeometry.prototype.corners = function(){
 // scale is a factor of change in corner position, from the original corner position.
 THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveAspectRatio){
 
-  var c = this.corners(cornerNo);
 
-  var iinterimScale = this.scale;
-  // this works. Has some error.
-  // Formulation is here:
-  // https://drive.google.com/file/d/0B7cqxyA6LUpUcmd5MWtfc2JULTg/view
-  this.scale.copy(
-    (
-      (
-        newCornerPosition.clone().sub(this.position).divide(c)
-      ).add(this.scale)
-    ).divideScalar(2)
-  );
+  if (preserveAspectRatio || true){
 
-  // p'
-  this.position.copy(
-    newCornerPosition.clone().sub(
-      this.scale.clone().multiply(c)
-    )
-  );
+    // See formulation:
+    // https://s3.amazonaws.com/uploads.hipchat.com/28703/213121/yCBzmNgVxNCeqlU/scaling_box_from_corner.pdf
+    console.assert( (this.scale.x === this.scale.y) && (this.scale.y === this.scale.z) );
 
+    var p0 = this.position,
+      d = newCornerPosition,
+      c = this.corners(cornerNo),
+      r0 = this.scale.x;
 
-  if (preserveAspectRatio){
+    // test:
+    d = c.clone().add(this.position);
 
-    var scalePrime = this.scale;
-
-    // to preserve aspect ratio
-    // figure out the limiting side
-    // multiply to get effective newCorner position
-    // for now, just do xy
-
-    var aspect = this.geometry.parameters.width / this.geometry.parameters.height;
-
-    // aspect needs to be off of new center position.
-    // new aspect = previous aspect * scale
-    var requestedAspect = (this.geometry.parameters.width * this.scale.x) / (this.geometry.parameters.height * this.scale.y);
-
-
-    if (requestedAspect > aspect){
-      // too wide
-      // use current height
-      // multiply for width
-
-      this.scale.x = aspect * (this.geometry.parameters.height * this.scale.y) / this.geometry.parameters.width;
-
-    } else { // too tall
-
-      this.scale.y = (this.geometry.parameters.width * this.scale.x) / aspect / this.geometry.parameters.height;
-
-    }
-
-    // reverse this out to get a new newCornerPosition
-    // and re-apply scale calculation
-
-    // if there is no change in scale, this should have no effect.
-    newCornerPosition.copy(
-      this.position.clone()
-        .add(
-          c.clone().multiply(
-            this.scale.clone().multiplyScalar(2).sub(iinterimScale)
-          )
-        )
+    var q0 = p0.clone().sub(
+      c.clone().multiplyScalar(r0)
     );
 
-  //  newCornerPosition.copy(
-  //    this.position.clone()
-  //      .add(
-  //        c.clone().multiply(
-  //          this.scale.clone().multiplyScalar(2).sub(scalePrime)
-  //        )
-  //      )
-  //  );
+    console.assert( !isNaN(q0.x) );
+
+    var t = - ( q0.dot(q0) - d.dot(d) + 2 * d.clone().sub(q0).dot(p0) ) /
+                      (2 * ( d.clone().sub(q0).dot(c) ) );
+
+    console.assert( !isNaN(t) );
+
+    var p = p0.clone().add( c.clone().multiplyScalar(t) );
+
+    var r = q0.clone().sub(p0).length();
+//    var r = q0.clone().sub(p0).divide(c).length();
+//    var r = p0.clone().sub(q0).divide(c).length();
+
+
+    console.log(p0, p);
+    console.log(r0, r);
+
+    console.assert(r === r0);
+    console.assert(this.position.equals(p));
+
+    this.position.copy(p);
+
+    this.scale.set(r, r, r);
+
+  }else {
+    var c = this.corners(cornerNo);
+
+    // this works. Has some error.
+    // Formulation is here:
+    // https://drive.google.com/file/d/0B7cqxyA6LUpUcmd5MWtfc2JULTg/view
+    this.scale.copy(
+      (
+        (
+          newCornerPosition.clone().sub(this.position).divide(c)
+          ).add(this.scale)
+        ).divideScalar(2)
+    );
+
+    var component = this.scale.length() / Math.sqrt(3);
+    this.scale.set(component, component, component);
+
+    // p'
+    this.position.copy(
+      newCornerPosition.clone().sub(
+        this.scale.clone().multiply(c)
+      )
+    );
+
   }
 
-
-  this.position.copy(
-    newCornerPosition.clone().sub(
-      this.scale.clone().multiply(c)
-    )
-  );
 
 
 
