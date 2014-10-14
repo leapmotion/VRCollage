@@ -57,13 +57,11 @@ window.InteractableBox = function(boxMesh, controller){
     hand.data('resizing', false);
   });
 
-}
+};
 
 window.InteractableBox.prototype = {
 
   handFocalPoints: function(hand){
-//      return [ hand.indexFinger.tipPosition ]
-//      return [ hand.palmPosition ]
     return [
       (new THREE.Vector3).fromArray(hand.palmPosition)
     ]
