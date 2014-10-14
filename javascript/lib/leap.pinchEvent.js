@@ -12,6 +12,7 @@ Leap.plugin('pinchEvent', function(scope){
     hand: function(hand){
       var pinching = hand.pinchStrength > scope.threshold;
 
+      plotter.plot('pinchStr', hand.pinchStrength);
       if (hand.data('pinchEvent.pinching') != pinching){
 
         controller.emit(
