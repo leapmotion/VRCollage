@@ -12,7 +12,15 @@ Leap.plugin('proximity', function(scope){
     }
   };
 
-  var Proximity = function(mesh, handPoints){
+  // accepts one option: mode
+  // mode: 'points', the default, will be "in" when any of the points are within the mesh.
+  //   Expects points to be vec3s from the origin.
+  // mode:
+
+  var Proximity = function(mesh, handPoints, options){
+    options || (options = {});
+    this.options = options;
+
     this.mesh = mesh;
     this.handPoints = handPoints;
     this.inCallbacks  = [];
@@ -52,23 +60,53 @@ Leap.plugin('proximity', function(scope){
 
     check: function(hand){
 
-      var mesh, length, state,
-        handPoints, handPoint, meshWorldPosition = new THREE.Vector3,
-        displacement = new THREE.Vector3;
-
-      mesh = this.mesh;
-
       // Handles Spheres. Planes. Boxes? other shapes? custom shapes?
 
-      // only support sphere for now
-      // Can't find a good way to test constructor name, so we test parameters for now.
-      if (!mesh.geometry.parameters.radius){
-        console.error("Unsupported geometry", mesh.geometry);
+      if (! ( this.mesh.geometry instanceof THREE.SphereGeometry || this.mesh.geometry instanceof THREE.BoxGeometry ) ){
+        console.error("Unsupported geometry", this.mesh.geometry);
         return
       }
 
-      handPoints = this.handPoints(hand);
+      var handPoints = this.handPoints(hand);
       console.assert(handPoints instanceof Array);
+
+      if (handPoints[0] instanceof Array){
+
+        this.checkLines(hand, handPoints);
+
+      }else {
+
+        this.checkPoints(hand, handPoints);
+
+      }
+
+    },
+
+    // http://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
+    checkLines: function(hand, handPoints){
+      var mesh, length, state,
+        handPoint, meshWorldPosition = new THREE.Vector3,
+        displacement = new THREE.Vector3;
+
+      for (var j = 0; j < handPoints.length; j++){
+
+        handPoint = handPoints[j] ;
+
+
+
+      }
+
+    },
+
+    checkPoints: function(hand, handPoints){
+      var mesh = this.mesh, length, state,
+        handPoint, meshWorldPosition = new THREE.Vector3,
+        displacement = new THREE.Vector3;
+
+      meshWorldPosition.setFromMatrixPosition( mesh.matrixWorld ); // note - this is last frame's position. Should be no problem.
+      console.assert(!isNaN(meshWorldPosition.x));
+      console.assert(!isNaN(meshWorldPosition.y));
+      console.assert(!isNaN(meshWorldPosition.z));
 
       for (var j = 0; j < handPoints.length; j++){
 
@@ -76,16 +114,6 @@ Leap.plugin('proximity', function(scope){
         console.assert(!isNaN(handPoint.x));
         console.assert(!isNaN(handPoint.y));
         console.assert(!isNaN(handPoint.z));
-
-        meshWorldPosition.setFromMatrixPosition( mesh.matrixWorld ); // note - this is last frame's position. Should be no problem.
-        console.assert(!isNaN(meshWorldPosition.x));
-        console.assert(!isNaN(meshWorldPosition.y));
-        console.assert(!isNaN(meshWorldPosition.z));
-
-//          Arrows.show(
-//            handPoint,
-//            meshWorldPosition
-//          );
 
         // subtract position from handpoint, compare to radius
         displacement.subVectors(handPoint, meshWorldPosition);

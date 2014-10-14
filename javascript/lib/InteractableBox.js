@@ -26,6 +26,8 @@ window.InteractableBox = function(boxMesh, controller){
     new THREE.MeshPhongMaterial({color: 0xffffff})
   );
 
+//  this.lowerRightCorner.visible = false;
+//
   this.lowerRightCorner.name = "lowerRightCorner"; // convenience
 
   this.lowerRightCorner.position.copy(
@@ -34,43 +36,80 @@ window.InteractableBox = function(boxMesh, controller){
 
   this.mesh.add(this.lowerRightCorner);
 
-  var proximity = this.controller.watch(
-    this.lowerRightCorner,
-    this.handFocalPoints
-  ).in(
-    function(hand, index, displacement, fraction){
-      this.lowerRightCorner.material.color.setHex(0x33ee22);
-    }.bind(this)
-  ).out(
-    function(){
-      this.lowerRightCorner.material.color.setHex(0xffffff);
-    }.bind(this)
-  );
+  this.bindResize();
 
-  this.controller.on('hand', this.checkResizeProximity.bind(this));
-
-  this.controller.on('pinch', function(hand){
-    hand.data('resizing', proximity.states[0] === 'in');
-  });
-
-  this.controller.on('unpinch', function(hand){
-    hand.data('resizing', false);
-  });
+//  this.bindMove();
 
 };
 
 window.InteractableBox.prototype = {
 
-  handFocalPoints: function(hand){
+  // 1: count fingertips past zplace
+  // 2: when more than 4, scroll
+  // 3: when more than 5, move
+  // 4: test/optimize with HMD.
+  bindMove: function(){
+
+    // determine if line and place intersect
+    var proximity = this.controller.watchLines(
+      this.mesh,
+      this.fingerTips
+    )
+
+  },
+
+  bindResize: function(){
+
+    // todo: handle four corners, not just one.
+    this.lowerRightCornerProximity = this.controller.watch(
+      this.lowerRightCorner,
+      this.cursorPoints
+    ).in(
+      function(hand, index, displacement, fraction){
+        this.lowerRightCorner.material.color.setHex(0x33ee22);
+      }.bind(this)
+    ).out(
+      function(){
+        this.lowerRightCorner.material.color.setHex(0xffffff);
+      }.bind(this)
+    );
+
+    this.controller.on('hand',
+      this.checkResizeProximity.bind(this)
+    );
+
+    this.controller.on('pinch', function(hand){
+      if (this.lowerRightCornerProximity.states[0] !== 'in') return;
+
+      hand.data('resizing', this.lowerRightCornerProximity);
+
+    }.bind(this));
+
+    this.controller.on('unpinch', function(hand){
+      if (!hand.data('resizing')) return;
+
+      hand.data('resizing', false);
+    }.bind(this));
+  },
+
+  // returns a collection of lines to be tested against
+  // tuples of... origin and relative displacement of the line?
+  //          ... the two points on the line?
+  //          ... starting implementation to determine which is more natural
+  fingerTips: function(){
+
+  },
+
+  cursorPoints: function(hand){
     return [
       (new THREE.Vector3).fromArray(hand.palmPosition)
     ]
   },
 
   checkResizeProximity: function(hand){
-    var resizing = hand.data('resizing');
+    var resizeTarget = hand.data('resizing');
 
-    if (resizing){
+    if (resizeTarget && (resizeTarget == this.lowerRightCornerProximity) ){
 
       if (hand.data('pinchEvent.pinching')) {
         this.handleResize(hand);
@@ -84,7 +123,7 @@ window.InteractableBox.prototype = {
   handleResize: function(hand){
 
     // change since last frame
-    var displacement = this.handFocalPoints( hand )[0];
+    var displacement = this.cursorPoints( hand )[0];
     this.mesh.setCorner(2, displacement);
 
     this.lowerRightCorner.scale.set(1,1,1).divide(this.mesh.scale);

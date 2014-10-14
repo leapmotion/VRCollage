@@ -113,6 +113,12 @@ angular.module('directives', [])
         scene.add(box);
         new InteractableBox(box, Leap.loopController);
 
+
+        var box2 = new THREE.Mesh(geometry, material);
+        box2.position.set(-120, 40, -300);
+        scene.add(box2);
+        new InteractableBox(box2, Leap.loopController);
+
         var render = function() {
           Arrows.update();
           vrControls.update();
