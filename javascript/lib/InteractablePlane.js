@@ -70,7 +70,7 @@ window.InteractableBox.prototype = {
     };
 
     // determine if line and place intersect
-    var proximity = this.moveProximity =this.controller.watch(
+    var proximity = this.moveProximity = this.controller.watch(
       this.mesh,
       this.interactiveEndBones
     );
@@ -124,6 +124,12 @@ window.InteractableBox.prototype = {
 
       // constrain movement to...
       // for now, let's discard z.
+      // better:
+      // Always move perpendicular to image normal
+      // Then set normal equal to average of intersecting line normals
+      // (Note: this will require some thought with grab.  Perhaps get carpal intersection, stop re-adjusting angle.)
+      // (Note: can't pick just any face normal, so that we can distort the mesh later on.
+      // This will allow (but hopefully not require?) expertise to use.
       this.mesh.position.x = averageMovement.x;
       this.mesh.position.y = averageMovement.y;
 

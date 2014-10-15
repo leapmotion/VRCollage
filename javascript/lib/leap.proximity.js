@@ -96,6 +96,8 @@ Leap.plugin('proximity', function(scope){
 
         state = intersectionPoint ? 'in' : 'out';
 
+//        console.log('state', state, mesh.name);
+
         if (state !== this.states[j]){
           this.emit(state, hand, intersectionPoint, handPoints[j], j); // todo - could include intersection displacement vector here (!)
           this.states[j] = state;
@@ -185,9 +187,9 @@ Leap.plugin('proximity', function(scope){
 
       for (var i = 0; i < frame.hands.length; i++){
 
-        for (var j = 0; i < proximities.length; i++){
+        for (var j = 0; j < proximities.length; j++){
 
-          proximities[i].check(frame.hands[i]);
+          proximities[j].check(frame.hands[i]);
 
         }
 
