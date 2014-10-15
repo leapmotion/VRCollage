@@ -25,8 +25,10 @@ Leap.plugin('proximity', function(scope){
     this.handPoints = handPoints;
     this.inCallbacks  = [];
     this.outCallbacks = [];
-    this.states = []; // one state for each handPoint, either in or out.
-    this.intersectionPoints = []; // one for each handPoint
+
+    // These are both keyed by the string: hand.id + handPointIndex
+    this.states = {};
+    this.intersectionPoints = {}; // one for each handPoint
   };
 
   Proximity.prototype = {
@@ -67,6 +69,8 @@ Leap.plugin('proximity', function(scope){
       var handPoints = this.handPoints(hand);
       console.assert(handPoints instanceof Array);
 
+      // this class is designed to either checkLines or checkPoints, but not both
+      // This should perhaps be split in to two classes, LineProximity and PointProximity.
       if (handPoints[0] instanceof Array){
 
         this.checkLines(hand, handPoints);
@@ -79,8 +83,11 @@ Leap.plugin('proximity', function(scope){
 
     },
 
+    // There is an issue here where handPoints is not indexed per hand
+    // check where index is used, refactor. oops.
+    // test pictures and resizing.
     checkLines: function(hand, handPoints){
-      var mesh = this.mesh, state, intersectionPoint;
+      var mesh = this.mesh, state, intersectionPoint, key;
 
 
       // this could support box as well, if we could decide which face to check.
@@ -92,15 +99,15 @@ Leap.plugin('proximity', function(scope){
       // j because this is inside a loop for every hand
       for (var j = 0; j < handPoints.length; j++){
 
-        this.intersectionPoints[j] = intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]);
+        key = hand.id.toString() + j.toString();
+
+        this.intersectionPoints[key] = intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]);
 
         state = intersectionPoint ? 'in' : 'out';
 
-//        console.log('state', state, mesh.name);
-
-        if (state !== this.states[j]){
-          this.emit(state, hand, intersectionPoint, handPoints[j], j); // todo - could include intersection displacement vector here (!)
-          this.states[j] = state;
+        if (state !== this.states[key]){
+          this.emit(state, hand, intersectionPoint, key, j); // todo - could include intersection displacement vector here (!)
+          this.states[key] = state;
         }
 
       }
@@ -110,8 +117,7 @@ Leap.plugin('proximity', function(scope){
     checkPoints: function(hand, handPoints){
       var mesh = this.mesh, length, state,
         handPoint, meshWorldPosition = new THREE.Vector3,
-        displacement = new THREE.Vector3;
-
+        displacement = new THREE.Vector3, key;
 
       if (! ( mesh.geometry instanceof THREE.SphereGeometry  ) ){
         console.error("Unsupported geometry", this.mesh.geometry);
@@ -125,6 +131,8 @@ Leap.plugin('proximity', function(scope){
 
       for (var j = 0; j < handPoints.length; j++){
 
+        key = hand.id.toString() + j.toString();
+
         handPoint = makeVector3( handPoints[j] );
         console.assert(!isNaN(handPoint.x));
         console.assert(!isNaN(handPoint.y));
@@ -136,9 +144,9 @@ Leap.plugin('proximity', function(scope){
 
         state = (length < mesh.geometry.parameters.radius) ? 'in' : 'out';
 
-        if (state !== this.states[j]){
-          this.emit(state, hand, handPoint, j, displacement, length / mesh.geometry.parameters.radius);
-          this.states[j] = state;
+        if (state !== this.states[key]){
+          this.emit(state, hand, key, j, displacement, length / mesh.geometry.parameters.radius);
+          this.states[key] = state;
         }
 
       }

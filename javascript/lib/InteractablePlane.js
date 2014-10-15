@@ -19,7 +19,7 @@ window.InteractableBox = function(planeMesh, controller, options){
   this.mesh = planeMesh;
   this.controller = controller;
 
-  this.intersections = [];
+  this.intersections = {}; //keyed by the string: hand.id + handPointIndex
 
   // create an invisible sphere mesh on the bottom right corner (Don't even add it to the scene? Or maybe yes as it must be offset from box and use world position later.)
   // For now, we calculate world Position once and leave it at that?
@@ -76,25 +76,26 @@ window.InteractableBox.prototype = {
     );
 
     // this ties InteractablePlane to boneHand plugin - probably should have callbacks pushed out to scene.
-    proximity.in( function(hand, intersectionPoint, boneEnds, index){
+    proximity.in( function(hand, intersectionPoint, key, index){
+
+//      console.log('in', proximity.mesh.name);
 
 //      getBoneMesh(hand, index).material.color.setHex(0x00ff00);
 
-      this.intersections.push({
-        index: index,
-        offset: intersectionPoint.clone().sub(this.mesh.position)
-      });
+      this.intersections[key] = intersectionPoint.clone().sub(this.mesh.position);
 
     }.bind(this) );
 
-    proximity.out( function(hand, intersectionPoint, boneEnds, index){
+    proximity.out( function(hand, intersectionPoint, key, index){
+
+      console.log('out', proximity.mesh.name);
 
 //      getBoneMesh(hand, index).material.color.setHex(0xffffff);
       
-      for (var i = 0; i < this.intersections.length; i++){
+      for ( var intersectionKey in this.intersections ){
         
-        if (this.intersections[i].index === index){
-          this.intersections.splice(i, 1);
+        if (intersectionKey === key){
+          delete this.intersections[intersectionKey];
           break;
         }
         
@@ -104,21 +105,23 @@ window.InteractableBox.prototype = {
 
     this.controller.on('frame', function(frame){
 
-      var averageMovement = new THREE.Vector3, intersection, intersectionCount = this.intersections.length;
+      var averageMovement = new THREE.Vector3, intersectionCount = 0;
+
+      for ( var intersectionKey in this.intersections ){
+        if( this.intersections.hasOwnProperty(intersectionKey) ){
+
+          intersectionCount++;
+
+          averageMovement.add(
+            this.moveProximity.intersectionPoints[intersectionKey].clone().sub(
+              this.intersections[intersectionKey]
+            )
+          )
+
+        }
+      }
 
       if ( intersectionCount < this.fingersRequiredForMove) return;
-
-      for (var i = 0; i < intersectionCount; i++){
-
-        intersection = this.intersections[i];
-
-        averageMovement.add(
-          this.moveProximity.intersectionPoints[intersection.index].clone().sub(
-            intersection.offset
-          )
-        )
-
-      }
 
       averageMovement.divideScalar(intersectionCount);
 
