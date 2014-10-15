@@ -10,10 +10,7 @@ angular.module('directives', [])
         var scene = new THREE.Scene();
         Arrows.scene = scene;
 
-        // Seems weird to have this here? (don't just bung everything in scene.js)
-        Leap.loopController.use('boneHand', {
-          scene: scene
-        });
+        Leap.loopController.plugins.boneHand.scene = scene;
 
         var camera = new THREE.PerspectiveCamera(
           75,
