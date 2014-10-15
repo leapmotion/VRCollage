@@ -107,17 +107,73 @@ angular.module('directives', [])
         var material = new THREE.MeshPhongMaterial({
           map: THREE.ImageUtils.loadTexture("images/" + images[0])
         });
+//
+//        var box = new THREE.Mesh(geometry, material);
+//        box.position.set(-20, 0, -300);
+//        scene.add(box);
+//        new InteractableBox(box, Leap.loopController);
+//
+//
+//        var box2 = new THREE.Mesh(geometry, material);
+//        box2.position.set(-120, 40, -300);
+//        scene.add(box2);
+//        new InteractableBox(box2, Leap.loopController);
 
-        var box = new THREE.Mesh(geometry, material);
-        box.position.set(-20, 0, -300);
-        scene.add(box);
-        new InteractableBox(box, Leap.loopController);
 
+        /**
+         * Parameters:
+         *  dir - Vector3
+         *  origin - Vector3
+         *  length - Number
+         *  color - color in hex value
+         *  headLength - Number
+         *  headWidth - Number
+         */
 
-        var box2 = new THREE.Mesh(geometry, material);
-        box2.position.set(-120, 40, -300);
-        scene.add(box2);
-        new InteractableBox(box2, Leap.loopController);
+        var pts = [];//points array - the path profile points will be stored here
+        var detail = Math.PI / 3 / 10; //half-circle detail - how many angle increments will be used to generate points
+        var radius = 20;//radius for half_sphere
+
+        for(var angle = 0.0; angle < Math.PI / 3 ; angle+= detail) //loop from 0.0 radians to PI (0 - 180 degrees)
+            pts.push(
+              new THREE.Vector3(
+                  Math.cos(angle) * radius,
+                  0,
+                  Math.sin(angle) * radius)
+            ); //angle/radius to x,z
+
+        geometry = new THREE.LatheGeometry(
+          pts,
+          24,
+          0,
+          Math.PI
+        );//create the lathe with 12 radial repetitions of the profile
+
+        var geometry = new THREE.RingGeometry( 15, 50, 8, 4 );
+        window.ring = geometry;
+
+//        var material = new THREE.MeshBasicMaterial( { color: 0xffff00, side: THREE.DoubleSide } );
+//        var mesh = new THREE.Mesh( geometry, material );
+//        scene.add( mesh );
+
+        var testLathe = new THREE.Mesh(
+          geometry, new THREE.MeshPhongMaterial({
+            color: 0xff0000,
+            wireframe: true
+          })
+        );
+
+        testLathe.position.set(-20, 0, -300)
+        scene.add(testLathe);
+        window.ringMesh = testLathe;
+
+        var cursor = new THREE.ArrowHelper(
+          new THREE.Vector3(1,1,1),
+          new THREE.Vector3(-20, 0, -300),
+          100,
+          0xff0000
+        );
+        scene.add(cursor);
 
         var render = function() {
           Arrows.update();
