@@ -52,6 +52,10 @@ var addImage = function(scene, url, position){
 
       var material = new THREE.MeshPhongMaterial({map: texture});
 
+      // alpha works, but for some reason no visibility behind.
+//      var material = new THREE.MeshPhongMaterial({map: texture, alpha: true});
+//      material.opacity = 0.5;
+
       var picture = new THREE.Mesh(geometry, material);
       picture.name = url;
       picture.position.fromArray(position);
