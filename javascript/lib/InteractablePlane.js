@@ -26,7 +26,10 @@ window.InteractableBox = function(planeMesh, controller, options){
   // this is used for proximity.
 
   var interactionRadius = 20;
-  this.fingersRequiredForMove = 2;
+
+  // If this is ever increased above one, that initial finger can not be counted when averaging position
+  // otherwise, it causes jumpyness.
+  this.fingersRequiredForMove = 1;
 
   this.lowerRightCorner = new THREE.Mesh(
     new THREE.SphereGeometry(interactionRadius, 32, 32),
@@ -59,14 +62,19 @@ window.InteractableBox.prototype = {
 
     // for every 2 index, we want to add (4 - 2).  That will equal the boneMesh index.
     // not sure if there is a clever formula for the following array:
-    var indexToBoneMeshIndex = [2,3, 6,7, 10,11, 14,15, 18,19];
+    var indexToBoneMeshIndex = [2,3, 2,3, 2,3, 2,3, 2,3];
 
-    var getBoneMesh = function(hand, index){
+    var setBoneMeshColor = function(hand, index, color){
 
       // In `index / 2`, `2` is the number of joints per hand we're looking at.
-      return hand.fingers[ Math.floor(index / 2) ].data('boneMeshes')[
+      var meshes = hand.fingers[ Math.floor(index / 2) ].data('boneMeshes');
+
+      if (!meshes) return;
+
+      meshes[
         indexToBoneMeshIndex[index]
-      ];
+      ].material.color.setHex(color)
+
     };
 
     // determine if line and place intersect
@@ -78,9 +86,7 @@ window.InteractableBox.prototype = {
     // this ties InteractablePlane to boneHand plugin - probably should have callbacks pushed out to scene.
     proximity.in( function(hand, intersectionPoint, key, index){
 
-//      console.log('in', proximity.mesh.name);
-
-//      getBoneMesh(hand, index).material.color.setHex(0x00ff00);
+      setBoneMeshColor(hand, index, 0xffffff);
 
       this.intersections[key] = intersectionPoint.clone().sub(this.mesh.position);
 
@@ -88,9 +94,7 @@ window.InteractableBox.prototype = {
 
     proximity.out( function(hand, intersectionPoint, key, index){
 
-      console.log('out', proximity.mesh.name);
-
-//      getBoneMesh(hand, index).material.color.setHex(0xffffff);
+      setBoneMeshColor(hand, index, 0x000000);
       
       for ( var intersectionKey in this.intersections ){
         

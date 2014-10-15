@@ -99,7 +99,7 @@ Leap.plugin('proximity', function(scope){
       // j because this is inside a loop for every hand
       for (var j = 0; j < handPoints.length; j++){
 
-        key = hand.id.toString() + j.toString();
+        key = hand.id + '-' + j;
 
         this.intersectionPoints[key] = intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]);
 
@@ -131,7 +131,7 @@ Leap.plugin('proximity', function(scope){
 
       for (var j = 0; j < handPoints.length; j++){
 
-        key = hand.id.toString() + j.toString();
+        key = hand.id + '-' + j;
 
         handPoint = makeVector3( handPoints[j] );
         console.assert(!isNaN(handPoint.x));
@@ -145,10 +145,23 @@ Leap.plugin('proximity', function(scope){
         state = (length < mesh.geometry.parameters.radius) ? 'in' : 'out';
 
         if (state !== this.states[key]){
-          this.emit(state, hand, key, j, displacement, length / mesh.geometry.parameters.radius);
+          this.emit(state, hand, displacement, key, j);
           this.states[key] = state;
         }
 
+      }
+
+    },
+
+    // loop through existing "in" states and emit "out" events.
+    clear: function(hand){
+
+      for ( var key in this.states ){
+        if( this.states.hasOwnProperty(key) ){
+
+          this.emit('out', hand, null, key, parseInt(key.split('-')[1],10) );
+
+        }
       }
 
     }
@@ -174,6 +187,14 @@ Leap.plugin('proximity', function(scope){
 
     return proximity;
   };
+
+  this.on('handLost', function(hand){
+
+    for (var i = 0; i < proximities.length; i++){
+      proximities[i].clear(hand);
+    }
+
+  });
 
   // After setting up a proximity to watch, you can watch for events like so:
   // controller

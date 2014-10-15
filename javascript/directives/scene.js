@@ -35,7 +35,7 @@ var images = [
    "LARGE-Papio trestle construction.tif.jpg                 ",
    "LARGE-PFE cars ice dock.tif.jpg                          ",
    "LARGE-PFE Las Vegas 1931.tif.jpg                         ",
-   "LARGE-SPLA&SL #504.tif.jpg                               ",
+   "LARGE-SPLAandSL #504.tif.jpg                             ",
    "LARGE-Streamliner 3 locos.Tif.jpg                        ",
    "LARGE-UP SP office KC.tif.jpg                            ",
    "LARGE-X1729 No 4038 near Truckee.tif.jpg                 ",
@@ -122,7 +122,7 @@ angular.module('directives', [])
 
         addImage(scene, "images/" + images[Math.floor(Math.random()*images.length)], [-20,-80,-300]);
 
-        addImage(scene, "images/" + images[Math.floor(Math.random()*images.length)], [20,80,-280]);
+        addImage(scene, "images/" + images[Math.floor(Math.random()*images.length)], [20,80,-298]);
 
 
         var render = function() {
