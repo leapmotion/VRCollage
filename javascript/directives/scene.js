@@ -102,22 +102,22 @@ angular.module('directives', [])
         ];
 
         // units - m or mm?
-        var geometry = new THREE.BoxGeometry(100, 100, 20);
+        var geometry = new THREE.PlaneGeometry(100, 100);
 
         var material = new THREE.MeshPhongMaterial({
           map: THREE.ImageUtils.loadTexture("images/" + images[0])
         });
 
-        var box = new THREE.Mesh(geometry, material);
-        box.position.set(-20, 0, -300);
-        scene.add(box);
-        new InteractableBox(box, Leap.loopController);
+        var picture = new THREE.Mesh(geometry, material);
+        picture.position.set(-20, 0, -300);
+        scene.add(picture);
+        new InteractableBox(picture, Leap.loopController);
 
 
-        var box2 = new THREE.Mesh(geometry, material);
-        box2.position.set(-120, 40, -300);
-        scene.add(box2);
-        new InteractableBox(box2, Leap.loopController);
+//        var picture2 = new THREE.Mesh(geometry, material);
+//        picture2.position.set(-120, 40, -300);
+//        scene.add(picture2);
+//        new InteractableBox(picture2, Leap.loopController);
 
         var render = function() {
           Arrows.update();

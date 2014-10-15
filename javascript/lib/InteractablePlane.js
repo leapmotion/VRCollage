@@ -8,11 +8,12 @@
 // - Moving
 // - Mesh deformations
 // - etc?
+// there's very nothing in this class which cares if it is a box or a plane.
 
 (function() {
 
-window.InteractableBox = function(boxMesh, controller){
-  this.mesh = boxMesh;
+window.InteractableBox = function(planeMesh, controller){
+  this.mesh = planeMesh;
   this.controller = controller;
 
   // create an invisible sphere mesh on the bottom right corner (Don't even add it to the scene? Or maybe yes as it must be offset from box and use world position later.)
@@ -31,14 +32,14 @@ window.InteractableBox = function(boxMesh, controller){
   this.lowerRightCorner.name = "lowerRightCorner"; // convenience
 
   this.lowerRightCorner.position.copy(
-    this.mesh.corners(2)
+    this.mesh.geometry.corners(2)
   );
 
   this.mesh.add(this.lowerRightCorner);
 
-  this.bindResize();
+//  this.bindResize();
 
-//  this.bindMove();
+  this.bindMove();
 
 };
 
@@ -51,10 +52,12 @@ window.InteractableBox.prototype = {
   bindMove: function(){
 
     // determine if line and place intersect
-    var proximity = this.controller.watchLines(
+    var proximity = this.controller.watch(
       this.mesh,
       this.fingerTips
     )
+      .in( function(){console.log('in' , arguments) })
+      .out(function(){console.log('out', arguments) })
 
   },
 
@@ -96,10 +99,17 @@ window.InteractableBox.prototype = {
   // tuples of... origin and relative displacement of the line?
   //          ... the two points on the line?
   //          ... starting implementation to determine which is more natural
-  fingerTips: function(){
-
+  // could be optimized to reuse vectors between frames
+  fingerTips: function(hand){
+    return [
+      [
+        (new THREE.Vector3).fromArray(hand.indexFinger.tipPosition), // todo - this may be better as btip position.
+        (new THREE.Vector3).fromArray(hand.indexFinger.dipPosition)
+      ]
+    ]
   },
 
+  // could be optimized to reuse vectors between frames
   cursorPoints: function(hand){
     return [
       (new THREE.Vector3).fromArray(hand.palmPosition)

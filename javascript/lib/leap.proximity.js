@@ -62,11 +62,6 @@ Leap.plugin('proximity', function(scope){
 
       // Handles Spheres. Planes. Boxes? other shapes? custom shapes?
 
-      if (! ( this.mesh.geometry instanceof THREE.SphereGeometry || this.mesh.geometry instanceof THREE.BoxGeometry ) ){
-        console.error("Unsupported geometry", this.mesh.geometry);
-        return
-      }
-
       var handPoints = this.handPoints(hand);
       console.assert(handPoints instanceof Array);
 
@@ -82,17 +77,27 @@ Leap.plugin('proximity', function(scope){
 
     },
 
-    // http://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
     checkLines: function(hand, handPoints){
-      var mesh, length, state,
-        handPoint, meshWorldPosition = new THREE.Vector3,
+      var mesh = this.mesh, length, state,
+        lineEnds, meshWorldPosition = new THREE.Vector3,
         displacement = new THREE.Vector3;
 
+
+      // this could support box as well, if we could decide which face to check.
+      if (! ( mesh.geometry instanceof THREE.PlaneGeometry ) ){
+        console.error("Unsupported geometry", this.mesh.geometry);
+        return
+      }
+
+      // j because this is inside a loop for every hand
       for (var j = 0; j < handPoints.length; j++){
 
-        handPoint = handPoints[j] ;
+        state = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]) ? 'in' : 'out';
 
-
+        if (state !== this.states[j]){
+          this.emit(state, hand, handPoints[j], j); // todo - could include intersection displacement vector here (!)
+          this.states[j] = state;
+        }
 
       }
 
@@ -102,6 +107,12 @@ Leap.plugin('proximity', function(scope){
       var mesh = this.mesh, length, state,
         handPoint, meshWorldPosition = new THREE.Vector3,
         displacement = new THREE.Vector3;
+
+
+      if (! ( mesh.geometry instanceof THREE.SphereGeometry  ) ){
+        console.error("Unsupported geometry", this.mesh.geometry);
+        return
+      }
 
       meshWorldPosition.setFromMatrixPosition( mesh.matrixWorld ); // note - this is last frame's position. Should be no problem.
       console.assert(!isNaN(meshWorldPosition.x));

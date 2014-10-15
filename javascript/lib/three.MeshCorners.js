@@ -36,6 +36,26 @@ THREE.BoxGeometry.prototype.corners = function(){
 
 };
 
+THREE.PlaneGeometry.prototype.corners = function(){
+
+  this._corners || (this._corners = [
+    new THREE.Vector2,
+    new THREE.Vector2,
+    new THREE.Vector2,
+    new THREE.Vector2
+  ]);
+
+  var halfWidth  = this.parameters.width  / 2,
+      halfHeight = this.parameters.height / 2;
+
+  this._corners[0].set( - halfWidth, + halfHeight);
+  this._corners[1].set( + halfWidth, + halfHeight);
+  this._corners[2].set( + halfWidth, - halfHeight);
+  this._corners[3].set( - halfWidth, - halfHeight);
+
+  return this._corners
+};
+
 // Doesn't change any other corner positions
 // scale is a factor of change in corner position, from the original corner position.
 THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveAspectRatio){
@@ -112,17 +132,41 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
 
 };
 
+// returns the absolute position in world space, factoring in scale and position.
 THREE.Mesh.prototype.corners = function(num){
 
-  if (!this.geometry instanceof THREE.BoxGeometry){
-    console.warn('Unsupported geometry for #corners()');
-    return
-  }
-
   if (!isNaN(num)){
+
+    // todo - same as below
     return this.geometry.corners()[num]
+
   }else{
-    return this.geometry.corners()
+
+    if (this.geometry instanceof THREE.PlaneGeometry){
+
+      var corners = this.geometry.corners();
+
+      for (var i = 0; i < corners.length; i++){
+
+        corners[i] = (
+            new THREE.Vector3( corners[i].x, corners[i].y, 0 )
+              .multiply(this.scale)
+          ).add(
+            this.position.clone()
+          );
+
+      }
+
+      return corners;
+
+    }else{
+
+      // todo - support box, etc
+      throw("unsupported geometry");
+
+    }
+
+
   }
 
 
