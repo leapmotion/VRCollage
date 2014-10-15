@@ -26,6 +26,7 @@ Leap.plugin('proximity', function(scope){
     this.inCallbacks  = [];
     this.outCallbacks = [];
     this.states = []; // one state for each handPoint, either in or out.
+    this.intersectionPoints = []; // one for each handPoint
   };
 
   Proximity.prototype = {
@@ -91,7 +92,7 @@ Leap.plugin('proximity', function(scope){
       // j because this is inside a loop for every hand
       for (var j = 0; j < handPoints.length; j++){
 
-        intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]);
+        this.intersectionPoints[j] = intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]);
 
         state = intersectionPoint ? 'in' : 'out';
 
@@ -178,10 +179,18 @@ Leap.plugin('proximity', function(scope){
 
   return {
 
-    hand: function(hand){
+    // we call this on frame explicitly, rather than hand, so that calculations are done before 'frame' and 'hand' events
+    // bound to elsewhere in the app.
+    frame: function(frame){
 
-      for (var i = 0; i < proximities.length; i++){
-        proximities[i].check(hand);
+      for (var i = 0; i < frame.hands.length; i++){
+
+        for (var j = 0; i < proximities.length; i++){
+
+          proximities[i].check(frame.hands[i]);
+
+        }
+
       }
 
     }

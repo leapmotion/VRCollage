@@ -12,15 +12,21 @@
 
 (function() {
 
-window.InteractableBox = function(planeMesh, controller){
+
+window.InteractableBox = function(planeMesh, controller, options){
+  this.options = options || {};
+
   this.mesh = planeMesh;
   this.controller = controller;
+
+  this.intersections = [];
 
   // create an invisible sphere mesh on the bottom right corner (Don't even add it to the scene? Or maybe yes as it must be offset from box and use world position later.)
   // For now, we calculate world Position once and leave it at that?
   // this is used for proximity.
 
   var interactionRadius = 20;
+  this.fingersRequiredForMove = 2;
 
   this.lowerRightCorner = new THREE.Mesh(
     new THREE.SphereGeometry(interactionRadius, 32, 32),
@@ -42,22 +48,86 @@ window.InteractableBox = function(planeMesh, controller){
   this.bindMove();
 
 };
-
 window.InteractableBox.prototype = {
 
   // 1: count fingertips past zplace
   // 2: when more than 4, scroll
   // 3: when more than 5, move
   // 4: test/optimize with HMD.
+  // note: this is begging for its own class (see all the local methods defined in the constructor??)
   bindMove: function(){
 
+    // for every 2 index, we want to add (4 - 2).  That will equal the boneMesh index.
+    // not sure if there is a clever formula for the following array:
+    var indexToBoneMeshIndex = [2,3, 6,7, 10,11, 14,15, 18,19];
+
+    var getBoneMesh = function(hand, index){
+
+      // In `index / 2`, `2` is the number of joints per hand we're looking at.
+      return hand.fingers[ Math.floor(index / 2) ].data('boneMeshes')[
+        indexToBoneMeshIndex[index]
+      ];
+    };
+
     // determine if line and place intersect
-    var proximity = this.controller.watch(
+    var proximity = this.moveProximity =this.controller.watch(
       this.mesh,
-      this.fingerTips
-    )
-      .in( function(intersectionPoint){console.log('in' , arguments) })
-      .out(function(){console.log('out', arguments) })
+      this.interactiveEndBones
+    );
+
+    // this ties InteractablePlane to boneHand plugin - probably should have callbacks pushed out to scene.
+    proximity.in( function(hand, intersectionPoint, boneEnds, index){
+
+//      getBoneMesh(hand, index).material.color.setHex(0x00ff00);
+
+      this.intersections.push({
+        index: index,
+        offset: intersectionPoint.clone().sub(this.mesh.position)
+      });
+
+    }.bind(this) );
+
+    proximity.out( function(hand, intersectionPoint, boneEnds, index){
+
+//      getBoneMesh(hand, index).material.color.setHex(0xffffff);
+      
+      for (var i = 0; i < this.intersections.length; i++){
+        
+        if (this.intersections[i].index === index){
+          this.intersections.splice(i, 1);
+          break;
+        }
+        
+      }
+
+    }.bind(this) );
+
+    this.controller.on('frame', function(frame){
+
+      var averageMovement = new THREE.Vector3, intersection, intersectionCount = this.intersections.length;
+
+      if ( intersectionCount < this.fingersRequiredForMove) return;
+
+      for (var i = 0; i < intersectionCount; i++){
+
+        intersection = this.intersections[i];
+
+        averageMovement.add(
+          this.moveProximity.intersectionPoints[intersection.index].clone().sub(
+            intersection.offset
+          )
+        )
+
+      }
+
+      averageMovement.divideScalar(intersectionCount);
+
+      // constrain movement to...
+      // for now, let's discard z.
+      this.mesh.position.x = averageMovement.x;
+      this.mesh.position.y = averageMovement.y;
+
+    }.bind(this) );
 
   },
 
@@ -95,21 +165,34 @@ window.InteractableBox.prototype = {
     }.bind(this));
   },
 
+  // Returns coordinates for the last two bones of every finger
+  // Format: An array of tuples of ends
+  // Order matters for our own use in this class
   // returns a collection of lines to be tested against
-  // tuples of... origin and relative displacement of the line?
-  //          ... the two points on the line?
-  //          ... starting implementation to determine which is more natural
   // could be optimized to reuse vectors between frames
-  fingerTips: function(hand){
-    return [
-      [
-        (new THREE.Vector3).fromArray(hand.indexFinger.tipPosition), // todo - this may be better as btip position.
-        (new THREE.Vector3).fromArray(hand.indexFinger.dipPosition)
-      ]
-    ]
+  interactiveEndBones: function(hand){
+    var out = [], finger;
+
+    for (var i = 0; i < 5; i++){
+      finger = hand.fingers[i];
+
+      out.push(
+        [
+          (new THREE.Vector3).fromArray(finger.medial.nextJoint),
+          (new THREE.Vector3).fromArray(finger.medial.prevJoint)
+        ],
+        [
+          (new THREE.Vector3).fromArray(finger.distal.nextJoint),
+          (new THREE.Vector3).fromArray(finger.distal.prevJoint)
+        ]
+      );
+    }
+
+    return out;
   },
 
   // could be optimized to reuse vectors between frames
+  // used for resizing
   cursorPoints: function(hand){
     return [
       (new THREE.Vector3).fromArray(hand.palmPosition)
