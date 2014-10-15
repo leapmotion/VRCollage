@@ -56,7 +56,7 @@ window.InteractableBox.prototype = {
       this.mesh,
       this.fingerTips
     )
-      .in( function(){console.log('in' , arguments) })
+      .in( function(intersectionPoint){console.log('in' , arguments) })
       .out(function(){console.log('out', arguments) })
 
   },

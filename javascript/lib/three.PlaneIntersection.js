@@ -10,6 +10,9 @@
 //   http://stackoverflow.com/questions/9638064/check-if-a-point-is-inside-a-plane-segment
 //   Sort of like ^^, we transform our four corners to a flat x,y space with the bottom left at 0,0,
 //   and compare components of the point d (intersectionPoint)
+
+// Returns the intersectionPoint is it is intersecting
+// Returns false otherwise.
 THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd){
 
   if ( ! (this.geometry instanceof THREE.PlaneGeometry ) ) {
@@ -76,7 +79,9 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd){
        intersectionPoint2d.y < corners[0].y &&
        corners[3].x < intersectionPoint2d.x &&
        intersectionPoint2d.x < corners[2].x ){
-    return true;
+
+    return intersectionPoint;
+
   }
 
 

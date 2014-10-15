@@ -52,6 +52,7 @@ Leap.plugin('proximity', function(scope){
       var callbacks = this[eventName + "Callbacks"];
       for (var i = 0; i < callbacks.length; i++){
 
+        // could use arguments.slice here.
         callbacks[i](data1, data2, data3, data4, data5);
 
       }
@@ -78,9 +79,7 @@ Leap.plugin('proximity', function(scope){
     },
 
     checkLines: function(hand, handPoints){
-      var mesh = this.mesh, length, state,
-        lineEnds, meshWorldPosition = new THREE.Vector3,
-        displacement = new THREE.Vector3;
+      var mesh = this.mesh, state, intersectionPoint;
 
 
       // this could support box as well, if we could decide which face to check.
@@ -92,10 +91,12 @@ Leap.plugin('proximity', function(scope){
       // j because this is inside a loop for every hand
       for (var j = 0; j < handPoints.length; j++){
 
-        state = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]) ? 'in' : 'out';
+        intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]);
+
+        state = intersectionPoint ? 'in' : 'out';
 
         if (state !== this.states[j]){
-          this.emit(state, hand, handPoints[j], j); // todo - could include intersection displacement vector here (!)
+          this.emit(state, hand, intersectionPoint, handPoints[j], j); // todo - could include intersection displacement vector here (!)
           this.states[j] = state;
         }
 
