@@ -36,7 +36,7 @@ THREE.BoxGeometry.prototype.corners = function(){
 
 };
 
-THREE.PlaneGeometry.prototype.corners = function(){
+THREE.PlaneGeometry.prototype.corners = function(num){
 
   this._corners || (this._corners = [
     new THREE.Vector2,
@@ -53,7 +53,12 @@ THREE.PlaneGeometry.prototype.corners = function(){
   this._corners[2].set( + halfWidth, - halfHeight);
   this._corners[3].set( - halfWidth, - halfHeight);
 
-  return this._corners
+  if (!isNaN(num)){
+    return this._corners[num]
+  }else {
+    return this._corners
+  }
+
 };
 
 // Doesn't change any other corner positions
@@ -104,9 +109,15 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
     this.scale.set(r, r, r);
 
   }else {
-    var c = this.corners(cornerNo);
 
-    // this works. Has some error.
+    if (! (this.geometry instanceof THREE.PlaneGeometry)) {
+      throw "Non planar geometries not currently supported";
+      // Not that it would be too hard.  This originally supported Boxes as well, but they werent' necessary.
+    }
+
+    var c = this.geometry.corners(cornerNo);
+    c = new THREE.Vector3(c.x, c.y,0.1); // hack in 0.1 to avoid divide by 0.
+
     // Formulation is here:
     // https://drive.google.com/file/d/0B7cqxyA6LUpUcmd5MWtfc2JULTg/view
     this.scale.copy(
@@ -124,6 +135,7 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
       )
     );
 
+
   }
 
 
@@ -137,8 +149,7 @@ THREE.Mesh.prototype.corners = function(num){
 
   if (!isNaN(num)){
 
-    // todo - same as below
-    return this.geometry.corners()[num]
+    return this.corners()[num]
 
   }else{
 
@@ -152,7 +163,7 @@ THREE.Mesh.prototype.corners = function(num){
             new THREE.Vector3( corners[i].x, corners[i].y, 0 )
               .multiply(this.scale)
           ).add(
-            this.position.clone()
+            this.position
           );
 
       }
@@ -165,7 +176,6 @@ THREE.Mesh.prototype.corners = function(num){
       throw("unsupported geometry");
 
     }
-
 
   }
 

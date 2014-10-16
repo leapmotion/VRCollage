@@ -40,13 +40,12 @@ window.InteractableBox = function(planeMesh, controller, options){
 //
   this.lowerRightCorner.name = "lowerRightCorner"; // convenience
 
-  this.lowerRightCorner.position.copy(
-    this.mesh.geometry.corners(2)
-  );
+  var cornerXY = this.mesh.geometry.corners(2);
+  this.lowerRightCorner.position.set(cornerXY.x, cornerXY.y, 0);
 
   this.mesh.add(this.lowerRightCorner);
 
-//  this.bindResize();
+  this.bindResize();
 
   this.bindMove();
 
@@ -165,7 +164,7 @@ window.InteractableBox.prototype = {
     );
 
     this.controller.on('pinch', function(hand){
-      if (this.lowerRightCornerProximity.states[0] !== 'in') return;
+      if (this.lowerRightCornerProximity.states[hand.id + '-0'] !== 'in') return;
 
       hand.data('resizing', this.lowerRightCornerProximity);
 
