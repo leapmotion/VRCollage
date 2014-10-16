@@ -7,7 +7,7 @@
   initScene = function(targetEl) {
     var camera, directionalLight, height, render, renderer, width;
     scope.scene = new THREE.Scene();
-    renderer = new THREE.WebGLRenderer({
+    scope.renderer = renderer = new THREE.WebGLRenderer({
       alpha: true
     });
     width = window.innerWidth;
@@ -25,7 +25,7 @@
     directionalLight = directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(-0.5, 0, -0.2);
     scope.scene.add(directionalLight);
-    camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+    scope.camera = camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
     camera.position.fromArray([0, 300, 500]);
     camera.lookAt(new THREE.Vector3(0, 160, 0));
     scope.scene.add(camera);
@@ -60,12 +60,16 @@
       return;
     }
     return hand.fingers.forEach(function(finger) {
-      var boneMeshes, boneRadius, jointMesh, jointMeshes, jointRadius;
+      var boneMeshes, boneRadius, jointMesh, jointMeshes, jointRadius, material;
       boneMeshes = finger.data("boneMeshes");
       jointMeshes = finger.data("jointMeshes");
       if (!boneMeshes) {
         boneMeshes = [];
         jointMeshes = [];
+        material = !isNaN(scope.opacity) ? new THREE.MeshPhongMaterial({
+          transparent: true,
+          opacity: scope.opacity
+        }) : new THREE.MeshPhongMaterial();
         if (!finger.bones) {
           console.warn("error, no bones on", hand.id);
           return;
@@ -74,16 +78,16 @@
         jointRadius = hand.middleFinger.proximal.length / 5;
         finger.bones.forEach(function(bone) {
           var boneMesh, jointMesh;
-          boneMesh = new THREE.Mesh(new THREE.CylinderGeometry(boneRadius, boneRadius, bone.length, 32), new THREE.MeshPhongMaterial());
+          boneMesh = new THREE.Mesh(new THREE.CylinderGeometry(boneRadius, boneRadius, bone.length, 32), material.clone());
           boneMesh.material.color.copy(boneColor);
           scope.scene.add(boneMesh);
           boneMeshes.push(boneMesh);
-          jointMesh = new THREE.Mesh(new THREE.SphereGeometry(jointRadius, 32, 32), new THREE.MeshPhongMaterial());
+          jointMesh = new THREE.Mesh(new THREE.SphereGeometry(jointRadius, 32, 32), material.clone());
           jointMesh.material.color.copy(jointColor);
           scope.scene.add(jointMesh);
           return jointMeshes.push(jointMesh);
         });
-        jointMesh = new THREE.Mesh(new THREE.SphereGeometry(jointRadius, 32, 32), new THREE.MeshPhongMaterial());
+        jointMesh = new THREE.Mesh(new THREE.SphereGeometry(jointRadius, 32, 32), material.clone());
         jointMesh.material.color.copy(jointColor);
         scope.scene.add(jointMesh);
         jointMeshes.push(jointMesh);
