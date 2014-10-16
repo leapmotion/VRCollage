@@ -149,31 +149,51 @@ angular.module('directives', [])
           Math.PI
         );//create the lathe with 12 radial repetitions of the profile
 
-        var geometry = new THREE.RingGeometry( 15, 50, 8, 4 , 0, Math.PI );
-        window.ring = geometry;
+        var geometry = new THREE.SphereGeometry( 50, 32, 32, 0, Math.PI / 2, 0, Math.PI );
+        var insideGeometry = new THREE.SphereGeometry( 49.9, 32, 32, 0, Math.PI / 2, 0, Math.PI );
 
-//        var material = new THREE.MeshBasicMaterial( { color: 0xffff00, side: THREE.DoubleSide } );
-//        var mesh = new THREE.Mesh( geometry, material );
-//        scene.add( mesh );
+        window.ring = geometry;
 
         var testLathe = new THREE.Mesh(
           geometry, new THREE.MeshPhongMaterial({
             color: 0xff0000,
-            wireframe: true
+            wireframe: false
           })
         );
 
-        testLathe.position.set(-20, 0, -300)
+        var testLatheInside = new THREE.Mesh(
+          insideGeometry, new THREE.MeshPhongMaterial({
+            color: 0x000000,
+            side: THREE.BackSide
+          })
+        );
+        testLathe.add(testLatheInside);
+
+        testLathe.rotation.set(Math.PI / 1.8,0,0);
+
+        testLathe.position.set(-20, 0, -300);
         scene.add(testLathe);
+
+        testLathe.add(
+          new THREE.AxisHelper(100)
+        );
+
         window.ringMesh = testLathe;
 
-        var cursor = new THREE.ArrowHelper(
+        var arrowHelper = new THREE.ArrowHelper(
           new THREE.Vector3(1,1,1),
           new THREE.Vector3(-20, 0, -300),
           100,
           0xff0000
         );
-        scene.add(cursor);
+        scene.add(arrowHelper);
+
+        Leap.loopController.on('hand', function(hand){ // one hand support for testing
+
+          geometry.setPhiLength(Math.PI * 2 * hand.pinchStrength);
+          insideGeometry.setPhiLength(Math.PI * 2 * hand.pinchStrength);
+
+        });
 
         var render = function() {
           Arrows.update();
