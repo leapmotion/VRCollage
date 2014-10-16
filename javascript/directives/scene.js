@@ -149,7 +149,7 @@ angular.module('directives', [])
           Math.PI
         );//create the lathe with 12 radial repetitions of the profile
 
-        var geometry = new THREE.RingGeometry( 15, 50, 8, 4 );
+        var geometry = new THREE.RingGeometry( 15, 50, 8, 4 , 0, Math.PI );
         window.ring = geometry;
 
 //        var material = new THREE.MeshBasicMaterial( { color: 0xffff00, side: THREE.DoubleSide } );

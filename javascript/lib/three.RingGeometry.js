@@ -15,7 +15,11 @@ THREE.RingGeometry = function ( innerRadius, outerRadius, thetaSegments, phiSegm
 	this.thetaSegments = thetaSegments = thetaSegments !== undefined ? Math.max( 3, thetaSegments ) : 8;
 	this.phiSegments = phiSegments = phiSegments !== undefined ? Math.max( 1, phiSegments ) : 8;
 
+  console.log(this.innerRadius, this.outerRadius, this.thetaSegments, this.phiSegments, this.thetaStart, this.thetaLength);
+
 	var i, o, uvs = [], radius = innerRadius, radiusStep = ( ( outerRadius - innerRadius ) / phiSegments );
+
+  var j = 0;
 
 	for ( i = 0; i < phiSegments + 1; i ++ ) { // concentric circles inside ring
 
@@ -25,6 +29,9 @@ THREE.RingGeometry = function ( innerRadius, outerRadius, thetaSegments, phiSegm
 			var segment = thetaStart + o / thetaSegments * thetaLength;
 			vertex.x = radius * Math.cos( segment );
 			vertex.y = radius * Math.sin( segment );
+
+      vertex.id = j;
+      j++;
 
 			this.vertices.push( vertex );
 			uvs.push( new THREE.Vector2( ( vertex.x / outerRadius + 1 ) / 2, ( vertex.y / outerRadius + 1 ) / 2 ) );
@@ -74,10 +81,14 @@ THREE.RingGeometry.prototype = Object.create( THREE.Geometry.prototype );
 // but - more work than I want to do right now
 THREE.RingGeometry.prototype.setThetaLength = function(thetaLength){
 
-//  this.thetaLength = thetaLength;
+  this.thetaLength = thetaLength;
+
+  console.log(this.innerRadius, this.outerRadius, this.thetaSegments, this.phiSegments, this.thetaStart, this.thetaLength);
 
 
   var i, o, uvs = [], radius = this.innerRadius, radiusStep = ( ( this.outerRadius - this.innerRadius ) / this.phiSegments );
+
+  var x, y, j = 0;
 
 	for ( i = 0; i < this.phiSegments + 1; i ++ ) { // concentric circles inside ring
 
@@ -85,30 +96,31 @@ THREE.RingGeometry.prototype.setThetaLength = function(thetaLength){
 
 			var vertex = this.vertices[i + o]; // maybe i need to query vertex indices here.
 			var segment = this.thetaStart + o / this.thetaSegments * this.thetaLength;
-			vertex.x = radius * Math.cos( segment );
-			vertex.y = radius * Math.sin( segment );
 
-			uvs.push( new THREE.Vector2( ( vertex.x / this.outerRadius + 1 ) / 2, ( vertex.y / this.outerRadius + 1 ) / 2 ) );
+
+			x = radius * Math.cos( segment );
+			y = radius * Math.sin( segment );
+
+      for (var ii = 0; ii < this.vertices.length; ii++){
+        if (this.vertices[ii].id == j){
+          vertex = this.vertices[ii];
+          break;
+        }
+      }
+
+      console.assert(j == vertex.id);
+      vertex.x = x;
+      vertex.y = y;
+
+
+      j++;
+
 		}
 
 		radius += radiusStep;
 
 	}
 
-
-
- 	this.computeFaceNormals();
-
- 	this.boundingSphere = new THREE.Sphere( new THREE.Vector3(), radius );
-
   this.verticesNeedUpdate = true;
-  this.elementsNeedUpdate = true;
-  this.morphTargetsNeedUpdate = true;
-  this.uvsNeedUpdate = true;
-  this.normalsNeedUpdate = true;
-  this.colorsNeedUpdate = true;
-  this.tangentsNeedUpdate = true;
-  this.dynamic = true;
-
 
 }
