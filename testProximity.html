@@ -42,11 +42,15 @@
   var camera = Leap.loopController.plugins.boneHand.camera;
 
   var plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(160,160),
-    new THREE.MeshPhongMaterial({wireframe: true})
+    new THREE.PlaneGeometry(80,80),
+    new THREE.MeshPhongMaterial({wireframe: false})
   );
 
-  plane.position.set(0,150,-100);
+
+  plane.scale.set(2,2,2);
+  plane.position.set(0,200,-100);
+
+  camera.lookAt( plane.position );
 
   var lineGeometry = new THREE.Geometry();
   lineGeometry.vertices.push( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -300 ) );
@@ -60,20 +64,25 @@
     new THREE.SphereGeometry(15, 32, 32),
     new THREE.MeshPhongMaterial
   );
-  sphere.position.set(0,0,-99); // todo - remove
 
   scene.add(plane);
   scene.add(line);
   scene.add(sphere);
 
+  var cornerSpheres = [];
+  for (var i = 0; i < 5; i++){
+    cornerSpheres[i] = new THREE.Mesh(
+      new THREE.SphereGeometry(15, 32, 32),
+      new THREE.MeshPhongMaterial
+    );
+
+    scene.add(cornerSpheres[i]);
+  }
+
+  var axisHelper = new THREE.AxisHelper( 100 );
+  scene.add( axisHelper );
+
   var controls = new THREE.OrbitControls( camera );
-  window.updateLoop = function(){
-    controls.update();
-    window.requestAnimationFrame(updateLoop);
-  };
-  updateLoop();
-
-
 
   // Set up interactions
 
@@ -82,7 +91,7 @@
 
     if (!frame.hands.length > 0) return;
 
-    for (var i = 0; i < frame.hands.length; i++) {
+    for (var i = 0; i < frame.hands.length && i < 2; i++) {
 
       lineGeometry.vertices[i].fromArray(frame.hands[i].palmPosition);
 

@@ -62,23 +62,29 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd){
   var inverseMatrix = (new THREE.Matrix4).getInverse(this.matrixWorld);
 
   // mesh.corners() does not (currently) memoize values
-  var corners = this.corners();
+  var cornerPositions = this.corners();
 
-  for (var i = 0; i < corners.length; i++){
+  for (var i = 0; i < cornerPositions.length; i++){
 
     // technically, there's an unused corner inversion here. - the top right.
-    corners[i].applyMatrix4(inverseMatrix);
+    cornerPositions[i].applyMatrix4(inverseMatrix);
+
+//    cornerSpheres[i].position.copy(cornerPositions[i]);
+    console.assert(cornerPositions[i].z < 0.0001);
 
   }
 
   // convert point by multiplying by the inverse of the plane's transformation matrix. hope.
   var intersectionPoint2d = intersectionPoint.clone().applyMatrix4(inverseMatrix); // clone may be unnecessary here.
 
+//  cornerSpheres[4].position.copy(intersectionPoint2d);
+  console.assert(intersectionPoint2d.z < 0.0001);
+
   // check y bottom up, then x left rightwards
-  if ( corners[3].y < intersectionPoint2d.y &&
-       intersectionPoint2d.y < corners[0].y &&
-       corners[3].x < intersectionPoint2d.x &&
-       intersectionPoint2d.x < corners[2].x ){
+  if ( cornerPositions[3].y < intersectionPoint2d.y &&
+       intersectionPoint2d.y < cornerPositions[0].y &&
+       cornerPositions[3].x < intersectionPoint2d.x &&
+       intersectionPoint2d.x < cornerPositions[2].x ){
 
     return intersectionPoint;
 
