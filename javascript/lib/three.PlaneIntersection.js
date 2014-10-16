@@ -19,10 +19,10 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd){
     throw "Not sure if geometry is supported"
   }
 
-  var p0 = this.position;
+  var p0 = this.position; // note that this is local, which would be buggy for nested objects (!)
   var l0 = lineStart;
   // the normal of any face will be the normal of the plane.
-  var n  = this.geometry.faces[0].normal.clone().applyMatrix4(this.matrixWorld); // but.. these need to be transformed by matrix?
+  var n  = this.geometry.faces[0].normal.clone();
   var l = lineEnd.clone().sub(lineStart);  // order shouldn't matter here.  And they didn't SAY normalize.
 
   var numerator = p0.clone().sub(l0).dot(n);
@@ -73,6 +73,7 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd){
     console.assert(cornerPositions[i].z < 0.0001);
 
   }
+
 
   // convert point by multiplying by the inverse of the plane's transformation matrix. hope.
   var intersectionPoint2d = intersectionPoint.clone().applyMatrix4(inverseMatrix); // clone may be unnecessary here.
