@@ -67,6 +67,10 @@ window.InteractableBox.prototype = {
     // this ties InteractablePlane to boneHand plugin - probably should have callbacks pushed out to scene.
     proximity.in( function(hand, intersectionPoint, key, index){
 
+      // Let's try out a one-way state machine
+      // This doesn't allow intersections to count if I'm already pinching
+      // So if they want to move after a pinch, they have to take hand out of picture and re-place.
+      if (hand.data('resizing')) return;
       setBoneMeshColor(hand, index, 0xffffff);
 
       this.intersections[key] = intersectionPoint.clone().sub(this.mesh.position);
