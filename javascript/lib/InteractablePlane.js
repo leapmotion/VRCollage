@@ -92,7 +92,69 @@ window.InteractablePlane.prototype = {
 
     }.bind(this) );
 
+    this.controller.on('grab', function(hand){
+      // check for existing grab
+      // check for intersections
+      // set grab offset to current offset.
+
+      if (this.moveProximity.intersectionCount() < 1) return;
+
+      // Todo - If there are multiple images, we are currently biased towards the one added first
+      // We should instead do the one with more intersection points.
+
+      if ( hand.data('grabMoving')) return;
+
+      // This is candidate for becoming its own class (possibly to handle the above todo).
+      var grab = {
+        target: this,
+        positionOffset: (new THREE.Vector3).fromArray(hand.palmPosition).sub(this.mesh.position)
+        // later add: rotation offset - this will require a hand.quaternion() or bone.quaternion() method in LeapJS.
+//        rotationOffset: (new THREE.Quaternion)
+      };
+      console.assert(!isNaN(grab.positionOffset.x));
+      console.assert(!isNaN(grab.positionOffset.y));
+      console.assert(!isNaN(grab.positionOffset.z));
+
+      hand.data('grabMoving', grab);
+
+
+    }.bind(this) );
+
+    this.controller.on('ungrab', function(hand){
+
+      if (!hand.data('grabMoving')) return;
+
+      hand.data('grabMoving', false);
+
+    });
+
     this.controller.on('frame', function(frame){
+
+      var hand, grab, grabbed;
+
+      // not sure if it would be better to store grab data here on the plane, rather than on the hand.
+      for (var i = 0; i < frame.hands.length; i++){
+        hand = frame.hands[i];
+        grab = hand.data('grabMoving');
+
+        // todo - right now, the first-hand-in-frame always takes grab precedence over a second grab of the same plane
+        // This should be perhaps replaced with the current grab/etc, or maybe a resize action.
+        if ( grab && grab.target === this ) {
+          grabbed = true;
+          break;
+        }
+      }
+
+      if (grabbed){
+        this.mesh.position.fromArray(hand.palmPosition).sub(grab.positionOffset);
+
+        console.assert(!isNaN(this.mesh.position.x));
+        console.assert(!isNaN(this.mesh.position.y));
+        console.assert(!isNaN(this.mesh.position.z));
+
+        return
+      }
+
 
       var averageMovement = new THREE.Vector3, intersectionCount = 0;
 

@@ -35,6 +35,18 @@ Leap.plugin('proximity', function(scope){
 
   Proximity.prototype = {
 
+    intersectionCount: function() {
+      var intersectionCount = 0, key;
+
+      for ( key in this.intersectionPoints ){
+        if( this.intersectionPoints.hasOwnProperty(key) ){
+          intersectionCount++;
+        }
+      }
+
+      return intersectionCount;
+    },
+
     // unlike "over" events, we emit when "in" an object.
     in: function(callback){
       this.inCallbacks.push(callback);
