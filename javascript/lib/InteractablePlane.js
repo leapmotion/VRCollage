@@ -15,41 +15,23 @@
 
 window.InteractableBox = function(planeMesh, controller, options){
   this.options = options || {};
+  this.options.cornerInteractionRadius || (this.options.cornerInteractionRadius = 20);
 
   this.mesh = planeMesh;
   this.controller = controller;
 
   this.intersections = {}; //keyed by the string: hand.id + handPointIndex
 
-  // create an invisible sphere mesh on the bottom right corner (Don't even add it to the scene? Or maybe yes as it must be offset from box and use world position later.)
-  // For now, we calculate world Position once and leave it at that?
-  // this is used for proximity.
-
-  var interactionRadius = 20;
-
   // If this is ever increased above one, that initial finger can not be counted when averaging position
   // otherwise, it causes jumpyness.
   this.fingersRequiredForMove = 1;
-
-  this.lowerRightCorner = new THREE.Mesh(
-    new THREE.SphereGeometry(interactionRadius, 32, 32),
-    new THREE.MeshPhongMaterial({color: 0xffffff})
-  );
-
-  this.lowerRightCorner.visible = false;
-//
-  this.lowerRightCorner.name = "lowerRightCorner"; // convenience
-
-  var cornerXY = this.mesh.geometry.corners(2);
-  this.lowerRightCorner.position.set(cornerXY.x, cornerXY.y, 0);
-
-  this.mesh.add(this.lowerRightCorner);
 
   this.bindResize();
 
   this.bindMove();
 
 };
+
 window.InteractableBox.prototype = {
 
   // 1: count fingertips past zplace
@@ -145,28 +127,66 @@ window.InteractableBox.prototype = {
 
   bindResize: function(){
 
-    // todo: handle four corners, not just one.
-    this.lowerRightCornerProximity = this.controller.watch(
-      this.lowerRightCorner,
-      this.cursorPoints
-    ).in(
-      function(hand, index, displacement, fraction){
-        this.lowerRightCorner.material.color.setHex(0x33ee22);
-      }.bind(this)
-    ).out(
-      function(){
-        this.lowerRightCorner.material.color.setHex(0xffffff);
-      }.bind(this)
-    );
+    var corners = this.mesh.geometry.corners();
+    this.cornerMeshes = [];
+    this.cornerProximities = [];
+    var mesh, proximity;
+
+    for (var i = 0; i < corners.length; i++) {
+
+      this.cornerMeshes[i] = mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(this.options.cornerInteractionRadius, 32, 32),
+        new THREE.MeshPhongMaterial({color: 0xffffff})
+      );
+
+      mesh.visible = false;
+      mesh.name = "corner-" + i; // convenience
+
+      var cornerXY = corners[i];
+      mesh.position.set(cornerXY.x, cornerXY.y, 0); // hard coded for PlaneGeometry.. :-/
+
+      this.mesh.add(mesh);
+
+      this.cornerProximities[i] = proximity = this.controller.watch(
+        mesh,
+        this.cursorPoints
+      ).in(
+        function(hand, displacement, key, index){
+          // test - this could be the context of the proximity.
+          this.mesh.material.color.setHex(0x33ee22);
+        }
+      ).out(
+        function(){
+          this.mesh.material.color.setHex(0xffffff);
+        }
+      );
+
+    }
 
     this.controller.on('hand',
       this.checkResizeProximity.bind(this)
     );
 
+    // todo - make sure pinching on multiple corners is well-defined.  Should always take the closest one.
+    // Right now it will always prefer the first-added Plane.
     this.controller.on('pinch', function(hand){
-      if (this.lowerRightCornerProximity.states[hand.id + '-0'] !== 'in') return;
 
-      hand.data('resizing', this.lowerRightCornerProximity);
+      var activeProximity, key = hand.id + '-0';
+
+      for (var i = 0; i < this.cornerProximities.length; i++) {
+
+        if (this.cornerProximities[i].states[key] === 'in') {
+          activeProximity = this.cornerProximities[i];
+          break;
+        }
+
+      }
+
+      if (!activeProximity) return;
+
+      if ( hand.data('resizing') ) return;
+
+      hand.data('resizing', activeProximity);
 
     }.bind(this));
 
@@ -212,26 +232,36 @@ window.InteractableBox.prototype = {
   },
 
   checkResizeProximity: function(hand){
-    var resizeTarget = hand.data('resizing');
+    var targetProximity = hand.data('resizing'), inverseScale;
 
-    if (resizeTarget && (resizeTarget == this.lowerRightCornerProximity) ){
+    if (!targetProximity) return;
 
-      if (hand.data('pinchEvent.pinching')) {
-        this.handleResize(hand);
-      }else{
-        hand.data('resizing', false);
+    var cursorPosition = this.cursorPoints( hand )[0];
+
+    for (var i = 0; i < this.cornerProximities.length; i++) {
+
+      if ( targetProximity === this.cornerProximities[i] ){
+
+        if (hand.data('pinchEvent.pinching')) {
+
+          this.mesh.setCorner(i, cursorPosition);
+
+          inverseScale = (new THREE.Vector3(1,1,1)).divide(this.mesh.scale);
+
+          for (var j = 0; j < this.cornerProximities.length; j++){
+            this.cornerMeshes[j].scale.copy(inverseScale);
+          }
+
+
+        } else {
+
+          hand.data('resizing', false);
+
+        }
+
       }
 
     }
-  },
-
-  handleResize: function(hand){
-
-    // change since last frame
-    var displacement = this.cursorPoints( hand )[0];
-    this.mesh.setCorner(2, displacement);
-
-    this.lowerRightCorner.scale.set(1,1,1).divide(this.mesh.scale);
 
   }
 

@@ -28,7 +28,9 @@ Leap.plugin('proximity', function(scope){
 
     // These are both keyed by the string: hand.id + handPointIndex
     this.states = {};
-    this.intersectionPoints = {}; // one for each handPoint
+    this.intersectionPoints = {}; // checkLines: one for each handPoint
+    this.distances = {}; // checkPoints: one for each handPoint
+    this.lengths = {}; // checkPoints: one for each handPoint
   };
 
   Proximity.prototype = {
@@ -56,7 +58,7 @@ Leap.plugin('proximity', function(scope){
       for (var i = 0; i < callbacks.length; i++){
 
         // could use arguments.slice here.
-        callbacks[i](data1, data2, data3, data4, data5);
+        callbacks[i].call(this, data1, data2, data3, data4, data5);
 
       }
 
@@ -117,7 +119,7 @@ Leap.plugin('proximity', function(scope){
     checkPoints: function(hand, handPoints){
       var mesh = this.mesh, length, state,
         handPoint, meshWorldPosition = new THREE.Vector3,
-        displacement = new THREE.Vector3, key;
+        distance = new THREE.Vector3, key;
 
       if (! ( mesh.geometry instanceof THREE.SphereGeometry  ) ){
         console.error("Unsupported geometry", this.mesh.geometry);
@@ -139,13 +141,16 @@ Leap.plugin('proximity', function(scope){
         console.assert(!isNaN(handPoint.z));
 
         // subtract position from handpoint, compare to radius
-        displacement.subVectors(handPoint, meshWorldPosition);
-        length = displacement.length();
+        // optimization - could square lengths here.
+        distance.subVectors(handPoint, meshWorldPosition);
+        length = distance.length();
+        this.distances[key] = distance;
+        this.lengths[key]   = length;
 
         state = (length < mesh.geometry.parameters.radius) ? 'in' : 'out';
 
         if (state !== this.states[key]){
-          this.emit(state, hand, displacement, key, j);
+          this.emit(state, hand, distance, key, j);
           this.states[key] = state;
         }
 
