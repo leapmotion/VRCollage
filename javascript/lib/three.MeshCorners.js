@@ -135,7 +135,6 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
       )
     );
 
-
   }
 
 

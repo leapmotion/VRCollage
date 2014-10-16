@@ -129,6 +129,36 @@ angular.module('directives', [])
         addImage(scene, "images/" + images[Math.floor(Math.random()*images.length)], [20,80,-300]);
 
 
+        Leap.loopController.on('hand', function(hand){
+          return
+          if (hand.data('cursor')) return;
+
+          var boneMeshes = hand.indexFinger.data('boneMeshes');
+
+          console.log(boneMeshes);
+
+          if (!boneMeshes) return;
+
+          var cursorTarget = new THREE.Vector3(-5,-39,25);
+          var cursorDirection = new THREE.Vector3(0,-1,0);
+          var cursorLength = 40;
+
+          var cursor = new THREE.ArrowHelper(
+            cursorDirection,
+            cursorTarget.clone().sub(cursorDirection.normalize().multiplyScalar(cursorLength)),
+            cursorLength,
+            0x5daa00,
+            20,
+            10
+          );
+
+
+          boneMeshes[0].add(cursor);
+
+          hand.data('cursor', cursor);
+        });
+
+
         var render = function() {
           Arrows.update();
           vrControls.update();
