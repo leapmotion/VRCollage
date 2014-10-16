@@ -36,7 +36,7 @@ window.InteractableBox = function(planeMesh, controller, options){
     new THREE.MeshPhongMaterial({color: 0xffffff})
   );
 
-//  this.lowerRightCorner.visible = false;
+  this.lowerRightCorner.visible = false;
 //
   this.lowerRightCorner.name = "lowerRightCorner"; // convenience
 
