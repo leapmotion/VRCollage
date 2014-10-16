@@ -103,7 +103,13 @@ Leap.plugin('proximity', function(scope){
 
         key = hand.id + '-' + j;
 
-        this.intersectionPoints[key] = intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]);
+        intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]);
+
+        if (intersectionPoint){
+          this.intersectionPoints[key] = intersectionPoint;
+        } else if (this.intersectionPoints[key]) {
+          delete this.intersectionPoints[key];
+        }
 
         state = intersectionPoint ? 'in' : 'out';
 
@@ -164,6 +170,10 @@ Leap.plugin('proximity', function(scope){
       for ( var key in this.states ){
         if( this.states.hasOwnProperty(key) ){
 
+          delete  this.states[key];
+          delete  this.intersectionPoints[key];
+          delete  this.lengths[key];
+          delete  this.distances[key];
           this.emit('out', hand, null, key, parseInt(key.split('-')[1],10) );
 
         }
