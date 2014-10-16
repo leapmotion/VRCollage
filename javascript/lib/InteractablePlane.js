@@ -22,6 +22,8 @@ window.InteractablePlane = function(planeMesh, controller, options){
 
   this.intersections = {}; //keyed by the string: hand.id + handPointIndex
 
+  this.grab = null; // hand id.  Limited to one hand for now.
+
   // If this is ever increased above one, that initial finger can not be counted when averaging position
   // otherwise, it causes jumpyness.
   this.fingersRequiredForMove = 1;
@@ -97,95 +99,80 @@ window.InteractablePlane.prototype = {
       // check for intersections
       // set grab offset to current offset.
 
+      // no two-handed grabs for now.
+      if (this.grab) return;
+
       if (this.moveProximity.intersectionCount() < 1) return;
 
       // Todo - If there are multiple images, we are currently biased towards the one added first
       // We should instead do the one with more intersection points.
 
-      if ( hand.data('grabMoving')) return;
-
       // This is candidate for becoming its own class (possibly to handle the above todo).
-      var grab = {
-        target: this,
+      this.grab = {
+        handId: hand.id,
         positionOffset: (new THREE.Vector3).fromArray(hand.palmPosition).sub(this.mesh.position)
         // later add: rotation offset - this will require a hand.quaternion() or bone.quaternion() method in LeapJS.
 //        rotationOffset: (new THREE.Quaternion)
       };
-      console.assert(!isNaN(grab.positionOffset.x));
-      console.assert(!isNaN(grab.positionOffset.y));
-      console.assert(!isNaN(grab.positionOffset.z));
-
-      hand.data('grabMoving', grab);
-
+      console.assert(!isNaN(this.grab.positionOffset.x));
+      console.assert(!isNaN(this.grab.positionOffset.y));
+      console.assert(!isNaN(this.grab.positionOffset.z));
 
     }.bind(this) );
 
     this.controller.on('ungrab', function(hand){
+      if (this.grab && hand.id != this.grab.handId) return;
 
-      if (!hand.data('grabMoving')) return;
-
-      hand.data('grabMoving', false);
-
-    });
+      this.grab = null;
+    }.bind(this));
 
     this.controller.on('frame', function(frame){
+      var hand;
 
-      var hand, grab, grabbed;
+      if (this.grab){
 
-      // not sure if it would be better to store grab data here on the plane, rather than on the hand.
-      for (var i = 0; i < frame.hands.length; i++){
-        hand = frame.hands[i];
-        grab = hand.data('grabMoving');
+        hand = frame.hand(this.grab.handId);
 
-        // todo - right now, the first-hand-in-frame always takes grab precedence over a second grab of the same plane
-        // This should be perhaps replaced with the current grab/etc, or maybe a resize action.
-        if ( grab && grab.target === this ) {
-          grabbed = true;
-          break;
-        }
-      }
-
-      if (grabbed){
-        this.mesh.position.fromArray(hand.palmPosition).sub(grab.positionOffset);
+        this.mesh.position.fromArray(hand.palmPosition).sub(this.grab.positionOffset);
 
         console.assert(!isNaN(this.mesh.position.x));
         console.assert(!isNaN(this.mesh.position.y));
         console.assert(!isNaN(this.mesh.position.z));
 
-        return
-      }
+      } else {
 
+        var averageMovement = new THREE.Vector3, intersectionCount = 0;
 
-      var averageMovement = new THREE.Vector3, intersectionCount = 0;
+        for ( var intersectionKey in this.intersections ){
+          if( this.intersections.hasOwnProperty(intersectionKey) ){
 
-      for ( var intersectionKey in this.intersections ){
-        if( this.intersections.hasOwnProperty(intersectionKey) ){
+            intersectionCount++;
 
-          intersectionCount++;
-
-          averageMovement.add(
-            this.moveProximity.intersectionPoints[intersectionKey].clone().sub(
-              this.intersections[intersectionKey]
+            averageMovement.add(
+              this.moveProximity.intersectionPoints[intersectionKey].clone().sub(
+                this.intersections[intersectionKey]
+              )
             )
-          )
 
+          }
         }
+
+        if ( intersectionCount < this.fingersRequiredForMove) return;
+
+        averageMovement.divideScalar(intersectionCount);
+
+        // constrain movement to...
+        // for now, let's discard z.
+        // better:
+        // Always move perpendicular to image normal
+        // Then set normal equal to average of intersecting line normals
+        // (Note: this will require some thought with grab.  Perhaps get carpal intersection, stop re-adjusting angle.)
+        // (Note: can't pick just any face normal, so that we can distort the mesh later on.
+        // This will allow (but hopefully not require?) expertise to use.
+        this.mesh.position.x = averageMovement.x;
+        this.mesh.position.y = averageMovement.y;
+
       }
-
-      if ( intersectionCount < this.fingersRequiredForMove) return;
-
-      averageMovement.divideScalar(intersectionCount);
-
-      // constrain movement to...
-      // for now, let's discard z.
-      // better:
-      // Always move perpendicular to image normal
-      // Then set normal equal to average of intersecting line normals
-      // (Note: this will require some thought with grab.  Perhaps get carpal intersection, stop re-adjusting angle.)
-      // (Note: can't pick just any face normal, so that we can distort the mesh later on.
-      // This will allow (but hopefully not require?) expertise to use.
-      this.mesh.position.x = averageMovement.x;
-      this.mesh.position.y = averageMovement.y;
 
     }.bind(this) );
 
