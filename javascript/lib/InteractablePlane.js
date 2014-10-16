@@ -13,7 +13,7 @@
 (function() {
 
 
-window.InteractableBox = function(planeMesh, controller, options){
+window.InteractablePlane = function(planeMesh, controller, options){
   this.options = options || {};
   this.options.cornerInteractionRadius || (this.options.cornerInteractionRadius = 20);
 
@@ -32,7 +32,7 @@ window.InteractableBox = function(planeMesh, controller, options){
 
 };
 
-window.InteractableBox.prototype = {
+window.InteractablePlane.prototype = {
 
   // 1: count fingertips past zplace
   // 2: when more than 4, scroll
@@ -43,12 +43,12 @@ window.InteractableBox.prototype = {
 
     // for every 2 index, we want to add (4 - 2).  That will equal the boneMesh index.
     // not sure if there is a clever formula for the following array:
-    var indexToBoneMeshIndex = [2,3, 2,3, 2,3, 2,3, 2,3];
+    var indexToBoneMeshIndex = [0,1,2,3, 0,1,2,3, 0,1,2,3, 0,1,2,3, 0,1,2,3];
 
     var setBoneMeshColor = function(hand, index, color){
 
       // In `index / 2`, `2` is the number of joints per hand we're looking at.
-      var meshes = hand.fingers[ Math.floor(index / 2) ].data('boneMeshes');
+      var meshes = hand.fingers[ Math.floor(index / 4) ].data('boneMeshes');
 
       if (!meshes) return;
 
@@ -79,7 +79,7 @@ window.InteractableBox.prototype = {
 
     proximity.out( function(hand, intersectionPoint, key, index){
 
-      setBoneMeshColor(hand, index, 0x000000);
+      setBoneMeshColor(hand, index, 0x222222);
       
       for ( var intersectionKey in this.intersections ){
         
@@ -213,6 +213,14 @@ window.InteractableBox.prototype = {
       finger = hand.fingers[i];
 
       out.push(
+        [
+          (new THREE.Vector3).fromArray(finger.metacarpal.nextJoint),
+          (new THREE.Vector3).fromArray(finger.metacarpal.prevJoint)
+        ],
+        [
+          (new THREE.Vector3).fromArray(finger.proximal.nextJoint),
+          (new THREE.Vector3).fromArray(finger.proximal.prevJoint)
+        ],
         [
           (new THREE.Vector3).fromArray(finger.medial.nextJoint),
           (new THREE.Vector3).fromArray(finger.medial.prevJoint)

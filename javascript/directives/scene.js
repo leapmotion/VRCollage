@@ -60,7 +60,7 @@ var addImage = function(scene, url, position){
       picture.name = url;
       picture.position.fromArray(position);
       scene.add(picture);
-      new InteractableBox(picture, Leap.loopController);
+      new InteractablePlane(picture, Leap.loopController);
     }
   );
 
@@ -94,11 +94,11 @@ angular.module('directives', [])
 
         var renderer = new THREE.WebGLRenderer({
           antialias: true,
-          alpha: true,
+//          alpha: true,
           canvas: canvas
         });
         renderer.shadowMapEnabled = false;
-        renderer.setClearColor(0x202060, 0);
+        renderer.setClearColor(0x000000, 0);
 
         renderer.setSize(window.innerWidth, window.innerHeight);
 
