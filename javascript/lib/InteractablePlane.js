@@ -99,6 +99,12 @@ window.InteractablePlane.prototype = {
     return this;
   },
 
+  clearMovementConstraints: function(){
+    this.movementConstraintsX = [];
+    this.movementConstraintsY = [];
+    this.movementConstraintsZ = [];
+  },
+
   changeParent: function(parent){
     var intersection, key, delta;
 

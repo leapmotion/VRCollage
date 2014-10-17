@@ -61,6 +61,7 @@ window.Dock.prototype = {
       // remove constraints:
       interactablePlane.options.moveY = true;
       interactablePlane.options.moveZ = true;
+      interactablePlane.clearMovementConstraints();
 
     }
   },
