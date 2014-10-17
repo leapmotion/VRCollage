@@ -104,7 +104,23 @@ angular.module('directives', [])
 
 
         // these would be better off directed as services.  But for now, we use window for message passing.
-        window.vrEffect = new THREE.VREffect(renderer);
+        window.vrEffect = new THREE.VREffect(renderer, null, {
+          onWindowed: function(){
+            Leap.loopController.setOptimizeHMD(false);
+
+            transformPlugin.quaternion = window.DesktopTransformation.quaternion;
+            transformPlugin.position   = window.DesktopTransformation.position;
+            transformPlugin.scale      = window.DesktopTransformation.scale;
+
+          },
+          onFullscreen: function(){
+            Leap.loopController.setOptimizeHMD(true);
+
+            transformPlugin.quaternion = window.HMDTransformation.quaternion;
+            transformPlugin.position   = window.HMDTransformation.position;
+            transformPlugin.scale      = window.HMDTransformation.scale;
+          }
+        });
 
         vrControls._camera = camera;
 
