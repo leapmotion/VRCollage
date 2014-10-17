@@ -94,7 +94,6 @@ angular.module('directives', [])
 
         var renderer = new THREE.WebGLRenderer({
           antialias: true,
-//          alpha: true,
           canvas: canvas
         });
         renderer.shadowMapEnabled = false;
@@ -103,6 +102,7 @@ angular.module('directives', [])
         renderer.setSize(window.innerWidth, window.innerHeight);
 
 
+        var transformPlugin = Leap.loopController.plugins.transform;
         // these would be better off directed as services.  But for now, we use window for message passing.
         window.vrEffect = new THREE.VREffect(renderer, null, {
           onWindowed: function(){
