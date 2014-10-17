@@ -4,6 +4,9 @@
 // The dock is on the left, and items slide to the right
 window.Dock = function(scene, planeMesh, controller, options){
   this.plane = new InteractablePlane(planeMesh, controller, options);
+  var halfHeight = planeMesh.geometry.parameters.height / 2;
+  this.plane.constrainMovement({y: function(y){ return ( y < halfHeight && y > - halfHeight ) }});
+
   this.mesh = planeMesh;
   this.scene = scene;
   this.controller = controller;
