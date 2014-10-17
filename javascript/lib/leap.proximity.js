@@ -127,7 +127,7 @@ Leap.plugin('proximity', function(scope){
 
         state = intersectionPoint ? 'in' : 'out';
 
-        if (state !== this.states[key]){
+        if ( (state == 'in' && this.states[key] !== 'in') || (state == 'out' && this.states[key] === 'in')){ // this logic prevents initial `out` events.
           this.emit(state, hand, intersectionPoint, key, j); // todo - could include intersection displacement vector here (!)
           this.states[key] = state;
         }
