@@ -43,29 +43,6 @@ var images = [
    "LARGE-Zoin Lodge opening 04-15-25.tif.jpg                "
 ];
 
-var photoScale = 1 / 4;
-
-var addImage = function(scene, url, position){
-
-  THREE.ImageUtils.loadTexture(url, undefined, function(texture){
-      var geometry = new THREE.PlaneGeometry(texture.image.width * photoScale, texture.image.height * photoScale);
-
-      var material = new THREE.MeshPhongMaterial({map: texture});
-
-      // alpha works, but for some reason no visibility behind.
-//      var material = new THREE.MeshPhongMaterial({map: texture, alpha: true});
-//      material.opacity = 0.5;
-
-      var picture = new THREE.Mesh(geometry, material);
-      picture.name = url;
-      picture.position.fromArray(position);
-      scene.add(picture);
-      new InteractablePlane(picture, Leap.loopController);
-    }
-  );
-
-};
-
 angular.module('directives', [])
   .directive('scene', function(vrControls) {
     return {
@@ -140,13 +117,34 @@ angular.module('directives', [])
         var light = new THREE.PointLight(0xffffff, 1, 1000);
         scene.add(light);
 
-        addImage(scene, "images/" + images[Math.floor(Math.random()*images.length)], [-20,-80,-300]);
 
-        addImage(scene, "images/" + images[Math.floor(Math.random()*images.length)], [20,80,-300]);
+        var dockHeight = 300;
+
+        var dockMesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(100, dockHeight),
+          new THREE.MeshPhongMaterial({wireframe: false, color: 0x222222})
+        );
+        dockMesh.name = "dock";
+
+        dockMesh.position.set(-80, 130 - dockHeight / 2, -300);
+
+        // for now, we don't create a scrollable object, but just let it be moved in the view
+        var dock = new Dock(scene, dockMesh, Leap.loopController, {
+          resize: false,
+          moveZ: false,
+          moveX: false
+        });
+
+        dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
+
+        dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
+
+        scene.add( camera );
+        camera.add(dockMesh);
 
 
         Leap.loopController.on('hand', function(hand){
-          return
+          return;
           if (hand.data('cursor')) return;
 
           var boneMeshes = hand.indexFinger.data('boneMeshes');
