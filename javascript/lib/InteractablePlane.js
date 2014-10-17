@@ -116,7 +116,7 @@ window.InteractablePlane.prototype = {
 
       intersection = this.intersections[key];
 
-      delta = (new THREE.Vector3).setFromMatrixPosition( this.mesh.matrixWorld );
+      delta = (new THREE.Vector3).setFromMatrixPosition( this.mesh.parent.matrixWorld );
       intersection.sub(delta);
     }
 
@@ -125,7 +125,6 @@ window.InteractablePlane.prototype = {
 
     this.getPosition(this.mesh.position);
     console.assert(this.mesh.position); // would fail if this is called with no intersections.
-    console.log('repositioning');
 
   },
 
@@ -221,43 +220,43 @@ window.InteractablePlane.prototype = {
 
     }.bind(this) );
 
-    if (this.options.moveZ){
 
-      this.controller.on('grab', function(hand){
-        // check for existing grab
-        // check for intersections
-        // set grab offset to current offset.
-        console.log('grab');
+    this.controller.on('grab', function(hand){
+      // check for existing grab
+      // check for intersections
+      // set grab offset to current offset.
+      console.log('grab');
 
-        // no two-handed grabs for now.
-        if (this.grab) return;
+      if (!this.options.moveZ) return;
 
-        if (this.moveProximity.intersectionCount() < 1) return;
+      // no two-handed grabs for now.
+      if (this.grab) return;
 
-        // Todo - If there are multiple images, we are currently biased towards the one added first
-        // We should instead do the one with more intersection points.
+      if (this.moveProximity.intersectionCount() < 1) return;
 
-        // This is candidate for becoming its own class (possibly to handle the above todo).
-        this.grab = {
-          handId: hand.id,
-          positionOffset: (new THREE.Vector3).fromArray(hand.palmPosition).sub(this.mesh.position)
-          // later add: rotation offset - this will require a hand.quaternion() or bone.quaternion() method in LeapJS.
-  //        rotationOffset: (new THREE.Quaternion)
-        };
-        console.assert(!isNaN(this.grab.positionOffset.x));
-        console.assert(!isNaN(this.grab.positionOffset.y));
-        console.assert(!isNaN(this.grab.positionOffset.z));
+      // Todo - If there are multiple images, we are currently biased towards the one added first
+      // We should instead do the one with more intersection points.
 
-      }.bind(this) );
+      // This is candidate for becoming its own class (possibly to handle the above todo).
+      this.grab = {
+        handId: hand.id,
+        positionOffset: (new THREE.Vector3).fromArray(hand.palmPosition).sub(this.mesh.position)
+        // later add: rotation offset - this will require a hand.quaternion() or bone.quaternion() method in LeapJS.
+//        rotationOffset: (new THREE.Quaternion)
+      };
+      console.assert(!isNaN(this.grab.positionOffset.x));
+      console.assert(!isNaN(this.grab.positionOffset.y));
+      console.assert(!isNaN(this.grab.positionOffset.z));
 
-      this.controller.on('ungrab', function(hand){
-        console.log('ungrab');
-        if (this.grab && hand.id != this.grab.handId) return;
+    }.bind(this) );
 
-        this.grab = null;
-      }.bind(this));
+    this.controller.on('ungrab', function(hand){
+      console.log('ungrab');
+      if (this.grab && hand.id != this.grab.handId) return;
 
-    }
+      this.grab = null;
+    }.bind(this));
+
 
     this.controller.on('frame', function(frame){
       var hand, i, moveX, moveY, moveZ;

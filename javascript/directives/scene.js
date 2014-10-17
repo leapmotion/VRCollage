@@ -138,6 +138,8 @@ angular.module('directives', [])
         dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
 
         dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
+        dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
+        dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
 
         scene.add( camera );
         camera.add(dockMesh);

@@ -32,7 +32,7 @@ window.Dock.prototype = {
         var yPosition = (this.mesh.geometry.parameters.height / 2) - (imgGeometry.parameters.height / 2 + this.padding );
         var lastImage = this.images[this.images.length - 1];
         if (lastImage){
-          yPosition -= (lastImage.mesh.geometry.parameters.height / 2) + (imgGeometry.parameters.height / 2) + this.padding * 2;
+          yPosition = lastImage.mesh.position.y - (lastImage.mesh.geometry.parameters.height / 2) - (imgGeometry.parameters.height / 2) - this.padding * 2;
         }
         imageMesh.position.set(0, yPosition, 1);
 
@@ -53,8 +53,6 @@ window.Dock.prototype = {
 
   onImageTravel: function(interactablePlane, imageMesh){
     if (imageMesh.parent === this.mesh && imageMesh.position.x > this.activationDistance){
-
-      console.log('pop out');
 
       interactablePlane.changeParent(this.scene);
 
