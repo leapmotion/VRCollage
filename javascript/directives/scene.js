@@ -130,7 +130,8 @@ angular.module('directives', [])
         var dockMesh = new THREE.Mesh(
           new THREE.PlaneGeometry(dockWidth, dockHeight),
           new THREE.MeshPhongMaterial({
-            wireframe: false//,
+            wireframe: false,
+            color: 0x222222//,
 //            map: THREE.ImageUtils.loadTexture("images/steam-engine-search.png")
           })
         );

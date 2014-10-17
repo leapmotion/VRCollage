@@ -37,7 +37,7 @@ window.Dock.prototype = {
         if (lastImage){
           yPosition = lastImage.mesh.position.y - (lastImage.mesh.geometry.parameters.height / 2) - (imgGeometry.parameters.height / 2) - this.padding * 2;
         }
-        imageMesh.position.set(0, yPosition, 1);
+        imageMesh.position.set(0, yPosition, (this.images.length + 1) * 0.1);
 
         this.mesh.add(imageMesh);
 

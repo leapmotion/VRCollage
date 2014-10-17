@@ -205,8 +205,9 @@ window.InteractablePlane.prototype = {
 
     proximity.out( function(hand, intersectionPoint, key, index){
 
-      setBoneMeshColor(hand, index, 0x222222);
-      
+//      setBoneMeshColor(hand, index, 0x222222);
+      setBoneMeshColor(hand, index, 0xffffff);
+
       for ( var intersectionKey in this.intersections ){
         
         if (intersectionKey === key){
