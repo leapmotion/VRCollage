@@ -11,15 +11,17 @@
 //   Sort of like ^^, we transform our four corners to a flat x,y space with the bottom left at 0,0,
 //   and compare components of the point d (intersectionPoint)
 
-// Returns the intersectionPoint is it is intersecting
+// Returns the intersectionPoint is it is intersecting, in world space
 // Returns false otherwise.
-THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd){
+// Accepts an optional third parameter worldPosition, which should be used for nested objects.
+// This is not calculated here for performance reasons.
+THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosition){
 
   if ( ! (this.geometry instanceof THREE.PlaneGeometry ) ) {
     throw "Not sure if geometry is supported"
   }
 
-  var p0 = this.position; // note that this is local, which would be buggy for nested objects (!)
+  var p0 = worldPosition || this.position; // note that this is local, which would be buggy for nested objects (!)
   var l0 = lineStart;
   // the normal of any face will be the normal of the plane.
   var n  = this.geometry.faces[0].normal.clone();
@@ -62,7 +64,7 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd){
   var inverseMatrix = (new THREE.Matrix4).getInverse(this.matrixWorld);
 
   // mesh.corners() does not (currently) memoize values
-  var cornerPositions = this.corners();
+  var cornerPositions = this.cornersFromPosition(p0);
 
   for (var i = 0; i < cornerPositions.length; i++){
 

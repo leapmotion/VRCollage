@@ -178,7 +178,42 @@ THREE.Mesh.prototype.corners = function(num){
 
   }
 
-
 };
+
+THREE.Mesh.prototype.cornersFromPosition = function(position, num){
+
+  if (!isNaN(num)){
+
+    return this.corners()[num]
+
+  }else{
+
+    if (this.geometry instanceof THREE.PlaneGeometry){
+
+      var corners = this.geometry.corners();
+
+      for (var i = 0; i < corners.length; i++){
+
+        corners[i] = (
+            new THREE.Vector3( corners[i].x, corners[i].y, 0 )
+              .multiply(this.scale)
+          ).add(
+            position
+          );
+
+      }
+
+      return corners;
+
+    }else{
+
+      // todo - support box, etc
+      throw("unsupported geometry");
+
+    }
+
+  }
+
+}
 
 }).call(this);

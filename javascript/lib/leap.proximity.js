@@ -28,7 +28,7 @@ Leap.plugin('proximity', function(scope){
 
     // These are both keyed by the string: hand.id + handPointIndex
     this.states = {};
-    this.intersectionPoints = {}; // checkLines: one for each handPoint
+    this.intersectionPoints = {}; // checkLines: one for each handPoint.  Position in world space.
     this.distances = {}; // checkPoints: one for each handPoint
     this.lengths = {}; // checkPoints: one for each handPoint
   };
@@ -110,12 +110,14 @@ Leap.plugin('proximity', function(scope){
         return
       }
 
+      var worldPosition = (new THREE.Vector3).setFromMatrixPosition( this.mesh.matrixWorld );
+
       // j because this is inside a loop for every hand
       for (var j = 0; j < handPoints.length; j++){
 
         key = hand.id + '-' + j;
 
-        intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1]);
+        intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1], worldPosition);
 
         if (intersectionPoint){
           this.intersectionPoints[key] = intersectionPoint;
