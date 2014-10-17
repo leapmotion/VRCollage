@@ -21,7 +21,8 @@ Leap.loop()
     scene: null, // this tells boneHand to use defer scene usage/creation.
     opacity: 0.7,
 //    jointColor: new THREE.Color(0xffffff)
-    jointColor: new THREE.Color(0x222222)
+    jointColor: new THREE.Color(0x222222),
+    arm: true
   })
   .use('proximity')
   .use('pinchEvent');
