@@ -55,7 +55,14 @@ angular.module('directives', [])
         var scene = new THREE.Scene();
         Arrows.scene = scene;
 
+        //we don't actually want the leap hand as child of the camera, as we want the data itself properly transformed.
+        // on every frame, we combine the base transformation with the camera transformation to the leap data
+        // this is used in grab, proximity, etc.
         Leap.loopController.plugins.boneHand.scene = scene;
+
+        Leap.loopController.on('frame', function(){
+          Leap.loopController.plugins.transform.effectiveParent = camera;
+        });
 
         var camera = new THREE.PerspectiveCamera(
           75,
@@ -84,11 +91,9 @@ angular.module('directives', [])
         window.vrEffect = new THREE.VREffect(renderer, null, {
           onWindowed: function(){
             Leap.loopController.setOptimizeHMD(false);
-
-            transformPlugin.quaternion = window.DesktopTransformation.quaternion;
-            transformPlugin.position   = window.DesktopTransformation.position;
-            transformPlugin.scale      = window.DesktopTransformation.scale;
-
+             transformPlugin.quaternion = window.DesktopTransformation.quaternion;
+             transformPlugin.position   = window.DesktopTransformation.position;
+             transformPlugin.scale      = window.DesktopTransformation.scale;
           },
           onFullscreen: function(){
             Leap.loopController.setOptimizeHMD(true);
@@ -118,15 +123,25 @@ angular.module('directives', [])
         scene.add(light);
 
 
-        var dockHeight = 300;
+        var dockWidth = 150;
+        var dockHeight = dockWidth / 750 * 2588;
+
 
         var dockMesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(100, dockHeight),
-          new THREE.MeshPhongMaterial({wireframe: false, color: 0x222222})
+          new THREE.PlaneGeometry(dockWidth, dockHeight),
+          new THREE.MeshPhongMaterial({
+            wireframe: false//,
+//            map: THREE.ImageUtils.loadTexture("images/steam-engine-search.png")
+          })
         );
         dockMesh.name = "dock";
 
-        dockMesh.position.set(-80, 130 - dockHeight / 2, -300);
+//        dockMesh.position.set(-90, 130 - dockHeight / 2, -300);
+        // while the dock is not attached to the camera, move it closer
+        dockMesh.position.set(-90, 130 - dockHeight / 2, -200);
+
+//        dockMesh.rotation.set(0, Math.PI / 4, 0, 0);
+        // leap proximity does not at all do well with angled objects.
 
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
@@ -136,13 +151,13 @@ angular.module('directives', [])
         });
 
         dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
-
         dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
         dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
         dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
 
         scene.add( camera );
-        camera.add(dockMesh);
+//        camera.add(dockMesh);
+        scene.add(dockMesh);
 
 
         Leap.loopController.on('hand', function(hand){
