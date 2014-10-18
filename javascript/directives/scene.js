@@ -55,21 +55,18 @@ angular.module('directives', [])
         var scene = new THREE.Scene();
         Arrows.scene = scene;
 
-        //we don't actually want the leap hand as child of the camera, as we want the data itself properly transformed.
-        // on every frame, we combine the base transformation with the camera transformation to the leap data
-        // this is used in grab, proximity, etc.
-        Leap.loopController.plugins.boneHand.scene = scene;
-
-        Leap.loopController.on('frame', function(){
-          Leap.loopController.plugins.transform.effectiveParent = camera;
-        });
-
         var camera = new THREE.PerspectiveCamera(
           75,
           window.innerWidth / window.innerHeight,
           0.1,
           10000
         );
+
+        //we don't actually want the leap hand as child of the camera, as we want the data itself properly transformed.
+        // on every frame, we combine the base transformation with the camera transformation to the leap data
+        // this is used in grab, proximity, etc.
+        Leap.loopController.plugins.boneHand.scene = scene;
+        Leap.loopController.plugins.transform.effectiveParent = camera;
 
         var canvas = element.find('canvas')[0];
         canvas.style.position = 'absolute';
