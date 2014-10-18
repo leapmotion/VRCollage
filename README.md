@@ -1,6 +1,6 @@
 # Virtual Reality Collage Viewer
 
-View a photo collection from the archives of the Union Pacific railroad in virtual reality, with the benefit of  Oculus Rift, Leap Motion, and Mozilla's VR API.
+View a photo collection from the archives of the (glorious) Union Pacific Railroad in virtual reality, with the benefit of  Oculus Rift, Leap Motion, and Mozilla's VR API.
 
 Requires Mozillas Nightly VR build, available here: http://vrhelloworld.com/builds/
 
