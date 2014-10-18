@@ -43,6 +43,40 @@ var images = [
    "LARGE-Zoin Lodge opening 04-15-25.tif.jpg                "
 ];
 
+
+function createText(text) {
+
+  var material = new THREE.MeshFaceMaterial( [
+    new THREE.MeshPhongMaterial( { color: 0xaaaaaa, shading: THREE.FlatShading } ), // front
+    new THREE.MeshPhongMaterial( { color: 0xaaaaaa, shading: THREE.SmoothShading } ) // side
+  ] );
+
+  var textGeo = new THREE.TextGeometry( text, {
+    size: 20,
+    height: 2,
+    curveSegments: 4,
+
+    bevelThickness: 1.5,
+    bevelSize: 1.5,
+    bevelEnabled: true
+  });
+
+
+  textGeo.computeBoundingBox();
+  textGeo.computeVertexNormals();
+
+  var mesh = new THREE.Mesh( textGeo, material );
+  mesh.name = "text";
+
+  mesh.position.x = -0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
+
+  return mesh;
+}
+
+
+
+
+
 angular.module('directives', [])
   .directive('scene', function(vrControls) {
     return {
@@ -61,6 +95,7 @@ angular.module('directives', [])
           0.1,
           10000
         );
+        scene.add( camera ); // so that we can add things to it later.
 
         //we don't actually want the leap hand as child of the camera, as we want the data itself properly transformed.
         // on every frame, we combine the base transformation with the camera transformation to the leap data
@@ -120,42 +155,50 @@ angular.module('directives', [])
         scene.add(light);
 
 
-        var dockWidth = 150;
-        var dockHeight = dockWidth / 750 * 2588;
+        var dockWidth = 1000;
+        var dockHeight = 150;
 
 
         var dockMesh = new THREE.Mesh(
           new THREE.PlaneGeometry(dockWidth, dockHeight),
           new THREE.MeshPhongMaterial({
             wireframe: false,
-            color: 0x222222//,
-//            map: THREE.ImageUtils.loadTexture("images/steam-engine-search.png")
+            color: 0xffffff,
+            map: THREE.ImageUtils.loadTexture("images/foto-viewer.jpg")
           })
         );
         dockMesh.name = "dock";
 
-//        dockMesh.position.set(-90, 130 - dockHeight / 2, -300);
-        // while the dock is not attached to the camera, move it closer
-        dockMesh.position.set(-90, 130 - dockHeight / 2, -200);
-
-//        dockMesh.rotation.set(0, Math.PI / 4, 0, 0);
-        // leap proximity does not at all do well with angled objects.
+//        dockMesh.position.set(-90, 130 - dockHeight / 2, -200);
+        dockMesh.position.set(dockWidth / 2 - 170, -90, -200);
 
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
           resize: false,
           moveZ: false,
-          moveX: false
+          moveY: false
         });
 
-        dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
-        dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
-        dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
-        dock.pushImage("images/" + images[Math.floor(Math.random()*images.length)]);
+        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
+        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
+        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
+        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
 
-        scene.add( camera );
+// leap proximity does not at all do well with angled objects:
+//        dockMesh.position.set(-90, 130 - dockHeight / 2, -300);
+//        dockMesh.rotation.set(0, Math.PI / 4, 0, 0);
 //        camera.add(dockMesh);
+
         scene.add(dockMesh);
+
+        scene.add(dockMesh);
+
+        var text = createText('place images..');
+        text.position.setZ(-250);
+        text.position.setY(120);
+        scene.add(text);
+
+
 
 
         Leap.loopController.on('hand', function(hand){
@@ -180,7 +223,6 @@ angular.module('directives', [])
             20,
             10
           );
-
 
           boneMeshes[0].add(cursor);
 
