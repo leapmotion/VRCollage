@@ -81,15 +81,17 @@ window.Dock.prototype = {
       interactablePlane.options.moveZ = true;
       interactablePlane.clearMovementConstraints();
 
-// this causes the images to jump down too quickly, and be grabbed.
-//      for (var i = 0; i < this.images.length; i++){
-//        if (this.images[i] === interactablePlane){
-//          this.images.splice(i,1);
-//          break;
-//        }
-//      }
 
-      this.arrangeImages();
+
+      for (var i = 0; i < this.images.length; i++){
+        if (this.images[i] === interactablePlane){
+          this.images.splice(i,1);
+          break;
+        }
+      }
+
+// this causes the images to jump down too quickly, and be grabbed.
+//      this.arrangeImages();
 
       // this is crappy to have here
       this.scene.getObjectByName( "text").visible = false;

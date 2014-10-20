@@ -105,27 +105,19 @@ window.InteractablePlane.prototype = {
     this.movementConstraintsZ = [];
   },
 
-  changeParent: function(parent){
-    var intersection, key, delta;
+  changeParent: function(newParent){
+    var key;
 
-
-    // The InteractablePlane drag works by adding deltas to the position
-    // Here add the delta between the dock and its scene
-
+    // Clean up so no jump
     for (key in this.intersections){
-
-      intersection = this.intersections[key];
-
-      delta = (new THREE.Vector3).setFromMatrixPosition( this.mesh.parent.matrixWorld );
-      intersection.sub(delta);
+      delete this.intersections[key];
     }
 
+    this.mesh.position.add( this.mesh.parent.position ); // should be the diff between the old and new parent world positions
     this.mesh.parent.remove(this.mesh);
-    parent.add(this.mesh);
+    newParent.add(this.mesh);
 
-    this.getPosition(this.mesh.position);
     console.assert(this.mesh.position); // would fail if this is called with no intersections.
-
   },
 
   // Returns the position of the mesh intersected
