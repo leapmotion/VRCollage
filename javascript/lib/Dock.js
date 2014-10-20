@@ -42,7 +42,6 @@ window.Dock.prototype = {
 
         var image = new InteractablePlane(imageMesh, this.controller, {moveZ: false, moveX: false});
         image.constrainMovement({y: function(y){ return y > this.imageMinHeight}.bind(this) });
-        image.originalPosition = imageMesh.position.clone();
         this.images.push(image);
 
         this.arrangeImages();
@@ -67,6 +66,7 @@ window.Dock.prototype = {
         xPosition = - (this.mesh.geometry.parameters.width / 2) + (imageMesh.geometry.parameters.width / 2 + this.padding );
       }
       imageMesh.position.setX(xPosition);
+      this.images[i].originPosition = imageMesh.position.clone();
 
     }
   },
@@ -102,7 +102,9 @@ window.Dock.prototype = {
 
     if (interactablePlane.mesh.parent !== this.mesh) return;
 
-    interactablePlane.mesh.position.copy(interactablePlane.originalPosition);
+    console.assert(interactablePlane.originPosition);
+
+    interactablePlane.mesh.position.copy(interactablePlane.originPosition);
 
   }
 
