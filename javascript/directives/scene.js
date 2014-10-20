@@ -2,6 +2,10 @@
 
 
 var images = [
+   "3d-abstract_hdwallpaper_steam-engine_50474.jpg                   ",
+   "52_8134_Hoentrop_2012-09-16.jpg                   ",
+   "steam-engine-4.png                          ",
+   "steam-engine-wallpaper-9.jpg                            ",
    "LARGE-3-175 UP3618 mallet 1929.tif.jpg                   ",
    "LARGE-3-420 oiling 9000.Tif.jpg                          ",
    "LARGE-6 sideview 9000.Tif.jpg                            ",
@@ -179,10 +183,14 @@ angular.module('directives', [])
           moveY: false
         });
 
-        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
-        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
-        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
-        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
+//        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
+//        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
+//        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
+//        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
+        dock.pushImage("images/trains/" + images[0]);
+        dock.pushImage("images/trains/" + images[1]);
+        dock.pushImage("images/trains/" + images[2]);
+        dock.pushImage("images/trains/" + images[3]);
 
 // leap proximity does not at all do well with angled objects:
 //        dockMesh.position.set(-90, 130 - dockHeight / 2, -300);
