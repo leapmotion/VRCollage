@@ -1,4 +1,5 @@
 
+// How the hand transform is moved relative to the camera. Used in scene.js.
 window.HMDTransformation = {
   quaternion: (new THREE.Quaternion).setFromEuler(
     new THREE.Euler( Math.PI * -0.3, 0, Math.PI, 'ZXY' )
