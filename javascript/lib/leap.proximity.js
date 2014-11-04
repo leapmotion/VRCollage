@@ -81,7 +81,6 @@ Leap.plugin('proximity', function(scope){
       // Handles Spheres. Planes. Boxes? other shapes? custom shapes?
 
       var handPoints = this.handPoints(hand);
-      console.assert(handPoints instanceof Array);
 
       // this class is designed to either checkLines or checkPoints, but not both
       // This should perhaps be split in to two classes, LineProximity and PointProximity.
@@ -147,18 +146,18 @@ Leap.plugin('proximity', function(scope){
       }
 
       meshWorldPosition.setFromMatrixPosition( mesh.matrixWorld ); // note - this is last frame's position. Should be no problem.
-      console.assert(!isNaN(meshWorldPosition.x));
-      console.assert(!isNaN(meshWorldPosition.y));
-      console.assert(!isNaN(meshWorldPosition.z));
+//      console.assert(!isNaN(meshWorldPosition.x));
+//      console.assert(!isNaN(meshWorldPosition.y));
+//      console.assert(!isNaN(meshWorldPosition.z));
 
       for (var j = 0; j < handPoints.length; j++){
 
         key = hand.id + '-' + j;
 
         handPoint = makeVector3( handPoints[j] );
-        console.assert(!isNaN(handPoint.x));
-        console.assert(!isNaN(handPoint.y));
-        console.assert(!isNaN(handPoint.z));
+//        console.assert(!isNaN(handPoint.x));
+//        console.assert(!isNaN(handPoint.y));
+//        console.assert(!isNaN(handPoint.z));
 
         // subtract position from handpoint, compare to radius
         // optimization - could square lengths here.

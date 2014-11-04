@@ -220,7 +220,6 @@ window.InteractablePlane.prototype = {
       // check for existing grab
       // check for intersections
       // set grab offset to current offset.
-      console.log('grab');
 
       if (!this.options.moveZ) return;
 
@@ -261,10 +260,6 @@ window.InteractablePlane.prototype = {
         hand = frame.hand(this.grab.handId);
 
         this.mesh.position.fromArray(hand.palmPosition).sub(this.grab.positionOffset);
-
-        console.assert(!isNaN(this.mesh.position.x));
-        console.assert(!isNaN(this.mesh.position.y));
-        console.assert(!isNaN(this.mesh.position.z));
 
       } else {
 

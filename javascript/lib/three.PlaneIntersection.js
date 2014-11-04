@@ -72,7 +72,7 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
     cornerPositions[i].applyMatrix4(inverseMatrix);
 
 //    cornerSpheres[i].position.copy(cornerPositions[i]);
-    console.assert(cornerPositions[i].z < 0.0001);
+//    console.assert(cornerPositions[i].z < 0.0001);
 
   }
 
@@ -81,7 +81,7 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
   var intersectionPoint2d = intersectionPoint.clone().applyMatrix4(inverseMatrix); // clone may be unnecessary here.
 
 //  cornerSpheres[4].position.copy(intersectionPoint2d);
-  console.assert(intersectionPoint2d.z < 0.0001);
+//  console.assert(intersectionPoint2d.z < 0.0001);
 
   // check y bottom up, then x left rightwards
   if ( cornerPositions[3].y < intersectionPoint2d.y &&
