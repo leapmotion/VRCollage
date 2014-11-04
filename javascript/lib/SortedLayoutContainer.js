@@ -197,6 +197,10 @@
   // Itterate through a layout list and move the given elements to the
   // given positions.
   function applyLayoutList(layoutList) {
-
+    for(var node in layoutList) {
+      var plane = node.plane;
+      var localSpace = plane.worldToLocal(node.position); // Convert our global coordinates to local space.
+      plane.position = localSpace; // Set the local space position of the plane.
+    }
   }
 }).call(this);
