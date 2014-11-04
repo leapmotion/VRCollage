@@ -44,13 +44,27 @@
     // Returns true if the plane is successfully added.
     // Returns false if the plane is a duplicate and cannot be added.
     addPlane: function(newPlane) {
-
+      if ( this.planeList.indexOf(newPlane) == -1 ) {
+        this.planeList.push(newPlane);
+        return true;
+      }
+      else {
+        return false;
+      }
     },
 
     // Removes the given plane from the list of planes.
     // Returns true if the plane was successfully removed.
     // Returns false if the plane could not be found and was not removed.
     removePlane: function(toRemove) {
+      var planeIndex;
+      if ( (planeIndex = this.planeList.indexOf(toRemove)) != -1 ) {
+        this.planeList.splice(planeIndex, 1);
+        return true;
+      }
+      else {
+        return false;
+      }
     }
   };
 
