@@ -32,7 +32,7 @@ window.Dock.prototype = {
         var scale = (height -0.02) / texture.image.height;
 
         var imgGeometry = new THREE.PlaneGeometry(texture.image.width * scale, texture.image.height * scale);
-        var material = new THREE.MeshPhongMaterial({map: texture});
+        var material = new THREE.MeshPhongMaterial({map: texture, side: THREE.DoubleSide});
 
         var imageMesh = new THREE.Mesh(imgGeometry, material);
         imageMesh.name = url;
