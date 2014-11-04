@@ -21,6 +21,9 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.options.moveY  !== undefined    || (this.options.moveY   = true);
   this.options.moveZ  !== undefined    || (this.options.moveZ   = true);
 
+  this.uid = window.InteractablePlane.instanceCount;
+  window.InteractablePlane.instanceCount += 1; // increment the instance count
+
   this.mesh = planeMesh;
   this.controller = controller;
 
@@ -51,6 +54,8 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.bindMove();
 
 };
+
+window.InteractablePlane.instanceCount = 0;
 
 window.InteractablePlane.prototype = {
 
