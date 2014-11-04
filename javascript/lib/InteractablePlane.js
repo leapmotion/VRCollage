@@ -25,6 +25,9 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.controller = controller;
   this.lastPosition = null;
 
+  // set this to false to disable inertia and any hand interactions.
+  this.interactable = true;
+
   // holds the difference (offset) between the intersection point in world space and the local position,
   // at the time of intersection.
   this.intersections = {}; //keyed by the string: hand.id + handPointIndex
@@ -268,6 +271,7 @@ window.InteractablePlane.prototype = {
       var hand, i, moveX, moveY, moveZ;
 
       if (this.grab){
+      if (!this.interactable) return false;
 
         hand = frame.hand(this.grab.handId);
 
