@@ -182,5 +182,9 @@
     return weightedMeanList;
   }
 
+  // Itterate through a layout list and move the given elements to the
+  // given positions.
+  function applyLayoutList(layoutList) {
+
   }
 }).call(this);
