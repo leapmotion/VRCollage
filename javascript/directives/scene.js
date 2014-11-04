@@ -221,11 +221,14 @@ angular.module('directives', [])
           vrControls.update();
           vrEffect.render(scene, camera);
 
-//          plotter.update();
-          requestAnimationFrame(render);
         };
-
         render();
+
+        // By controlling render from frame, we make sure that rendering happens immediately after frame processing.
+        Leap.loopController.on('frame', function(){
+          render();
+        });
+
 
       }
     };
