@@ -82,7 +82,7 @@ function createText(text) {
 
 
 angular.module('directives', [])
-  .directive('scene', function(vrControls) {
+  .directive('scene', function() {
     return {
       restrict: 'E',
       template: '<canvas></canvas>',
@@ -124,23 +124,8 @@ angular.module('directives', [])
 
         var transformPlugin = Leap.loopController.plugins.transform;
         // these would be better off directed as services.  But for now, we use window for message passing.
-        window.vrEffect = new THREE.VREffect(renderer, null, {
-          onWindowed: function(){
-            Leap.loopController.setOptimizeHMD(false);
-             transformPlugin.quaternion = window.DesktopTransformation.quaternion;
-             transformPlugin.position   = window.DesktopTransformation.position;
-             transformPlugin.scale      = window.DesktopTransformation.scale;
-          },
-          onFullscreen: function(){
-            Leap.loopController.setOptimizeHMD(true);
-
-            transformPlugin.quaternion = window.HMDTransformation.quaternion;
-            transformPlugin.position   = window.HMDTransformation.position;
-            transformPlugin.scale      = window.HMDTransformation.scale;
-          }
-        });
-
-        vrControls._camera = camera;
+        window.vrEffect = new THREE.VREffect(renderer);
+        window.vrControls = new THREE.VRControls(camera);
 
 
         onResize = function() {
@@ -159,8 +144,8 @@ angular.module('directives', [])
         scene.add(light);
 
 
-        var dockWidth = 1000;
-        var dockHeight = 150;
+        var dockWidth = 0.5;
+        var dockHeight = dockWidth * 0.15;
 
 
         var dockMesh = new THREE.Mesh(
@@ -173,8 +158,7 @@ angular.module('directives', [])
         );
         dockMesh.name = "dock";
 
-//        dockMesh.position.set(-90, 130 - dockHeight / 2, -200);
-        dockMesh.position.set(dockWidth / 2 - 170, -90, -200);
+        dockMesh.position.set(dockWidth / 2 - 0.1, -0.1, -0.5);  // probably too far
 
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
@@ -183,10 +167,6 @@ angular.module('directives', [])
           moveY: false
         });
 
-//        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
-//        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
-//        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
-//        dock.pushImage("images/UP/" + images[Math.floor(Math.random()*images.length)]);
         dock.pushImage("images/trains/" + images[0]);
         dock.pushImage("images/trains/" + images[1]);
         dock.pushImage("images/trains/" + images[2]);
@@ -196,8 +176,6 @@ angular.module('directives', [])
 //        dockMesh.position.set(-90, 130 - dockHeight / 2, -300);
 //        dockMesh.rotation.set(0, Math.PI / 4, 0, 0);
 //        camera.add(dockMesh);
-
-        scene.add(dockMesh);
 
         scene.add(dockMesh);
 

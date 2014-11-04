@@ -1,6 +1,6 @@
 /**
- * Looks like this was renamed/refactored from VRRenderer
  * @author dmarcos / https://github.com/dmarcos
+ * @author pehrlich / https://github.com/pehrlich
  *
  * It handles stereo rendering
  * If mozGetVRDevices and getVRDevices APIs are not available it gracefuly falls back to a
@@ -22,20 +22,22 @@
  * https://drive.google.com/folderview?id=0BzudLt22BqGRbW9WTHMtOWMzNjQ&usp=sharing#list
  *
  */
-THREE.VREffect = function ( renderer, done, options ) {
+THREE.VREffect = function ( renderer, options ) {
 
 	var cameraLeft = new THREE.PerspectiveCamera();
 	var cameraRight = new THREE.PerspectiveCamera();
 
-  this.options = (options || {});
+  options || (options = {})
+
+	this.options = options;
 
 	this._renderer = renderer;
 
 	this._init = function() {
 		var self = this;
 		if ( !navigator.mozGetVRDevices && !navigator.getVRDevices ) {
-			if ( done ) {
-				done("Your browser is not VR Ready");
+			if ( options.error ) {
+        options.error("Your browser is not VR Ready");
 			}
 			return;
 		}
@@ -58,12 +60,18 @@ THREE.VREffect = function ( renderer, done, options ) {
 					break; // We keep the first we encounter
 				}
 			}
-			if ( done ) {
-				if ( !vrHMD ) {
-				 error = 'HMD not available';
-				}
-				done( error );
+
+      if ( !vrHMD && options.error ) {
+
+        options.error('HMD not available');
+
+      }
+      if ( vrHMD && options.success ){
+
+        options.success('HMD not available');
+
 			}
+
 		}
 	};
 
@@ -152,17 +160,17 @@ THREE.VREffect = function ( renderer, done, options ) {
 		this.startFullscreen();
 	};
 
-  this.onFullScreenChanged = function(){
-    var failedFullscreen = (!document.mozFullScreenElement && !document.webkitFullScreenElement);
+	this.onFullScreenChanged = function(){
+	  var windowed = (!document.mozFullScreenElement && !document.webkitFullScreenElement);
 
-    if ( failedFullscreen ) {
-      this.setFullScreen( false );
-      this.options.onWindowed && this.options.onWindowed();
-    } else {
-      this.options.onFullscreen && this.options.onFullscreen();
-    }
+	  if ( windowed ) {
+	    this.setFullScreen( false );
+	    this.options.onWindowed && this.options.onWindowed();
+	  } else {
+	    this.options.onFullscreen && this.options.onFullscreen();
+	  }
 
-  };
+	};
 
 	this.startFullscreen = function() {
 		var vrHMD = this._vrHMD;

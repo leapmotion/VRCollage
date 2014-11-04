@@ -105,6 +105,7 @@ window.InteractablePlane.prototype = {
     this.movementConstraintsZ = [];
   },
 
+  // todo - handle rotations as well
   changeParent: function(newParent){
     var key;
 
@@ -172,6 +173,7 @@ window.InteractablePlane.prototype = {
     };
 
     // determine if line and place intersect
+    // todo - rename to something that's not a mozilla method
     var proximity = this.moveProximity = this.controller.watch(
       this.mesh,
       this.interactiveEndBones

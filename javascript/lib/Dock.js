@@ -16,10 +16,10 @@ window.Dock = function(scene, planeMesh, controller, options){
   this.controller = controller;
 
   this.images = [];
-  this.padding = 4;
+  this.padding = 0.003;
 
-  this.activationDistance = 50; // distance an image must be drawn out to be free.
-  this.imageMinHeight = -33;
+  this.activationDistance = 0.05; // distance an image must be drawn out to be free.
+  this.imageMinHeight = -0.007;
 };
 
 window.Dock.prototype = {
@@ -29,7 +29,7 @@ window.Dock.prototype = {
     THREE.ImageUtils.loadTexture(url, undefined, function(texture){
         var height = this.mesh.geometry.parameters.height; // scale will be inherited.  Let's never scale dock so that we
         // don't have to compensate when removing item from dock.
-        var scale = isNaN(height) ? 1 / 4 : height / texture.image.height;
+        var scale = (height -0.02) / texture.image.height;
 
         var imgGeometry = new THREE.PlaneGeometry(texture.image.width * scale, texture.image.height * scale);
         var material = new THREE.MeshPhongMaterial({map: texture});
@@ -37,11 +37,11 @@ window.Dock.prototype = {
         var imageMesh = new THREE.Mesh(imgGeometry, material);
         imageMesh.name = url;
 
-        imageMesh.position.set(0, this.imageMinHeight, (this.images.length + 1) * 0.1);
+        imageMesh.position.set(0, this.imageMinHeight, (this.images.length + 1) * 0.001);
         this.mesh.add(imageMesh);
 
         var image = new InteractablePlane(imageMesh, this.controller, {moveZ: false, moveX: false});
-        image.constrainMovement({y: function(y){ return y > this.imageMinHeight}.bind(this) });
+        image.constrainMovement({y: function(y){ return y > this.imageMinHeight }.bind(this) });
         this.images.push(image);
 
         this.arrangeImages();
