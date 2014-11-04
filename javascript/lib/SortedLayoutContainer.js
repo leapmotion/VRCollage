@@ -46,11 +46,23 @@
   window.SortedLayoutContainer.prototype = {
     // Takes two hand positions
     // if the container's current state allows programatic layout (as opposed to manual user layout )
-    // will sort the InteractablePlane(s) in the container accordingly
+    // will sort the InteractablePlane(s) in the container accordingly (and return true).
     // Update will return false if the current container state does not support
     // programatic layout
     update: function(hand1Position, hand2Position) {
-
+      if ( this.sortState == "DYNAMIC_SORTED" ) {
+        var diff = new THREE.Vector3().subVectors(hand2Position, hand1Position);
+        var weightX = diff.x / (diff.x + diff.y);
+        var weightY = diff.y / (diff.x + diff.y);
+        var alphabeticalLayout = listLayout(hand1Position, new THREE.Vector3(hand1Position.x + diff.x, hand1Position.y, hand1Position.z)).alphabetical();
+        var chronologicalLayout = listLayout(hand1Position, new THREE.Vector3(hand1Position.x, hand1Position.y + diff.y, hand1Position.z)).alphabetical();
+        var blendedLayout = blendedLayoutList([alphabeticalLayout, chronologicalLayout], [weightX, weightY]);
+        applyLayoutList(blendedLayout);
+        return true;
+      }
+      else {
+        return false;
+      }
     },
 
     // Adds the given plane to list of planes managed by the container.
