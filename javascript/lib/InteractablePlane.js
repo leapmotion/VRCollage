@@ -64,7 +64,7 @@ window.InteractablePlane.prototype = {
     // note: not ie-compatible indexOf:
     if (['travel', 'touch', 'release'].indexOf(eventName) === -1) {
       console.error("Invalid event name:", eventName);
-      return
+      return;
     }
 
     var callbacks = this[eventName + "Callbacks"];
