@@ -1,6 +1,5 @@
 /**
  * @author dmarcos / https://github.com/dmarcos
- * @author pehrlich / https://github.com/pehrlich
  *
  * It handles stereo rendering
  * If mozGetVRDevices and getVRDevices APIs are not available it gracefuly falls back to a
@@ -22,22 +21,18 @@
  * https://drive.google.com/folderview?id=0BzudLt22BqGRbW9WTHMtOWMzNjQ&usp=sharing#list
  *
  */
-THREE.VREffect = function ( renderer, options ) {
+THREE.VREffect = function ( renderer, done ) {
 
 	var cameraLeft = new THREE.PerspectiveCamera();
 	var cameraRight = new THREE.PerspectiveCamera();
-
-  options || (options = {})
-
-	this.options = options;
 
 	this._renderer = renderer;
 
 	this._init = function() {
 		var self = this;
 		if ( !navigator.mozGetVRDevices && !navigator.getVRDevices ) {
-			if ( options.error ) {
-        options.error("Your browser is not VR Ready");
+			if ( done ) {
+				done("Your browser is not VR Ready");
 			}
 			return;
 		}
@@ -60,18 +55,12 @@ THREE.VREffect = function ( renderer, options ) {
 					break; // We keep the first we encounter
 				}
 			}
-
-      if ( !vrHMD && options.error ) {
-
-        options.error('HMD not available');
-
-      }
-      if ( vrHMD && options.success ){
-
-        options.success('HMD not available');
-
+			if ( done ) {
+				if ( !vrHMD ) {
+				 error = 'HMD not available';
+				}
+				done( error );
 			}
-
 		}
 	};
 
@@ -80,7 +69,6 @@ THREE.VREffect = function ( renderer, options ) {
 	this.render = function ( scene, camera ) {
 		var renderer = this._renderer;
 		var vrHMD = this._vrHMD;
-		renderer.enableScissorTest( false );
 		// VR render mode if HMD is available
 		if ( vrHMD ) {
 			this.renderStereo.apply( this, arguments );
@@ -125,6 +113,8 @@ THREE.VREffect = function ( renderer, options ) {
 		renderer.setScissor( eyeDivisionLine, 0, eyeDivisionLine, rendererHeight );
 		renderer.render( scene, cameraRight );
 
+		renderer.enableScissorTest( false );
+
 	};
 
 	this.setSize = function( width, height ) {
@@ -160,26 +150,20 @@ THREE.VREffect = function ( renderer, options ) {
 		this.startFullscreen();
 	};
 
-	this.onFullScreenChanged = function(){
-	  var windowed = (!document.mozFullScreenElement && !document.webkitFullScreenElement);
-
-	  if ( windowed ) {
-	    this.setFullScreen( false );
-	    this.options.onWindowed && this.options.onWindowed();
-	  } else {
-	    this.options.onFullscreen && this.options.onFullscreen();
-	  }
-
-	};
-
 	this.startFullscreen = function() {
+		var self = this;
+		var renderer = this._renderer;
 		var vrHMD = this._vrHMD;
-		var canvas = document.body;
+		var canvas = renderer.domElement;
 		var fullScreenChange =
 			canvas.mozRequestFullScreen? 'mozfullscreenchange' : 'webkitfullscreenchange';
 
-		document.addEventListener( fullScreenChange, this.onFullScreenChanged.bind(this), false );
-
+		document.addEventListener( fullScreenChange, onFullScreenChanged, false );
+		function onFullScreenChanged() {
+			if ( !document.mozFullScreenElement && !document.webkitFullScreenElement ) {
+				self.setFullScreen( false );
+			}
+		}
 		if ( canvas.mozRequestFullScreen ) {
 			canvas.mozRequestFullScreen( { vrDisplay: vrHMD } );
 		} else {
