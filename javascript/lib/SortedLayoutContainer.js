@@ -132,9 +132,9 @@
     else if (arguments.length == 3) {
       var layoutList = [];
       var ittr = 0;
-      startPosition || startPosition = 0;
-      endPosition || endPosition = 0;
-      reverse || reverse = false;
+      startPosition || (startPosition = 0);
+      endPosition || (endPosition = 0);
+      reverse || (reverse = false);
 
       // Sort the planelist alphabetically by "plane.mesh.name"
       this.planeList.sort(sortComparitor);
