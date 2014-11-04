@@ -22,22 +22,6 @@
 // have the plane's parent determine its container. ( this goes along
 // with the proposed coordinate space refactor. )
 
-//The external API for the object is:
-// - Update( Vec3 hand1Position, Vec3 hand2Position)
-//   Update takes two hand positions and if the container's current
-//   state allows programatic layout ( as opposed to manual user layout  )
-//   will sort the InteractablePlane(s) in the container accordingly
-//
-//  Update will return false if the current container state does not support
-//  programatic layout
-//
-// - AddPlane( InteractablePlane newPlane )
-//   AddPlane will add the given plane to list of planes managed by the container.
-//
-// - RemovePlane( InteractablePLane toRemove )
-//   RemovePlane will remove the given plane from the list of planes.
-
-
 (function () {
   // SortedLayoutContainer Constructor
   // Optional argument "planeList" is a list of InteractivePlanes to be added to the container on creation
@@ -47,16 +31,26 @@
   };
 
   window.SortedLayoutContainer.prototype = {
+    // Takes two hand positions
+    // if the container's current state allows programatic layout (as opposed to manual user layout )
+    // will sort the InteractablePlane(s) in the container accordingly
+    // Update will return false if the current container state does not support
+    // programatic layout
     update: function(hand1Position, hand2Position) {
 
     },
 
+    // Adds the given plane to list of planes managed by the container.
+    // Returns true if the plane is successfully added.
+    // Returns false if the plane is a duplicate and cannot be added.
     addPlane: function(newPlane) {
 
     },
 
-    removePlane: function(newPlane) {
-
+    // Removes the given plane from the list of planes.
+    // Returns true if the plane was successfully removed.
+    // Returns false if the plane could not be found and was not removed.
+    removePlane: function(toRemove) {
     }
   };
 }).call(this);
