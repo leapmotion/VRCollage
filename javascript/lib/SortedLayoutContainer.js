@@ -92,22 +92,54 @@
     return returnNode;
   }
 
-  // Returns an array of layoutNodes specifying the InteractivePlane and the
-  // location in space according to their alphabettical order.
+  // If called with a sort comparitor, returns an array of layoutNodes specifying the InteractivePlane and the
+  // location in space according to the supplied sort comparitor function.
   // Locations are given in a 0-1 space if no positions are specified.
   //
-  // NOTE: should be called with .bind(this) from the calling object.
-  function alphabetLayout(startPosition, endPosition) {
+  // if called with just start and end position, returns an object that containts the relevant
+  // calls to generate the layout with different sorting properties.
+  function listLayout(startPosition, endPosition, sortComparitor) {
+    // If only start and end position are given, utilize partial evaluation
+    // to allow a call formated like: listLayout(startPosition, endPosition).alphabetical();
+    if (arguments.length == 2) {
+      return {
+        alphabetical: function() {
+          listLayout(startPosition, endPosition, function(a,b) {
+            if ( plane1.mesh.name <= plane2.mesh.name ) { return -1; }
+            else { return 1; }
+          });
+        },
+        chronological: function() {
+          listLayout(startPosition, endPosition, function(a,b) {
+            if ( plane1.uid <= plane2.uid ) { return -1; }
+            else { return 1; }
+          });
+        }
+      };
+    }
+    else if (arguments.length == 3) {
+      var layoutList = [];
+      var ittr = 0;
+      startPosition || startPosition = 0;
+      endPosition || endPosition = 0;
+      reverse || reverse = false;
 
-  }
+      // Sort the planelist alphabetically by "plane.mesh.name"
+      this.planeList.sort(sortComparitor);
 
-  // Returns an array of layoutNodes specifying the InteractivePlane and the
-  // location in space according to their alphabettical order.
-  // Locations are given in a 0-1 space if no positions are specified.
-  //
-  // NOTE: should be called with .bind(this) from the calling object.
-  function chronologicalLayout(startPosition, endPosition) {
+      // Generate the layout list full of layout nodes
+      for ( var plane in this.planelist ) {
+        var listPercentage = (ittr*1.0) / (this.planelist.length*1.0); // force double division
+        var position = startPosition.lerp(endPosition, listPercentage);
+        layoutList.push(returnNode(plane, position));
+        ittr += 1;
+      }
 
+      return layoutList;
+    }
+    else {
+      return false;
+    }
   }
 
   // - Retruns a weighted mean of the given layout node lists as an array of layout nodes
