@@ -53,4 +53,40 @@
     removePlane: function(toRemove) {
     }
   };
+
+  // Generates a LayoutNode object which is just a
+  // simple structure to hold a plane and the position
+  // generated for it.
+  function LayoutNode(plane, position) {
+    var returnNode = {
+      "plane": plane,
+      "position": position
+    };
+    return returnNode;
+  }
+
+  // Returns an array of layoutNodes specifying the InteractivePlane and the
+  // location in space according to their alphabettical order.
+  // Locations are given in a 0-1 space if no positions are specified.
+  //
+  // NOTE: should be called with .bind(this) from the calling object.
+  function alphabetLayout(startPosition, endPosition) {
+
+  }
+
+  // Returns an array of layoutNodes specifying the InteractivePlane and the
+  // location in space according to their alphabettical order.
+  // Locations are given in a 0-1 space if no positions are specified.
+  //
+  // NOTE: should be called with .bind(this) from the calling object.
+  function chronologicalLayout(startPosition, endPosition) {
+
+  }
+
+  // - Retruns a weighted average of the given layout node lists as an array of layout nodes
+  // - Assumes that each index of each list in layout lists referes to the
+  //   same node.
+  function blendLayouts(layoutList, weightList) {
+
+  }
 }).call(this);
