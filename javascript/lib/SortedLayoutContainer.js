@@ -23,13 +23,26 @@
 // with the proposed coordinate space refactor. )
 
 (function () {
+  //The list of valid states for the manner of sorting.
+  var validSortStates = [
+    "USER_SORTED",
+    "DYNAMIC_SORTED"
+  ];
   // SortedLayoutContainer Constructor
   // Optional argument "planeList" is a list of InteractivePlanes to be added to the container on creation
-  window.SortedLayoutContainer = function(planeList){
+  // Optional argument "sortState" is a string given one of the validSortStates listed above.
+  window.SortedLayoutContainer = function(planeList, sortState){
     this.planeList = planeList || [];
 
+    if (sortState !== undefined && validSortStates.indexOf(sortState) != -1) {
+      this.sortState = sortState;
+    }
+    else {
+      this.sortState = "DYNAMIC_SORTED";
+    }
   };
 
+  // Pubic Methods
   window.SortedLayoutContainer.prototype = {
     // Takes two hand positions
     // if the container's current state allows programatic layout (as opposed to manual user layout )
