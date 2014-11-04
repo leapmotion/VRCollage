@@ -153,7 +153,8 @@ angular.module('directives', [])
           new THREE.MeshPhongMaterial({
             wireframe: false,
             color: 0xffffff,
-            map: THREE.ImageUtils.loadTexture("images/foto-viewer.jpg")
+            map: THREE.ImageUtils.loadTexture("images/foto-viewer.jpg"),
+            side: THREE.DoubleSide // allow reverse raycasting.
           })
         );
         dockMesh.name = "dock";
@@ -163,7 +164,7 @@ angular.module('directives', [])
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
           resize: false,
-          moveZ: false,
+          moveZ: true,
           moveY: false
         });
 

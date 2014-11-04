@@ -16,10 +16,10 @@
 window.InteractablePlane = function(planeMesh, controller, options){
   this.options = options || {};
   this.options.cornerInteractionRadius || (this.options.cornerInteractionRadius = 20);
-  this.options.resize !== undefined    || (this.options.resize  = true);
-  this.options.moveX  !== undefined    || (this.options.moveX   = true);
-  this.options.moveY  !== undefined    || (this.options.moveY   = true);
-  this.options.moveZ  !== undefined    || (this.options.moveZ   = true);
+  this.options.resize !== undefined    || (this.options.resize  = false);
+  this.options.moveX  !== undefined    || (this.options.moveX   = true );
+  this.options.moveY  !== undefined    || (this.options.moveY   = true );
+  this.options.moveZ  !== undefined    || (this.options.moveZ   = true );
 
   this.mesh = planeMesh;
   this.controller = controller;
