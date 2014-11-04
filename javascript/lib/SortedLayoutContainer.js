@@ -110,10 +110,45 @@
 
   }
 
-  // - Retruns a weighted average of the given layout node lists as an array of layout nodes
+  // - Retruns a weighted mean of the given layout node lists as an array of layout nodes
   // - Assumes that each index of each list in layout lists referes to the
   //   same node.
-  function blendLayouts(layoutList, weightList) {
+  // - The length of the weightList and the layoutList must be equal.
+  function blendLayouts(layoutLists, weightList) {
+    var ittr = 0;
+    var weightSumList = [];
+    var vectorSumList = [];
+    var blendedLayoutList = [];
+
+    // Confirm arguments are valid(ish)
+    if( layoutList === undefined || weightList === undefined) { return false; }
+    else if ( layoutList.length != weightList.length ) { return false; }
+    else if ( layoutList.length === 0 ) { return false; }
+
+    // For each node, calculate the weighted sum of vectors
+    // along with the sum of weights.
+    for( var layoutList in layoutLists ) {
+      var weight = weightList[ittr];
+      for ( var layoutNode in layoutList ) {
+        if (vectorSumList[ittr] === undefined) { vectorSumList[ittr] = layoutNode.position; }
+        else { vectorSumList[ittr].add(layoutNode.position.multiplyScalar(weight)); }
+        weightSum += weight;
+      }
+      ittr+=1;
+    }
+
+    ittr = 0; // reset itterator
+
+    //Calculate the weighted mean for each node
+    for ( var vecSum in sumList ) {
+      var plane = layoutLists[0][ittr].plane;
+      var weightSum = weightSumList[ittr];
+      blendedLayoutList[ittr] = LayoutNode(plane, vecSum.divideScalar(weightSum));
+      ittr += 1;
+    }
+
+    return weightedMeanList;
+  }
 
   }
 }).call(this);
