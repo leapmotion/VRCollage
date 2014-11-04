@@ -20,10 +20,10 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.options.moveX  !== undefined    || (this.options.moveX   = true);
   this.options.moveY  !== undefined    || (this.options.moveY   = true);
   this.options.moveZ  !== undefined    || (this.options.moveZ   = true);
-  console.log(this, this.options);
 
   this.mesh = planeMesh;
   this.controller = controller;
+  this.lastPosition = null;
 
   // holds the difference (offset) between the intersection point in world space and the local position,
   // at the time of intersection.
@@ -44,6 +44,10 @@ window.InteractablePlane = function(planeMesh, controller, options){
   // If this is ever increased above one, that initial finger can not be counted when averaging position
   // otherwise, it causes jumpyness.
   this.fingersRequiredForMove = 1;
+
+  this.tempVec3 = new THREE.Vector3;
+  this.drag = 1 - 0.06; // 0.06 is the damping
+  this.lastPosition = new THREE.Vector3;
 
   if (this.options.resize){
     this.bindResize();
@@ -141,9 +145,17 @@ window.InteractablePlane.prototype = {
       }
     }
 
-    if ( intersectionCount < this.fingersRequiredForMove) return;
+    if ( intersectionCount < this.fingersRequiredForMove) {
+      // inertia
+      // simple verlet integration
+      newPosition.subVectors(this.mesh.position, this.lastPosition).multiplyScalar(this.drag).add(this.mesh.position);
 
-    newPosition.divideScalar(intersectionCount);
+    } else {
+
+      newPosition.divideScalar(intersectionCount);
+
+    }
+
 
     return newPosition;
   },
@@ -263,9 +275,9 @@ window.InteractablePlane.prototype = {
 
       } else {
 
-        var newPosition = this.getPosition();
+        var newPosition = this.getPosition( this.tempVec3.set(0,0,0) );
 
-        if (!newPosition) return;
+        this.lastPosition.copy(this.mesh.position);
 
         // constrain movement to...
         // for now, let's discard z.
@@ -294,11 +306,20 @@ window.InteractablePlane.prototype = {
           }
           if (moveY) this.mesh.position.y = newPosition.y;
         }
+        if (this.options.moveZ){
+          moveZ = true;
+          for (i = 0; i < this.movementConstraintsZ.length; i++){
+            if (!this.movementConstraintsZ[i](newPosition.z)) {
+              moveZ = false; break;
+            }
+          }
+          if (moveZ) this.mesh.position.z = newPosition.z;
+        }
 
       }
 
       // note - include moveZ here when implemented.
-      if (moveX || moveY) this.emit('travel', this, this.mesh);
+      if (moveX || moveY || moveZ) this.emit('travel', this, this.mesh);
 
 
     }.bind(this) );

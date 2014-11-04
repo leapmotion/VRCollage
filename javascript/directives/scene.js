@@ -158,7 +158,7 @@ angular.module('directives', [])
         );
         dockMesh.name = "dock";
 
-        dockMesh.position.set(dockWidth / 2 - 0.1, -0.1, -0.5);  // probably too far
+        dockMesh.position.set(dockWidth / 2 - 0.1, -0.1, -0.25);
 
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
