@@ -104,8 +104,14 @@ angular.module('directives', [])
         //we don't actually want the leap hand as child of the camera, as we want the data itself properly transformed.
         // on every frame, we combine the base transformation with the camera transformation to the leap data
         // this is used in grab, proximity, etc.
-        Leap.loopController.plugins.boneHand.scene = scene;
+        boneHand = Leap.loopController.plugins.boneHand;
+        boneHand.scene = scene;
+        // preload two hands in to the scene
+        boneHand.HandMesh.create();
+        boneHand.HandMesh.create();
+
         Leap.loopController.plugins.transform.effectiveParent = camera;
+
 
         var canvas = element.find('canvas')[0];
         canvas.style.position = 'absolute';
@@ -163,7 +169,7 @@ angular.module('directives', [])
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
           resize: false,
-          moveZ: true,
+          moveZ: false,
           moveY: false
         });
 

@@ -5,7 +5,7 @@
   scope = null;
 
   initScene = function(targetEl, scale) {
-    var camera, directionalLight, far, height, near, render, renderer, width;
+    var camera, directionalLight, far, height, near, renderer, width;
     scope.scene = new THREE.Scene();
     scope.renderer = renderer = new THREE.WebGLRenderer({
       alpha: true
@@ -44,11 +44,10 @@
       renderer.setSize(width, height);
       return renderer.render(scope.scene, camera);
     }, false);
-    render = scope.render || function() {
-      renderer.render(scope.scene, camera);
-      return window.requestAnimationFrame(render);
-    };
-    return render();
+    scope.render || (scope.render = function(scope) {
+      return renderer.render(scope.scene, scope.camera);
+    });
+    return scope.render();
   };
 
   baseBoneRotation = (new THREE.Quaternion).setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0));
@@ -283,6 +282,7 @@
     scope.jointScale && (jointScale = scope.jointScale);
     scope.boneColor && (boneColor = scope.boneColor);
     scope.jointColor && (jointColor = scope.jointColor);
+    scope.HandMesh = HandMesh;
     this.use('handEntry');
     this.use('handHold');
     if (scope.scene === void 0) {
@@ -295,6 +295,9 @@
     if (scope.scene) {
       HandMesh.create();
       HandMesh.create();
+      this.on('frame', function(frame) {
+        return scope.render();
+      });
     }
     this.on('handLost', boneHandLost);
     return {
