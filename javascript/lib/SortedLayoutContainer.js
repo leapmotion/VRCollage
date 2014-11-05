@@ -218,16 +218,10 @@
   // Itterate through a layout list and move the given elements to the
   // given positions.
   function applyLayoutList(layoutList) {
-    console.log("applyLayoutList");
-    console.log(layoutList);
     for(var i=0; i<layoutList.length; i++) {
       var node = layoutList[i];
       var plane = node.plane;
-      console.log("plane interactable: " + plane.interactable);
-      var localSpace = plane.mesh.worldToLocal(node.position); // Convert our global coordinates to local space.
-
-      //plane.mesh.position = localSpace; // Set the local space position of the plane.
-      plane.mesh.position.copy(localSpace);
+      plane.mesh.position.copy(node.position);
     }
   }
 }).call(this);
