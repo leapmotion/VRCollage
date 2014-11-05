@@ -35,10 +35,10 @@
     this.planeList = planeList || [];
 
     if (sortState !== undefined && validSortStates.indexOf(sortState) != -1) {
-      this.sortState = sortState;
+      this.changeSortState(sortState);
     }
     else {
-      this.sortState = "DYNAMIC_SORTED";
+      this.changeSortState("DYNAMIC_SORTED");
     }
   };
 
@@ -65,11 +65,33 @@
       }
     },
 
+    changeSortState: function(newSortState) {
+      if (validSortStates.indexOf(newSortState) == -1 || newSortState == this.sortState) {
+        return false;
+      }
+
+      if ( newSortState == "DYNAMIC_SORTED" ) {
+        for(var i=0; i<this.planeList.length; i++) {
+          this.planeList[i].interactable = false;
+        }
+      }
+      else if ( newSortState == "USER_SORTED" ) {
+        for(var i=0; i<this.planeList.length; i++) {
+          this.planeList[i].interactable = true;
+        }
+      }
+
+      this.sortState = newSortState;
+    },
+
     // Adds the given plane to list of planes managed by the container.
     // Returns true if the plane is successfully added.
     // Returns false if the plane is a duplicate and cannot be added.
     addPlane: function(newPlane) {
       if ( this.planeList.indexOf(newPlane) == -1 ) {
+        if ( this.sortState == "DYNAMIC_SORTED" ) {
+          newPlane.interactable = false;
+        }
         this.planeList.push(newPlane);
         return true;
       }
@@ -84,6 +106,7 @@
     removePlane: function(toRemove) {
       var planeIndex;
       if ( (planeIndex = this.planeList.indexOf(toRemove)) != -1 ) {
+        toRemove.interactable = true;
         this.planeList.splice(planeIndex, 1);
         return true;
       }
