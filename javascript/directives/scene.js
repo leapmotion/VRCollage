@@ -122,7 +122,6 @@ angular.module('directives', [])
         renderer.setSize(window.innerWidth, window.innerHeight);
 
 
-        var transformPlugin = Leap.loopController.plugins.transform;
         // these would be better off directed as services.  But for now, we use window for message passing.
         window.vrEffect = new THREE.VREffect(renderer);
         window.vrControls = new THREE.VRControls(camera);
