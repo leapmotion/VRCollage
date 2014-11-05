@@ -134,7 +134,6 @@
       var ittr = 0;
       startPosition || (startPosition = 0);
       endPosition || (endPosition = 0);
-      reverse || (reverse = false);
 
       // Sort the planelist alphabetically by "plane.mesh.name"
       planeList.sort(sortComparitor);
