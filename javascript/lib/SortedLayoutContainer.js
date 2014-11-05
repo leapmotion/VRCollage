@@ -52,13 +52,22 @@
     update: function(hand1, hand2) {
       var hand1Position = new THREE.Vector3().copy(hand1);
       var hand2Position = new THREE.Vector3().copy(hand2);
+      var fromTwoToOne = new THREE.Vector3().copy(hand2Position).sub(hand1Position);
+
+      var leftmost = hand1Position.x < hand2Position.x ? hand1Position : hand2Position;
+      var rightmost = hand1Position.x < hand2Position.x ? hand2Position : hand1Position;
+      var topmost = hand1Position.x < hand2Position.x ? hand1Position : hand2Position;
+      var bottommost = hand1Position.x < hand2Position.x ? hand1Position : hand2Position;
+
+      var start = Math.abs(fromTwoToOne.x) > Math.abs(fromTwoToOne.y) ? leftmost : topmost;
+      var end = Math.abs(fromTwoToOne.x) > Math.abs(fromTwoToOne.y) ? rightmost : bottommost;
 
       if ( this.sortState == "DYNAMIC_SORTED" ) {
-        var diff = new THREE.Vector3().copy(hand2Position).sub(hand1Position);
+        var diff = new THREE.Vector3().copy(rightmost).sub(leftmost);
         var weightX = diff.x / (diff.x + diff.y);
         var weightY = diff.y / (diff.x + diff.y);
-        var alphabeticalLayout = listLayout(this.planeList, hand1Position, new THREE.Vector3(hand1Position.x + diff.x, hand1Position.y, hand1Position.z)).alphabetical();
-        var chronologicalLayout = listLayout(this.planeList, hand1Position, new THREE.Vector3(hand1Position.x, hand1Position.y + diff.y, hand1Position.z)).alphabetical();
+        var alphabeticalLayout = listLayout(this.planeList, leftmost, new THREE.Vector3(leftmost.x + diff.x, leftmost.y, leftmost.z)).alphabetical();
+        var chronologicalLayout = listLayout(this.planeList, leftmost, new THREE.Vector3(leftmost.x, leftmost.y + diff.y, leftmost.z)).alphabetical();
         var blendedLayout = blendLayouts([alphabeticalLayout, chronologicalLayout], [weightX, weightY]);
         applyLayoutList(blendedLayout);
         return true;
