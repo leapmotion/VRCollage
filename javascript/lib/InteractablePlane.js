@@ -21,10 +21,6 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.options.moveY  !== undefined    || (this.options.moveY   = true );
   this.options.moveZ  !== undefined    || (this.options.moveZ   = true );
 
-//  planeMesh.quaternion.setFromEuler(new THREE.Euler( Math.PI, 0, 0 ));
-  this.uid = window.InteractablePlane.instanceCount;
-  window.InteractablePlane.instanceCount += 1; // increment the instance count
-
   this.mesh = planeMesh;
   this.controller = controller;
   this.lastPosition = null;
@@ -70,8 +66,6 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.bindMove();
 
 };
-
-window.InteractablePlane.instanceCount = 0;
 
 window.InteractablePlane.prototype = {
 
