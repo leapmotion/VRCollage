@@ -222,7 +222,7 @@ window.InteractablePlane.prototype = {
       // check for existing grab
       // check for intersections
       // set grab offset to current offset.
-      console.log('grab');
+      //console.log('grab');
 
       if (!this.options.moveZ) return;
 
@@ -248,7 +248,7 @@ window.InteractablePlane.prototype = {
     }.bind(this) );
 
     this.controller.on('ungrab', function(hand){
-      console.log('ungrab');
+      //console.log('ungrab');
       if (this.grab && hand.id != this.grab.handId) return;
 
       this.grab = null;
