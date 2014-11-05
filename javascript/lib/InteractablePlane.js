@@ -236,7 +236,7 @@ window.InteractablePlane.prototype = {
             // could it be that for shared positions, there's no overlap distance either way?
             if ( !overlap ){
 
-              console.log('null', this.mesh.name);
+              //console.log('null', this.mesh.name);
               this.physicalFingerSides[key] = null;
 
             }
@@ -250,7 +250,7 @@ window.InteractablePlane.prototype = {
           if (overlap){
 
             this.physicalFingerSides[key] = 1;
-            console.log('side1', this.mesh.name);
+            //console.log('side1', this.mesh.name);
 
           } else {
 
@@ -262,7 +262,7 @@ window.InteractablePlane.prototype = {
             if (overlap){
 
               this.physicalFingerSides[key] = -1;
-              console.log('side -1', this.mesh.name);
+              //console.log('side -1', this.mesh.name);
 
             }
 
