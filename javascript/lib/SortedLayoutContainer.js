@@ -154,7 +154,6 @@
     }
     else if (arguments.length == 4) {
       var layoutList = [];
-      var ittr = 0;
       startPosition || (startPosition = 0);
       endPosition || (endPosition = 0);
 
@@ -162,11 +161,12 @@
       planeList.sort(sortComparitor);
 
       // Generate the layout list full of layout nodes
-      for ( var plane in planeList ) {
-        var listPercentage = (ittr*1.0) / (planeList.length*1.0); // force double division
-        var position = startPosition.lerp(endPosition, listPercentage);
+      for (var i=0; i<planeList.length; i++) {
+        var plane = planeList[i];
+        var listPercentage = (i*1.0) / (planeList.length*1.0); // force double division
+        var position = new THREE.Vector3();
+        position.copy(startPosition).lerp(endPosition, listPercentage);
         layoutList.push(LayoutNode(plane, position));
-        ittr += 1;
       }
 
       return layoutList;
@@ -187,42 +187,50 @@
     var blendedLayoutList = [];
 
     // Confirm arguments are valid(ish)
-    if( layoutList === undefined || weightList === undefined) { return false; }
-    else if ( layoutList.length != weightList.length ) { return false; }
-    else if ( layoutList.length === 0 ) { return false; }
+    if( layoutLists === undefined || weightList === undefined) { return false; }
+    else if ( !(Array.isArray(layoutLists)) || !(Array.isArray(layoutLists))) { return false; }
+    else if ( layoutLists.length != weightList.length ) { return false; }
+    else if ( layoutLists.length === 0 ) { return false; }
 
     // For each node, calculate the weighted sum of vectors
     // along with the sum of weights.
-    for( var layoutList in layoutLists ) {
-      var weight = weightList[ittr];
-      for ( var layoutNode in layoutList ) {
-        if (vectorSumList[ittr] === undefined) { vectorSumList[ittr] = layoutNode.position; }
-        else { vectorSumList[ittr].add(layoutNode.position.multiplyScalar(weight)); }
-        weightSum += weight;
-      }
-      ittr+=1;
-    }
+    for( var i=0; i < layoutLists.length; i++ ) {
+      var layoutList = layoutLists[i];
+      var weight = weightList[i];
+      for ( var j=0; j<layoutList.length; j++ ) {
+        var layoutNode = layoutList[j];
+        if (vectorSumList[j] === undefined) { vectorSumList[j] = layoutNode.position.multiplyScalar(weight); }
+        else { vectorSumList[j].add(layoutNode.position.multiplyScalar(weight)); }
 
-    ittr = 0; // reset itterator
+        if (weightSumList[j] === undefined) { weightSumList[j] = weight; }
+        else { weightSumList[j] += weight; }
+      }
+    }
 
     //Calculate the weighted mean for each node
-    for ( var vecSum in sumList ) {
-      var plane = layoutLists[0][ittr].plane;
-      var weightSum = weightSumList[ittr];
-      blendedLayoutList[ittr] = LayoutNode(plane, vecSum.divideScalar(weightSum));
-      ittr += 1;
+    for ( var i=0; i < vectorSumList.length; i++) {
+      vecSum = vectorSumList[i];
+      var plane = layoutLists[0][i].plane;
+      var weightSum = weightSumList[i];
+      blendedLayoutList[i] = LayoutNode(plane, vecSum.divideScalar(weightSum));
     }
 
-    return weightedMeanList;
+    return blendedLayoutList;
   }
 
   // Itterate through a layout list and move the given elements to the
   // given positions.
   function applyLayoutList(layoutList) {
-    for(var node in layoutList) {
+    console.log("applyLayoutList");
+    console.log(layoutList);
+    for(var i=0; i<layoutList.length; i++) {
+      var node = layoutList[i];
       var plane = node.plane;
-      var localSpace = plane.worldToLocal(node.position); // Convert our global coordinates to local space.
-      plane.position = localSpace; // Set the local space position of the plane.
+      console.log("plane interactable: " + plane.interactable);
+      var localSpace = plane.mesh.worldToLocal(node.position); // Convert our global coordinates to local space.
+
+      //plane.mesh.position = localSpace; // Set the local space position of the plane.
+      plane.mesh.position.copy(localSpace);
     }
   }
 }).call(this);
