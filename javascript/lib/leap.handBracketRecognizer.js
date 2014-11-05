@@ -13,9 +13,11 @@ Leap.plugin('handBracket', function(scope){
       if (frame.hands.length !== 2) return;
 
       controller.emit('handBracket.update',
-        frame.hands.map(function(hand) { return hand.palmPosition })
-        );
+        frame.hands.map(function(hand) {
+          var pos = hand.palmPosition;
+          return new THREE.Vector3(pos[0], pos[1], pos[2]);
+        })
+      );
     }
-
-  }
+  };
 });
