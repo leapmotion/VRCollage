@@ -49,9 +49,9 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.fingersRequiredForMove = 1;
 
   this.tempVec3 = new THREE.Vector3;
-//  this.drag = 1 - 0.06; // 0.06 is the damping
-  this.drag = 0;
-  this.lastPosition = new THREE.Vector3;
+  this.drag = 1 - 0.12; // 0.06 is the damping
+//  this.drag = 0;
+  this.lastPosition = planeMesh.position.clone();
 
   // keyed by handId-fingerIndex
   // 1 or -1 to indicate which side of the mesh a finger is "on"

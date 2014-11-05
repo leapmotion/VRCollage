@@ -4,8 +4,8 @@
 
   scope = null;
 
-  initScene = function(targetEl) {
-    var camera, directionalLight, height, render, renderer, width;
+  initScene = function(targetEl, scale) {
+    var camera, directionalLight, far, height, near, render, renderer, width;
     scope.scene = new THREE.Scene();
     scope.renderer = renderer = new THREE.WebGLRenderer({
       alpha: true
@@ -25,7 +25,13 @@
     directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(-0.5, 0, -0.2);
     scope.scene.add(directionalLight);
-    scope.camera = camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+    near = 10;
+    far = 10000;
+    if (scale) {
+      near *= scale;
+      far *= scale;
+    }
+    scope.camera = camera = new THREE.PerspectiveCamera(45, width / height, near, far);
     camera.position.fromArray([0, 300, 500]);
     camera.lookAt(new THREE.Vector3(0, 160, 0));
     scope.scene.add(camera);
@@ -38,7 +44,7 @@
       renderer.setSize(width, height);
       return renderer.render(scope.scene, camera);
     }, false);
-    render = function() {
+    render = scope.render || function() {
       renderer.render(scope.scene, camera);
       return window.requestAnimationFrame(render);
     };
@@ -268,6 +274,7 @@
   };
 
   Leap.plugin('boneHand', function(options) {
+    var scale;
     if (options == null) {
       options = {};
     }
@@ -280,7 +287,10 @@
     this.use('handHold');
     if (scope.scene === void 0) {
       console.assert(scope.targetEl);
-      initScene(scope.targetEl);
+      if (this.plugins.transform && this.plugins.transform.scale) {
+        scale = this.plugins.transform.scale.x;
+      }
+      initScene(scope.targetEl, scale);
     }
     if (scope.scene) {
       HandMesh.create();
