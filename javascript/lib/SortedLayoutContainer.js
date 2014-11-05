@@ -49,9 +49,12 @@
     // will sort the InteractablePlane(s) in the container accordingly (and return true).
     // Update will return false if the current container state does not support
     // programatic layout
-    update: function(hand1Position, hand2Position) {
+    update: function(hand1, hand2) {
+      var hand1Position = new THREE.Vector3().copy(hand1);
+      var hand2Position = new THREE.Vector3().copy(hand2);
+
       if ( this.sortState == "DYNAMIC_SORTED" ) {
-        var diff = new THREE.Vector3().subVectors(hand2Position, hand1Position);
+        var diff = new THREE.Vector3().copy(hand2Position).sub(hand1Position);
         var weightX = diff.x / (diff.x + diff.y);
         var weightY = diff.y / (diff.x + diff.y);
         var alphabeticalLayout = listLayout(this.planeList, hand1Position, new THREE.Vector3(hand1Position.x + diff.x, hand1Position.y, hand1Position.z)).alphabetical();
@@ -132,7 +135,10 @@
   //
   // if called with just start and end position, returns an object that containts the relevant
   // calls to generate the layout with different sorting properties.
-  function listLayout(planeList, startPosition, endPosition, sortComparitor) {
+  function listLayout(planeList, start, end, sortComparitor) {
+    var startPosition = new THREE.Vector3().copy(start);
+    var endPosition = new THREE.Vector3().copy(end);
+
     // If only start and end position are given, utilize partial evaluation
     // to allow a call formated like: listLayout(startPosition, endPosition).alphabetical();
     if (arguments.length == 3) {
@@ -161,8 +167,9 @@
       for (var i=0; i<planeList.length; i++) {
         var plane = planeList[i];
         var listPercentage = (i*1.0) / (planeList.length*1.0); // force double division
-        var position = new THREE.Vector3();
-        position.copy(startPosition).lerp(endPosition, listPercentage);
+        listPercentage = Math.min(1.0, Math.max(0.0, listPercentage));
+        var position = new THREE.Vector3().copy(startPosition).lerp(endPosition, listPercentage);
+
         layoutList.push(LayoutNode(plane, position));
       }
 
@@ -196,8 +203,8 @@
       var weight = weightList[i];
       for ( var j=0; j<layoutList.length; j++ ) {
         var layoutNode = layoutList[j];
-        if (vectorSumList[j] === undefined) { vectorSumList[j] = layoutNode.position.multiplyScalar(weight); }
-        else { vectorSumList[j].add(layoutNode.position.multiplyScalar(weight)); }
+        if (vectorSumList[j] === undefined) { vectorSumList[j] = new THREE.Vector3().copy(layoutNode.position).multiplyScalar(weight); }
+        else { vectorSumList[j].add(new THREE.Vector3().copy(layoutNode.position).multiplyScalar(weight)); }
 
         if (weightSumList[j] === undefined) { weightSumList[j] = weight; }
         else { weightSumList[j] += weight; }
@@ -209,7 +216,7 @@
       vecSum = vectorSumList[i];
       var plane = layoutLists[0][i].plane;
       var weightSum = weightSumList[i];
-      blendedLayoutList[i] = LayoutNode(plane, vecSum.divideScalar(weightSum));
+      blendedLayoutList[i] = LayoutNode(plane, new THREE.Vector3().copy(vecSum).divideScalar(weightSum));
     }
 
     return blendedLayoutList;
