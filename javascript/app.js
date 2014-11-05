@@ -10,7 +10,8 @@ Leap.loop()
     arm: true
   })
   .use('proximity')
-  .use('pinchEvent');
+  .use('pinchEvent')
+  .use('handBracket');
 
 Leap.loopController.setBackground(true);
 
