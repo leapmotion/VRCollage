@@ -53,11 +53,10 @@
     update: function(hand1, hand2) {
       var hand1Position = new THREE.Vector3().copy(hand1);
       var hand2Position = new THREE.Vector3().copy(hand2);
-      var fromTwoToOne = new THREE.Vector3().copy(hand2Position).sub(hand1Position);
 
-      var leftmost = hand1Position.x < hand2Position.x ? hand1Position : hand2Position;
-      var rightmost = hand1Position.x < hand2Position.x ? hand2Position : hand1Position;
-      var topmost = hand1Position.y < hand2Position.y ? hand1Position : hand2Position;
+      var leftmost   = hand1Position.x < hand2Position.x ? hand1Position : hand2Position;
+      var rightmost  = hand1Position.x < hand2Position.x ? hand2Position : hand1Position;
+      var topmost    = hand1Position.y < hand2Position.y ? hand1Position : hand2Position;
       var bottommost = hand1Position.y < hand2Position.y ? hand2Position : hand1Position;
 
       if ( this.sortState == "DYNAMIC_SORTED" ) {
@@ -66,9 +65,8 @@
         var weightX = diff.x / (diff.x + diff.y);
         var weightY = diff.y / (diff.x + diff.y);
 
-        var alphabeticalLayout = listLayout(this.planeList, leftmost, new THREE.Vector3(rightmost.x, leftmost.y, leftmost.z)).alphabetical();
-        var chronologicalLayout = listLayout(this.planeList, bottommost, new THREE.Vector3(bottommost.x, topmost.y, bottommost.z)).alphabetical();
-        var blendedLayout = blendLayouts([alphabeticalLayout, chronologicalLayout], [weightX, weightY]);
+        var alphabeticalLayout = listLayout(this.planeList, bottommost, new THREE.Vector3(bottommost.x, topmost.y, bottommost.z)).alphabetical(); // vertical
+        var blendedLayout = blendLayouts([this.userLayout, alphabeticalLayout], [weightX, weightY]);
         applyLayoutList(blendedLayout);
         return true;
       }
@@ -138,9 +136,9 @@
 
     // Save the current layout as the new cannonical "user defined layout"
     persistLayout: function() {
-      userLayout = [];
+      this.userLayout = [];
       for (var i=0; i<this.planeList.length; i++) {
-        userLayout.push(LayoutNode(this.planeList[i], this.planeList[i].mesh.position));
+        this.userLayout.push(LayoutNode(this.planeList[i], this.planeList[i].mesh.position));
       }
     }
   };
