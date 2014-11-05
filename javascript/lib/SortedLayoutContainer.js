@@ -139,13 +139,13 @@
     if (arguments.length == 3) {
       return {
         alphabetical: (function() {
-          listLayout(planeList, startPosition, endPosition, function(a,b) {
+          return listLayout(planeList, startPosition, endPosition, function(a,b) {
             if ( a.mesh.name <= b.mesh.name ) { return -1; }
             else { return 1; }
           });
         }),
         chronological: (function() {
-          listLayout(planeList, startPosition, endPosition, function(a,b) {
+          return listLayout(planeList, startPosition, endPosition, function(a,b) {
             if ( a.uid <= b.uid ) { return -1; }
             else { return 1; }
           });
