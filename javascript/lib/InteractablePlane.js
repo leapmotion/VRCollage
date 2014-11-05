@@ -205,12 +205,12 @@ window.InteractablePlane.prototype = {
       setBoneMeshColor(hand, index, 0xffffff);
 
       for ( var intersectionKey in this.intersections ){
-        
+
         if (intersectionKey === key){
           delete this.intersections[intersectionKey];
           break;
         }
-        
+
       }
 
       if (proximity.intersectionCount() == 0) this.emit('release', this);
