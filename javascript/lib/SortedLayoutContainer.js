@@ -54,9 +54,9 @@
         var diff = new THREE.Vector3().subVectors(hand2Position, hand1Position);
         var weightX = diff.x / (diff.x + diff.y);
         var weightY = diff.y / (diff.x + diff.y);
-        var alphabeticalLayout = listLayout(hand1Position, new THREE.Vector3(hand1Position.x + diff.x, hand1Position.y, hand1Position.z)).alphabetical();
-        var chronologicalLayout = listLayout(hand1Position, new THREE.Vector3(hand1Position.x, hand1Position.y + diff.y, hand1Position.z)).alphabetical();
-        var blendedLayout = blendedLayoutList([alphabeticalLayout, chronologicalLayout], [weightX, weightY]);
+        var alphabeticalLayout = listLayout(this.planeList, hand1Position, new THREE.Vector3(hand1Position.x + diff.x, hand1Position.y, hand1Position.z)).alphabetical();
+        var chronologicalLayout = listLayout(this.planeList, hand1Position, new THREE.Vector3(hand1Position.x, hand1Position.y + diff.y, hand1Position.z)).alphabetical();
+        var blendedLayout = blendLayouts([alphabeticalLayout, chronologicalLayout], [weightX, weightY]);
         applyLayoutList(blendedLayout);
         return true;
       }
@@ -110,26 +110,26 @@
   //
   // if called with just start and end position, returns an object that containts the relevant
   // calls to generate the layout with different sorting properties.
-  function listLayout(startPosition, endPosition, sortComparitor) {
+  function listLayout(planeList, startPosition, endPosition, sortComparitor) {
     // If only start and end position are given, utilize partial evaluation
     // to allow a call formated like: listLayout(startPosition, endPosition).alphabetical();
-    if (arguments.length == 2) {
+    if (arguments.length == 3) {
       return {
-        alphabetical: function() {
-          listLayout(startPosition, endPosition, function(a,b) {
-            if ( plane1.mesh.name <= plane2.mesh.name ) { return -1; }
+        alphabetical: (function() {
+          listLayout(planeList, startPosition, endPosition, function(a,b) {
+            if ( a.mesh.name <= b.mesh.name ) { return -1; }
             else { return 1; }
           });
-        },
-        chronological: function() {
-          listLayout(startPosition, endPosition, function(a,b) {
-            if ( plane1.uid <= plane2.uid ) { return -1; }
+        }),
+        chronological: (function() {
+          listLayout(planeList, startPosition, endPosition, function(a,b) {
+            if ( a.uid <= b.uid ) { return -1; }
             else { return 1; }
           });
-        }
+        })
       };
     }
-    else if (arguments.length == 3) {
+    else if (arguments.length == 4) {
       var layoutList = [];
       var ittr = 0;
       startPosition || (startPosition = 0);
@@ -137,13 +137,13 @@
       reverse || (reverse = false);
 
       // Sort the planelist alphabetically by "plane.mesh.name"
-      this.planeList.sort(sortComparitor);
+      planeList.sort(sortComparitor);
 
       // Generate the layout list full of layout nodes
-      for ( var plane in this.planelist ) {
-        var listPercentage = (ittr*1.0) / (this.planelist.length*1.0); // force double division
+      for ( var plane in planeList ) {
+        var listPercentage = (ittr*1.0) / (planeList.length*1.0); // force double division
         var position = startPosition.lerp(endPosition, listPercentage);
-        layoutList.push(returnNode(plane, position));
+        layoutList.push(LayoutNode(plane, position));
         ittr += 1;
       }
 
