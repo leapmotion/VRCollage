@@ -1,23 +1,8 @@
-
-// How the hand transform is moved relative to the camera. Used in scene.js.
-window.HMDTransformation = {
-  quaternion: (new THREE.Quaternion).setFromEuler(
-    new THREE.Euler( Math.PI * -0.3, 0, Math.PI, 'ZXY' )
-  ),
-  position: new THREE.Vector3(0,100,-30),
-  scale: 0.75
-};
-
-window.DesktopTransformation = {
-  quaternion: (new THREE.Quaternion),
-  position: new THREE.Vector3(0,-200,-300),
-  scale: 0.75
-};
-
-
 // Plugin order is critical:
 Leap.loop()
-  .use('transform', window.DesktopTransformation)
+  .use('transform', {
+    vr: true
+  })
   .use('boneHand', {
     scene: null, // this tells boneHand to use defer scene usage/creation.
     opacity: 0.7,

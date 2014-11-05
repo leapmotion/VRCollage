@@ -16,16 +16,21 @@
 window.InteractablePlane = function(planeMesh, controller, options){
   this.options = options || {};
   this.options.cornerInteractionRadius || (this.options.cornerInteractionRadius = 20);
-  this.options.resize !== undefined    || (this.options.resize  = true);
-  this.options.moveX  !== undefined    || (this.options.moveX   = true);
-  this.options.moveY  !== undefined    || (this.options.moveY   = true);
-  this.options.moveZ  !== undefined    || (this.options.moveZ   = true);
+  this.options.resize !== undefined    || (this.options.resize  = false);
+  this.options.moveX  !== undefined    || (this.options.moveX   = true );
+  this.options.moveY  !== undefined    || (this.options.moveY   = true );
+  this.options.moveZ  !== undefined    || (this.options.moveZ   = true );
 
+//  planeMesh.quaternion.setFromEuler(new THREE.Euler( Math.PI, 0, 0 ));
   this.uid = window.InteractablePlane.instanceCount;
   window.InteractablePlane.instanceCount += 1; // increment the instance count
 
   this.mesh = planeMesh;
   this.controller = controller;
+  this.lastPosition = null;
+
+  // set this to false to disable inertia and any hand interactions.
+  this.interactable = true;
 
   // holds the difference (offset) between the intersection point in world space and the local position,
   // at the time of intersection.
@@ -41,11 +46,22 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.movementConstraintsY = [];
   this.movementConstraintsZ = [];
 
-  this.grab = null; // hand id.  Limited to one hand for now.
-
   // If this is ever increased above one, that initial finger can not be counted when averaging position
   // otherwise, it causes jumpyness.
   this.fingersRequiredForMove = 1;
+
+  this.tempVec3 = new THREE.Vector3;
+//  this.drag = 1 - 0.06; // 0.06 is the damping
+  this.drag = 0;
+  this.lastPosition = new THREE.Vector3;
+
+  // keyed by handId-fingerIndex
+  // 1 or -1 to indicate which side of the mesh a finger is "on"
+  this.physicalFingerSides = {};
+
+
+  this.rayCaster = new THREE.Raycaster;
+  this.rayCasterDirection = new THREE.Vector3();
 
   if (this.options.resize){
     this.bindResize();
@@ -109,6 +125,7 @@ window.InteractablePlane.prototype = {
     this.movementConstraintsZ = [];
   },
 
+  // todo - handle rotations as well
   changeParent: function(newParent){
     var key;
 
@@ -118,6 +135,8 @@ window.InteractablePlane.prototype = {
     }
 
     this.mesh.position.add( this.mesh.parent.position ); // should be the diff between the old and new parent world positions
+    this.lastPosition.copy(this.mesh.position);  // reset velocity (!)
+
     this.mesh.parent.remove(this.mesh);
     newParent.add(this.mesh);
 
@@ -144,11 +163,120 @@ window.InteractablePlane.prototype = {
       }
     }
 
-    if ( intersectionCount < this.fingersRequiredForMove) return;
+    if ( intersectionCount < this.fingersRequiredForMove) {
+      // inertia
+      // simple verlet integration
+      newPosition.subVectors(this.mesh.position, this.lastPosition).multiplyScalar(this.drag).add(this.mesh.position);
 
-    newPosition.divideScalar(intersectionCount);
+    } else {
+
+      newPosition.divideScalar(intersectionCount);
+
+    }
+
 
     return newPosition;
+  },
+
+
+  // not as good design as proximity - we'll first build in-place raycasting for finger tip z-depth
+  // not sure what the final factoring should be.
+  getZReposition: function(hands){
+    var rayCaster = this.rayCaster;
+    var rayCasterDirection = this.rayCasterDirection;
+    var hand, finger, key, overlap;
+    this.mesh.matrixWorld.needsUpdate = true; // this is a bit of an unnecessary security.
+
+    var averageDistance = 0;
+    var overlappingFingers = 0;
+
+    for (var i =0; i < hands.length; i++){
+      hand = hands[i];
+
+
+      // for each finger tip
+      // if there's no side yet, ray cast both ways until it gets a side
+      // if these is a side, average the distances which have crossed.
+      // for now, the delta offset = Min(0, offset), allowing it to be pushed away from but not suck towards the fingertip
+      // later, we should apply moments and get rotations.
+      for (var j = 0; j < 5; j++){
+
+        finger = hand.fingers[j];
+        key = hand.id + "-" + j;
+
+        rayCasterDirection.set(0,0,-1); //.applyMatrix4(this.mesh.matrixWorld).normalize(); // normalize may not be necessary here?
+        rayCaster.set(
+          (new THREE.Vector3).fromArray(finger.tipPosition).add(rayCasterDirection.clone().setLength(0.01) ),
+          rayCasterDirection
+        );
+
+        if ( this.physicalFingerSides[key] ){
+          // hand in front of plane
+
+          // we always multiply the opposite direction, to figure out how much across we are
+          rayCaster.ray.direction.multiplyScalar( this.physicalFingerSides[key] * -1 );
+          // having some distance between the origin point here prevents low-speed passthrough
+          rayCaster.ray.origin.fromArray(finger.tipPosition).add( rayCasterDirection.clone().setLength(0.01 * this.physicalFingerSides[key]) );
+          overlap = rayCaster.intersectObject(this.mesh)[0];
+
+
+          // planes only have one intersection
+          if (overlap){
+
+            overlappingFingers++;
+            averageDistance += (overlap.distance * this.physicalFingerSides[key] * -1);
+
+          } else {
+            // hand behind plane
+
+            // check that we're still overlapping.  If not, blow everything up.
+            rayCaster.ray.direction.multiplyScalar( -1 );
+            overlap = rayCaster.intersectObject(this.mesh)[0];
+
+            // could it be that for shared positions, there's no overlap distance either way?
+            if ( !overlap ){
+
+              console.log('null', this.mesh.name);
+              this.physicalFingerSides[key] = null;
+
+            }
+
+          }
+
+        } else {
+
+          overlap = rayCaster.intersectObject(this.mesh)[0];
+
+          if (overlap){
+
+            this.physicalFingerSides[key] = 1;
+            console.log('side1', this.mesh.name);
+
+          } else {
+
+            rayCaster.ray.direction.multiplyScalar( -1 );
+            rayCaster.ray.origin.fromArray(finger.tipPosition).add( rayCasterDirection.clone().setLength(-0.01) );
+
+            overlap = rayCaster.intersectObject(this.mesh)[0];
+
+            if (overlap){
+
+              this.physicalFingerSides[key] = -1;
+              console.log('side -1', this.mesh.name);
+
+            }
+
+          }
+
+        }
+
+
+      }
+
+    }
+
+    return overlappingFingers > 0 ? averageDistance / overlappingFingers : 0;
+
   },
 
   // 1: count fingertips past zplace
@@ -175,7 +303,9 @@ window.InteractablePlane.prototype = {
 
     };
 
+    // we use proximity for x and y, raycasting for z
     // determine if line and place intersect
+    // todo - rename to something that's not a mozilla method
     var proximity = this.moveProximity = this.controller.watch(
       this.mesh,
       this.interactiveEndBones
@@ -217,95 +347,58 @@ window.InteractablePlane.prototype = {
 
     }.bind(this) );
 
-
-    this.controller.on('grab', function(hand){
-      // check for existing grab
-      // check for intersections
-      // set grab offset to current offset.
-      //console.log('grab');
-
-      if (!this.options.moveZ) return;
-
-      // no two-handed grabs for now.
-      if (this.grab) return;
-
-      if (this.moveProximity.intersectionCount() < 1) return;
-
-      // Todo - If there are multiple images, we are currently biased towards the one added first
-      // We should instead do the one with more intersection points.
-
-      // This is candidate for becoming its own class (possibly to handle the above todo).
-      this.grab = {
-        handId: hand.id,
-        positionOffset: (new THREE.Vector3).fromArray(hand.palmPosition).sub(this.mesh.position)
-        // later add: rotation offset - this will require a hand.quaternion() or bone.quaternion() method in LeapJS.
-//        rotationOffset: (new THREE.Quaternion)
-      };
-      console.assert(!isNaN(this.grab.positionOffset.x));
-      console.assert(!isNaN(this.grab.positionOffset.y));
-      console.assert(!isNaN(this.grab.positionOffset.z));
-
-    }.bind(this) );
-
-    this.controller.on('ungrab', function(hand){
-      //console.log('ungrab');
-      if (this.grab && hand.id != this.grab.handId) return;
-
-      this.grab = null;
-    }.bind(this));
-
-
     this.controller.on('frame', function(frame){
-      var hand, i, moveX, moveY, moveZ;
+      if (!this.interactable) return false;
 
-      if (this.grab){
+      var i, moveX, moveY, moveZ;
 
-        hand = frame.hand(this.grab.handId);
 
-        this.mesh.position.fromArray(hand.palmPosition).sub(this.grab.positionOffset);
+      var newPosition = this.getPosition( this.tempVec3.set(0,0,0) );
 
-        console.assert(!isNaN(this.mesh.position.x));
-        console.assert(!isNaN(this.mesh.position.y));
-        console.assert(!isNaN(this.mesh.position.z));
+      newPosition.z += this.getZReposition(frame.hands);
 
-      } else {
+      this.lastPosition.copy(this.mesh.position);
 
-        var newPosition = this.getPosition();
+      // constrain movement to...
+      // for now, let's discard z.
+      // better:
+      // Always move perpendicular to image normal
+      // Then set normal equal to average of intersecting line normals
+      // (Note: this will require some thought with grab.  Perhaps get carpal intersection, stop re-adjusting angle.)
+      // (Note: can't pick just any face normal, so that we can distort the mesh later on.
+      // This will allow (but hopefully not require?) expertise to use.
 
-        if (!newPosition) return;
-
-        // constrain movement to...
-        // for now, let's discard z.
-        // better:
-        // Always move perpendicular to image normal
-        // Then set normal equal to average of intersecting line normals
-        // (Note: this will require some thought with grab.  Perhaps get carpal intersection, stop re-adjusting angle.)
-        // (Note: can't pick just any face normal, so that we can distort the mesh later on.
-        // This will allow (but hopefully not require?) expertise to use.
-
-        if (this.options.moveX){
-          moveX = true;
-          for (i = 0; i < this.movementConstraintsX.length; i++){
-            if (!this.movementConstraintsX[i](newPosition.x)) {
-              moveX = false; break;
-            }
+      if (this.options.moveX){
+        moveX = true;
+        for (i = 0; i < this.movementConstraintsX.length; i++){
+          if (!this.movementConstraintsX[i](newPosition.x)) {
+            moveX = false; break;
           }
-          if (moveX) this.mesh.position.x = newPosition.x;
         }
-        if (this.options.moveY){
-          moveY = true;
-          for (i = 0; i < this.movementConstraintsY.length; i++){
-            if (!this.movementConstraintsY[i](newPosition.y)) {
-              moveY = false; break;
-            }
+        if (moveX) this.mesh.position.x = newPosition.x;
+      }
+      if (this.options.moveY){
+        moveY = true;
+        for (i = 0; i < this.movementConstraintsY.length; i++){
+          if (!this.movementConstraintsY[i](newPosition.y)) {
+            moveY = false; break;
           }
-          if (moveY) this.mesh.position.y = newPosition.y;
         }
-
+        if (moveY) this.mesh.position.y = newPosition.y;
+      }
+      if (this.options.moveZ){
+        moveZ = true;
+        for (i = 0; i < this.movementConstraintsZ.length; i++){
+          if (!this.movementConstraintsZ[i](newPosition.z)) {
+            moveZ = false; break;
+          }
+        }
+        if (moveZ) this.mesh.position.z = newPosition.z;
       }
 
+
       // note - include moveZ here when implemented.
-      if (moveX || moveY) this.emit('travel', this, this.mesh);
+      if (moveX || moveY ) this.emit('travel', this, this.mesh);
 
 
     }.bind(this) );

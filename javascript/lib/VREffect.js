@@ -1,5 +1,4 @@
 /**
- * Looks like this was renamed/refactored from VRRenderer
  * @author dmarcos / https://github.com/dmarcos
  *
  * It handles stereo rendering
@@ -22,12 +21,10 @@
  * https://drive.google.com/folderview?id=0BzudLt22BqGRbW9WTHMtOWMzNjQ&usp=sharing#list
  *
  */
-THREE.VREffect = function ( renderer, done, options ) {
+THREE.VREffect = function ( renderer, done ) {
 
 	var cameraLeft = new THREE.PerspectiveCamera();
 	var cameraRight = new THREE.PerspectiveCamera();
-
-  this.options = (options || {});
 
 	this._renderer = renderer;
 
@@ -72,7 +69,6 @@ THREE.VREffect = function ( renderer, done, options ) {
 	this.render = function ( scene, camera ) {
 		var renderer = this._renderer;
 		var vrHMD = this._vrHMD;
-		renderer.enableScissorTest( false );
 		// VR render mode if HMD is available
 		if ( vrHMD ) {
 			this.renderStereo.apply( this, arguments );
@@ -117,6 +113,8 @@ THREE.VREffect = function ( renderer, done, options ) {
 		renderer.setScissor( eyeDivisionLine, 0, eyeDivisionLine, rendererHeight );
 		renderer.render( scene, cameraRight );
 
+		renderer.enableScissorTest( false );
+
 	};
 
 	this.setSize = function( width, height ) {
@@ -152,26 +150,20 @@ THREE.VREffect = function ( renderer, done, options ) {
 		this.startFullscreen();
 	};
 
-  this.onFullScreenChanged = function(){
-    var failedFullscreen = (!document.mozFullScreenElement && !document.webkitFullScreenElement);
-
-    if ( failedFullscreen ) {
-      this.setFullScreen( false );
-      this.options.onWindowed && this.options.onWindowed();
-    } else {
-      this.options.onFullscreen && this.options.onFullscreen();
-    }
-
-  };
-
 	this.startFullscreen = function() {
+		var self = this;
+		var renderer = this._renderer;
 		var vrHMD = this._vrHMD;
 		var canvas = renderer.domElement;
 		var fullScreenChange =
 			canvas.mozRequestFullScreen? 'mozfullscreenchange' : 'webkitfullscreenchange';
 
-		document.addEventListener( fullScreenChange, this.onFullScreenChanged.bind(this), false );
-
+		document.addEventListener( fullScreenChange, onFullScreenChanged, false );
+		function onFullScreenChanged() {
+			if ( !document.mozFullScreenElement && !document.webkitFullScreenElement ) {
+				self.setFullScreen( false );
+			}
+		}
 		if ( canvas.mozRequestFullScreen ) {
 			canvas.mozRequestFullScreen( { vrDisplay: vrHMD } );
 		} else {

@@ -69,7 +69,7 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
   if (preserveAspectRatio){
     // See formulation:
     // https://s3.amazonaws.com/uploads.hipchat.com/28703/213121/yCBzmNgVxNCeqlU/scaling_box_from_corner.pdf
-    console.assert( (this.scale.x === this.scale.y) && (this.scale.y === this.scale.z) );
+//    console.assert( (this.scale.x === this.scale.y) && (this.scale.y === this.scale.z) );
 
     var p0 = this.position,
       d = newCornerPosition,
@@ -83,13 +83,13 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
       c.clone().multiplyScalar(r0)
     );
 
-    console.assert( !isNaN(q0.x) );
+//    console.assert( !isNaN(q0.x) );
 
     // TODO: handle 0-division edge cases
     var t = - ( q0.dot(q0) - d.dot(d) + 2 * d.clone().sub(q0).dot(p0) ) /
                       (2 * ( d.clone().sub(q0).dot(c) ) );
 
-    console.assert( !isNaN(t) );
+//    console.assert( !isNaN(t) );
 
     var p = p0.clone().add( c.clone().multiplyScalar(t) );
 
@@ -101,8 +101,8 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
     console.log(p0, p);
     console.log(r0, r);
 
-    console.assert(r === r0);
-    console.assert(this.position.equals(p));
+//    console.assert(r === r0);
+//    console.assert(this.position.equals(p));
 
     this.position.copy(p);
 
