@@ -11,7 +11,6 @@ Leap.plugin('handBracket', function(scope){
     frame: function(frame){
 
       if (frame.hands.length !== 2) return;
-
       controller.emit('handBracket.update',
         frame.hands.map(function(hand) {
           var pos = hand.palmPosition;
