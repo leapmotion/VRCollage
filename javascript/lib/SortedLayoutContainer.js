@@ -38,7 +38,7 @@
       this.changeSortState(sortState);
     }
     else {
-      this.changeSortState("DYNAMIC_SORTED");
+      this.changeSortState("USER_SORTED");
     }
   };
 
