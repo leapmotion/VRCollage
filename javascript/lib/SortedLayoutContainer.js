@@ -129,7 +129,6 @@
 
   // If called with a sort comparitor, returns an array of layoutNodes specifying the InteractivePlane and the
   // location in space according to the supplied sort comparitor function.
-  // Locations are given in a 0-1 space if no positions are specified.
   //
   // if called with just start and end position, returns an object that containts the relevant
   // calls to generate the layout with different sorting properties.
@@ -154,8 +153,6 @@
     }
     else if (arguments.length == 4) {
       var layoutList = [];
-      startPosition || (startPosition = 0);
-      endPosition || (endPosition = 0);
 
       // Sort the planelist alphabetically by "plane.mesh.name"
       planeList.sort(sortComparitor);
