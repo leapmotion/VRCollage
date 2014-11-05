@@ -22,6 +22,8 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.options.moveZ  !== undefined    || (this.options.moveZ   = true );
 
 //  planeMesh.quaternion.setFromEuler(new THREE.Euler( Math.PI, 0, 0 ));
+  this.uid = window.InteractablePlane.instanceCount;
+  window.InteractablePlane.instanceCount += 1; // increment the instance count
 
   this.mesh = planeMesh;
   this.controller = controller;
@@ -69,6 +71,8 @@ window.InteractablePlane = function(planeMesh, controller, options){
 
 };
 
+window.InteractablePlane.instanceCount = 0;
+
 window.InteractablePlane.prototype = {
 
   emit: function(eventName, data1, data2, data3, data4, data5){
@@ -76,7 +80,7 @@ window.InteractablePlane.prototype = {
     // note: not ie-compatible indexOf:
     if (['travel', 'touch', 'release'].indexOf(eventName) === -1) {
       console.error("Invalid event name:", eventName);
-      return
+      return;
     }
 
     var callbacks = this[eventName + "Callbacks"];
@@ -232,7 +236,7 @@ window.InteractablePlane.prototype = {
             // could it be that for shared positions, there's no overlap distance either way?
             if ( !overlap ){
 
-              console.log('null', this.mesh.name);
+              //console.log('null', this.mesh.name);
               this.physicalFingerSides[key] = null;
 
             }
@@ -246,7 +250,7 @@ window.InteractablePlane.prototype = {
           if (overlap){
 
             this.physicalFingerSides[key] = 1;
-            console.log('side1', this.mesh.name);
+            //console.log('side1', this.mesh.name);
 
           } else {
 
@@ -258,7 +262,7 @@ window.InteractablePlane.prototype = {
             if (overlap){
 
               this.physicalFingerSides[key] = -1;
-              console.log('side -1', this.mesh.name);
+              //console.log('side -1', this.mesh.name);
 
             }
 
@@ -331,18 +335,17 @@ window.InteractablePlane.prototype = {
       setBoneMeshColor(hand, index, 0xffffff);
 
       for ( var intersectionKey in this.intersections ){
-        
+
         if (intersectionKey === key){
           delete this.intersections[intersectionKey];
           break;
         }
-        
+
       }
 
       if (proximity.intersectionCount() == 0) this.emit('release', this);
 
     }.bind(this) );
-
 
     this.controller.on('frame', function(frame){
       if (!this.interactable) return false;

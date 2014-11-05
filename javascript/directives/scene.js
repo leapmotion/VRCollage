@@ -172,6 +172,17 @@ angular.module('directives', [])
         dock.pushImage("images/trains/" + images[2]);
         dock.pushImage("images/trains/" + images[3]);
 
+        var sortedLayoutContainer = new SortedLayoutContainer();
+
+        // When an image is removed from the doc, add it to the container.
+        dock.imageRemoveCallbacks.push(function(data) {
+          sortedLayoutContainer.addPlane(data[0]);
+        });
+
+        Leap.loopController.on('handBracket.update', function(points){
+          sortedLayoutContainer.update(points[0], points[1]);
+        });
+
 // leap proximity does not at all do well with angled objects:
 //        dockMesh.position.set(-90, 130 - dockHeight / 2, -300);
 //        dockMesh.rotation.set(0, Math.PI / 4, 0, 0);

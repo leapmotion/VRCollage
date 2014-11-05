@@ -20,9 +20,26 @@ window.Dock = function(scene, planeMesh, controller, options){
 
   this.activationDistance = 0.05; // distance an image must be drawn out to be free.
   this.imageMinHeight = -0.007;
+
+  this.imageRemoveCallbacks = [];
 };
 
 window.Dock.prototype = {
+
+  emit: function(eventName, data) {
+    // note: not ie-compatible indexOf:
+    if (['imageRemove'].indexOf(eventName) === -1) {
+      console.error("Invalid event name:", eventName);
+      return;
+    }
+
+    var callbacks = this[eventName + "Callbacks"];
+    for (var i = 0; i < callbacks.length; i++){
+
+      // could use arguments.slice here.
+      callbacks[i].call(this, data);
+    }
+  },
 
   pushImage: function(url){
 
@@ -81,7 +98,8 @@ window.Dock.prototype = {
       interactablePlane.options.moveZ = true;
       interactablePlane.clearMovementConstraints();
 
-
+      // Emit an image removed event
+      this.emit('imageRemove', [interactablePlane]);
 
       for (var i = 0; i < this.images.length; i++){
         if (this.images[i] === interactablePlane){
