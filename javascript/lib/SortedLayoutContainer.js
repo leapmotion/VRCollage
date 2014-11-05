@@ -33,6 +33,7 @@
   // Optional argument "sortState" is a string given one of the validSortStates listed above.
   window.SortedLayoutContainer = function(planeList, sortState){
     this.planeList = planeList || [];
+    this.userLayout = [];
 
     if (sortState !== undefined && validSortStates.indexOf(sortState) != -1) {
       this.changeSortState(sortState);
@@ -103,6 +104,9 @@
         if ( this.sortState == "DYNAMIC_SORTED" ) {
           newPlane.interactable = false;
         }
+
+        this.userLayout.push(LayoutNode(newPlane, newPlane.mesh.position));
+
         this.planeList.push(newPlane);
         return true;
       }
@@ -119,10 +123,24 @@
       if ( (planeIndex = this.planeList.indexOf(toRemove)) != -1 ) {
         toRemove.interactable = true;
         this.planeList.splice(planeIndex, 1);
+
+        var userIndex;
+        if ( (userIndex = this.userLayout.indexOf(toRemove)) != -1 ) {
+          this.userLayout.splice(userIndex, 1);
+        }
+
         return true;
       }
       else {
         return false;
+      }
+    },
+
+    // Save the current layout as the new cannonical "user defined layout"
+    persistLayout: function() {
+      userLayout = [];
+      for (var i=0; i<this.planeList.length; i++) {
+        userLayout.push(LayoutNode(this.planeList[i], this.planeList[i].mesh.position));
       }
     }
   };
