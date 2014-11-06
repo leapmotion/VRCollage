@@ -180,11 +180,9 @@ angular.module('directives', [])
 
         dock.setInteractable(false);
 
-        var sortedLayoutContainer = new SortedLayoutContainer(null, "collage", function(newState){
+        window.dock = dock;
 
-          var showDock = newState === 'collage';
-          dock.mesh.visible = showDock;
-          dock.setInteractable(showDock);
+        var sortedLayoutContainer = window.sortedLayoutContainer = new SortedLayoutContainer(null, "collage", function(newState){
 
         });
 

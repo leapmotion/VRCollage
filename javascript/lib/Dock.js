@@ -97,7 +97,7 @@ window.Dock.prototype = {
 
       // remove constraints:
       interactablePlane.options.moveX = true;
-      interactablePlane.options.moveZ = true;
+//      interactablePlane.options.moveZ = true;
       interactablePlane.clearMovementConstraints();
 
       // Emit an image removed event
