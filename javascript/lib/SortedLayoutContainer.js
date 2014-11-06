@@ -71,8 +71,6 @@
 //      this.yEnd = new THREE.Vector3().subVectors(this.p2, this.p1).y;
       console.log('persist, x:', this.xEnd.toPrecision(3));
 
-      return
-
       for (var i=0; i<this.planes.length; i++) {
 
         this.planePositionOffsets.push(
@@ -152,6 +150,7 @@
         layout.p1.copy(origP1).lerp(destP1, animationStep);
         layout.p2.copy(origP2).lerp(destP2, animationStep);
 
+        window.sortedLayoutContainer.calcWeight();
         layout.updatePositions();
 
         applyLayoutList(
@@ -268,32 +267,12 @@
 
       // Figure out the weighting of each layout
       var diff = new THREE.Vector3().subVectors(rightmost, leftmost);
-//      var weightX = diff.x / (diff.x + diff.y); // horizontal
-//      var weightY = diff.y / (diff.x + diff.y); // vertical
-//        var weightX = diff.x / diff.length(); // horizontal
-//        var weightY = diff.y / diff.length(); // vertical
 
-//      // todo - these (layout?) objects should not be created here
-//      var alphabeticalLayout = listLayout(
-//        this.planesAlpha,
-//        bottommost,
-//        new THREE.Vector3(bottommost.x, topmost.y, bottommost.z)
-//      );
-
-      // reposition based off of p1 and p2
-//      this.layouts.alpha.update();
-//
-//      this.layouts.stack.p1.x = leftmost.x;
-//      // todo - we lock the y when horizontal, the x when vertical
-////      this.layouts.stack.p1.y = leftmost.y;
-//      this.layouts.stack.p1.z = this.z;
-//      this.layouts.stack.p2.copy(this.layouts.stack.p1);
-
-      // stacked should not allow left hand motion`
-
+      // save in case we need to animate later
       var origP1 = this.layouts.collage.p1.clone();
       var origP2 = this.layouts.collage.p2.clone();
 
+      // stacked should not allow left hand motion`
       // only one layout: collage
       if (this.mode == "horizontal" || this.lastMode == "horizontal") {
         this.layouts.collage.p1.x = leftmost.x;
@@ -313,29 +292,22 @@
       this.layouts.collage.p1.z = this.z;
       this.layouts.collage.p2.z = this.z;
 
-
-      if (this.mode == "stacked"){
-        this.layouts.collage.weight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.2;
-      } else if (this.mode =="horizontal"){
-        this.layouts.collage.weight = diff.x / this.layouts.collage.xEnd ;
-      } else if (this.mode =="vertical"){
-        this.layouts.collage.weight = diff.y / this.layouts.collage.yEnd ;
-      }
+      this.calcWeight();
 
 
       if (this.mode =="stacked" && this.layouts.collage.weight > 1) {
-        if (diff.x > diff.y){
+//        if (diff.x > diff.y){
           this.setMode("horizontal");
-          this.layouts.collage.weight = diff.x / this.layouts.collage.xEnd ; // todo - dry
+          this.calcWeight(); // recalc after mode change
           var layout = this.layouts.collage;
           var newP1 = this.layouts.collage.p1.clone();
           var newP2 = this.layouts.collage.p2.clone();
           this.layouts.collage.p1 = origP1;
           this.layouts.collage.p2 = origP2;
           layout.animateTo(500, newP1, newP2, 'linear');
-        } else {
-          this.setMode("vertical");
-        }
+//        } else {
+//          this.setMode("vertical");
+//        }
       } else if (this.layouts.collage.weight < 0.5) {
         this.setMode("stacked");
       }
@@ -347,6 +319,20 @@
       applyLayoutList(
         this.blendLayouts()
       );
+
+    },
+
+    calcWeight: function(){
+      var layout = this.layouts.collage;
+      var diff = (new THREE.Vector3).subVectors(layout.p2, layout.p1);
+
+      if (this.mode == "stacked"){
+        layout.weight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.2;
+      } else if (this.mode =="horizontal"){
+        layout.weight = diff.x / layout.xEnd ;
+      } else if (this.mode =="vertical"){
+        layout.weight = diff.y / layout.yEnd ;
+      }
 
     },
 
@@ -374,8 +360,9 @@
       // all mode changes happen before release
       if ( this.mode == 'stacked' ){
         layout.animateTo(500, layout.p1.clone(), layout.p1.clone().add(new THREE.Vector3(0.01, -0.01, -0.01)));
-      } else if (this.mode == "horizontal"){
-        layout.animateTo(500, layout.p1.clone(), layout.p2.clone().setX(layout.xEnd) );
+      } else if (this.mode == "horizontal" && layout.p2.x < (layout.xEnd / 2)){
+        console.log('releasing with minimum width');
+//        layout.animateTo(500, layout.p1.clone(), layout.p2.clone().setX(layout.xEnd / 2) );
       }
 
     },
@@ -444,28 +431,6 @@
 
       return true;
     },
-
-//    // Removes the given plane from the list of planes.
-//    // Returns true if the plane was successfully removed.
-//    // Returns false if the plane could not be found and was not removed.
-//    removePlane: function(toRemove) {
-//      var planeIndex;
-//      if ( (planeIndex = this.planes.indexOf(toRemove)) != -1 ) {
-//        toRemove.interactable = true;
-//        this.planes.splice(planeIndex, 1);
-//
-//        var userIndex;
-//        if ( (userIndex = this.userLayout.indexOf(toRemove)) != -1 ) {
-//          this.userLayout.splice(userIndex, 1);
-//        }
-//
-//        return true;
-//      }
-//      else {
-//        return false;
-//      }
-//    },
-
 
 
   // - Returns a weighted mean of the given layout node lists as an array of layout nodes
