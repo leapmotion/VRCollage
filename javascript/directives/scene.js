@@ -211,8 +211,32 @@ angular.module('directives', [])
         text.position.setY(120);
         scene.add(text);
 
+        // Example hand arrow.
+        var handArrow1 = new HandArrow(scene);
+        var handArrow2 = new HandArrow(scene);
 
+        Leap.loopController.on('twoHand.start', function(hand1, hand2) {
+          if (handArrow1.mesh !== undefined) {
+            handArrow1.mesh.visible = true;
+          }
+          if (handArrow2.mesh !== undefined) {
+            handArrow2.mesh.visible = true;
+          }
+        });
 
+        Leap.loopController.on('twoHand.update', function(hand1, hand2) {
+          handArrow1.update(hand1.palmPosition, hand2.palmPosition);
+          handArrow2.update(hand2.palmPosition, hand1.palmPosition);
+        });
+
+        Leap.loopController.on('twoHand.end', function() {
+          if (handArrow1.mesh !== undefined) {
+            //handArrow1.mesh.visible = false;
+          }
+          if (handArrow2.mesh !== undefined) {
+            //handArrow2.mesh.visible = false;
+          }
+        });
 
         Leap.loopController.on('hand', function(hand){
           return;
