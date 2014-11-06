@@ -349,7 +349,8 @@
 
       // all mode changes happen before release
       if ( this.mode == 'stacked' ){
-        layout.animateTo(500, layout.p1.clone(), layout.p1.clone().add(new THREE.Vector3(0.01, -0.01, -0.01)));
+        var midPoint = (new THREE.Vector3).addVectors(layout.p1, layout.p2).divideScalar(2);
+        layout.animateTo(500, midPoint, midPoint.clone().add(new THREE.Vector3(0.01, -0.01, -0.01)));
       } else if (this.mode == "horizontal" && layout.p2.x < (layout.xEnd / 2)){
         console.log('would be releasing with minimum width');
 //        layout.animateTo(500, layout.p1.clone(), layout.p2.clone().setX(layout.xEnd / 2) );
