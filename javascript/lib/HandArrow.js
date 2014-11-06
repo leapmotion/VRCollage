@@ -1,7 +1,7 @@
 (function() {
 
   window.HandArrow = function(parent) {
-    this.followRadius = 0.5;
+    this.followRadius = 0.08;
     this.parent = parent;
     this.mesh = undefined;
 
@@ -10,6 +10,7 @@
       this.mesh.position.set(0,0,-0.2);
       this.mesh.material = new THREE.MeshPhongMaterial( { color: 0x00FF00, shading: THREE.SmoothShading } );
       this.mesh.scale.set(0.03,0.03,0.03);
+      //this.mesh.visible = false;
       this.parent.add(this.mesh);
       console.log("ADDED ARROW MESH");
     }.bind(this));
@@ -17,11 +18,15 @@
 
   window.HandArrow.prototype = {
     update: function(toFollow, toPointTo) {
+      var follow = new THREE.Vector3(toFollow[0], toFollow[1], toFollow[2]);
+      var pointTo = new THREE.Vector3(toPointTo[0], toPointTo[1], toPointTo[2]);
       if ( this.mesh !== undefined ) {
-        // TODO: do some stuff.
-        var diff = new THREE.Vector3().copy(toPointTo).sub(toFollow);
+        var diff = new THREE.Vector3().copy(pointTo).sub(follow);
         var direction = new THREE.Vector3().copy(diff).normalize();
-        this.mesh.position = new  THREE.Vector3().copy(toFollow).add(new THREE.Vector3().copy(direction).multiplyScalar(diff.length() / 2.0));
+        this.mesh.position.copy(new  THREE.Vector3().copy(follow).add(new THREE.Vector3().copy(direction).multiplyScalar(this.followRadius)));
+        this.mesh.lookAt(pointTo);
+        this.mesh.rotateOnAxis (new THREE.Vector3(1,0,0), -Math.PI/2.0);
+        this.mesh.rotateOnAxis (new THREE.Vector3(0,1,0), Math.PI/2.0);
       }
 
     }
