@@ -81,18 +81,26 @@
     },
 
     updatePositions: function () {
+      var insetAmount = 0.5;
       var plane, listPercentage, position, i;
+
+      var diff =  new THREE.Vector3().copy(this.p2).sub(this.p1);
+      var dir = new THREE.Vector3().copy(diff).normalize();
+      var dist = diff.length();
+      var totalInset = dist * (insetAmount);
+      var offsetP1 = new THREE.Vector3().copy(this.p1).add(new THREE.Vector3().copy(dir).multiplyScalar((totalInset/2.0)));
+      var offsetP2 = new THREE.Vector3().copy(this.p2).add(new THREE.Vector3().copy(dir).multiplyScalar((-totalInset/2.0)));
 
       this.planePositions = [];
 
       for (i = 0; i < this.planes.length; i++) {
         plane = this.planes[i];
-        listPercentage = i / this.planes.length;
+        listPercentage = i / (this.planes.length - 1);
         listPercentage = Math.min(1.0, Math.max(0.0, listPercentage));
 
         position = new THREE.Vector3()
-          .copy(this.p1)
-          .lerp(this.p2, listPercentage);
+          .copy(offsetP1)
+          .lerp(offsetP2, listPercentage);
 
         // uses weight as percentageComplete
 
