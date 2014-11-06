@@ -39,7 +39,7 @@ var images = [
    "LARGE-Papio trestle construction.tif.jpg                 ",
    "LARGE-PFE cars ice dock.tif.jpg                          ",
    "LARGE-PFE Las Vegas 1931.tif.jpg                         ",
-   "LARGE-SPLAandSL num504.tif.jpg                             ",
+   "LARGE-SPLAandSL num504.tif.jpg                           ",
    "LARGE-Streamliner 3 locos.Tif.jpg                        ",
    "LARGE-UP SP office KC.tif.jpg                            ",
    "LARGE-X1729 No 4038 near Truckee.tif.jpg                 ",
@@ -178,7 +178,15 @@ angular.module('directives', [])
         dock.pushImage("images/trains/" + images[2]);
         dock.pushImage("images/trains/" + images[3]);
 
-        var sortedLayoutContainer = new SortedLayoutContainer();
+        dock.setInteractable(false);
+
+        var sortedLayoutContainer = new SortedLayoutContainer(null, "collage", function(newState){
+
+          var showDock = newState === 'collage';
+          dock.mesh.visible = showDock;
+          dock.setInteractable(showDock);
+
+        });
 
         // When an image is removed from the doc, add it to the container.
         dock.imageRemoveCallbacks.push(function(data) {
@@ -187,6 +195,10 @@ angular.module('directives', [])
 
         Leap.loopController.on('handBracket.update', function(points){
           sortedLayoutContainer.update(points[0], points[1]);
+        });
+
+        Leap.loopController.on('handBracket.end', function(points){
+          sortedLayoutContainer.release();
         });
 
 // leap proximity does not at all do well with angled objects:

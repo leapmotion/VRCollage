@@ -2,21 +2,34 @@
 Leap.plugin('handBracket', function(scope){
 
 
-  this.emit('handBracket.start');
 
   var controller = this;
+
+  var emitting = false;
 
   return {
 
     frame: function(frame){
 
-      if (frame.hands.length !== 2) return;
+      if (frame.hands.length !== 2) {
+        if (emitting){
+          emitting = false;
+          controller.emit('handBracket.end');
+        }
+        return
+      }
+
+      if (!emitting){
+        this.emit('handBracket.start');
+        emitting = true;
+      }
+
       controller.emit('handBracket.update',
         frame.hands.map(function(hand) {
-          var pos = hand.palmPosition;
-          return new THREE.Vector3(pos[0], pos[1], pos[2]);
+          return new THREE.Vector3().fromArray(hand.palmPosition);
         })
       );
+
     }
   };
 });

@@ -24,23 +24,132 @@
 
 (function () {
   //The list of valid states for the manner of sorting.
+  // todo - these become collage, vertical, stack, and transitioning
   var validSortStates = [
-    "USER_SORTED",
-    "DYNAMIC_SORTED"
+    "transitioning"
   ];
-  // SortedLayoutContainer Constructor
-  // Optional argument "planeList" is a list of InteractivePlanes to be added to the container on creation
-  // Optional argument "sortState" is a string given one of the validSortStates listed above.
-  window.SortedLayoutContainer = function(planeList, sortState){
-    this.planeList = planeList || [];
-    this.userLayout = [];
 
-    if (sortState !== undefined && validSortStates.indexOf(sortState) != -1) {
-      this.changeSortState(sortState);
+  Layout = function(options){
+    options || (options = {});
+
+    this.planes = [];
+    this.planePositions = []; // Array of LayoutNodes
+    this.planePositionOffsets = []; // Array of positions
+
+    this.p1 = new THREE.Vector3;
+    this.p2 = new THREE.Vector3;
+
+    this.weight = 0;
+
+    this.sorter = options.sorter;
+    this.onRelease = options.onRelease;
+
+  };
+
+  Layout.prototype = {
+
+    sort: function(){
+
+      this.planes.sort(this.sorter);
+
+    },
+
+    // save position of planes in layout
+    // stored as offsets from the lerp percentage positions
+    // these get scaled on later.
+    // assumes that updatePositions has been recently called, but without actually moving the planes (!)
+    // todo - adding a plane when in non-collage mode will cause bad ordering.
+    persist: function(){
+
+      this.planePositionOffsets = [];
+      this.updatePositions(); // updates the positions stored
+
+      for (var i=0; i<this.planes.length; i++) {
+
+        this.planePositionOffsets.push(
+          (new THREE.Vector3).subVectors(this.planes[i].mesh.position, this.planePositions[i].position)
+        );
+
+      }
+    },
+
+    updatePositions: function () {
+      var plane, listPercentage, position, i;
+
+      this.planePositions = [];
+
+      for (i = 0; i < this.planes.length; i++) {
+        plane = this.planes[i];
+        listPercentage = i / this.planes.length;
+        listPercentage = Math.min(1.0, Math.max(0.0, listPercentage));
+
+        position = new THREE.Vector3()
+          .copy(this.p1)
+          .lerp(this.p2, listPercentage);
+
+        // uses weight as percentageComplete
+
+        this.planePositions.push(LayoutNode(plane, position));
+      }
+
+      if (this.planePositionOffsets.length > 0){
+        for (i = 0; i < this.planes.length; i++){
+
+          this.planePositions[i].position.add(
+            this.planePositionOffsets[i].clone().multiplyScalar(this.weight)
+          )
+
+        }
+      }
+
     }
-    else {
-      this.changeSortState("USER_SORTED");
+
+  }
+
+  // SortedLayoutContainer Constructor
+  // Optional argument "planes" is a list of InteractivePlanes to be added to the container on creation
+  // Optional argument "sortState" is a string given one of the validSortStates listed above.
+  window.SortedLayoutContainer = function(planes, sortState, onStateChange){
+    this.z = -0.25; // this is a global, to be set only by pushing or pulling on the stack with one hand.
+
+    this.layouts = {
+
+      stack:  new Layout({
+        onRelease: function(){
+          this.p2 = this.p1; // todo - check order
+
+          // Show stack depth.
+          this.p2.x += 0.01;
+          this.p2.y += 0.01;
+          this.p2.z += 0.01;
+        }
+      }),
+
+//      alpha:  new Layout({
+//        sorter: function(a,b) {
+//          return a.mesh.name <= b.mesh.name  ? -1 : 1;
+//        },
+//        onRelease: function(){
+//          this.p2.x = this.p1.x = (this.p2.x + this.p1.x) / 2;
+//        }
+//      }),
+
+      collage: new Layout({
+        onRelease: function(){
+          this.p2.y = this.p1.y = (this.p2.y + this.p1.y) / 2;
+        }
+      })
+
+    };
+
+    for (var key in this.layouts){
+      validSortStates.push(key);
     }
+
+    this.sortState = null;
+    this.onStateChange = onStateChange;
+
+    this.changeSortState(sortState);
   };
 
   // Pubic Methods
@@ -50,209 +159,260 @@
     // will sort the InteractablePlane(s) in the container accordingly (and return true).
     // Update will return false if the current container state does not support
     // programatic layout
-    update: function(hand1, hand2) {
-      var hand1Position = new THREE.Vector3().copy(hand1);
-      var hand2Position = new THREE.Vector3().copy(hand2);
+    update: function(position1, position2) {
 
-      var leftmost   = hand1Position.x < hand2Position.x ? hand1Position : hand2Position;
-      var rightmost  = hand1Position.x < hand2Position.x ? hand2Position : hand1Position;
-      var topmost    = hand1Position.y < hand2Position.y ? hand1Position : hand2Position;
-      var bottommost = hand1Position.y < hand2Position.y ? hand2Position : hand1Position;
+      console.log('update');
 
-      if ( this.sortState == "DYNAMIC_SORTED" ) {
-        // Figure out the weighting of each layout
-        var diff = new THREE.Vector3().copy(rightmost).sub(leftmost);
-        var weightX = diff.x / (diff.x + diff.y);
-        var weightY = diff.y / (diff.x + diff.y);
+      if (this.sortState == 'collage'){
+        // todo - DRY this shite.
+        var leftmost   = position1.x < position2.x ? position1 : position2;
+        var rightmost  = position1.x < position2.x ? position2 : position1;
 
-        var alphabeticalLayout = listLayout(this.planeList, bottommost, new THREE.Vector3(bottommost.x, topmost.y, bottommost.z)).alphabetical(); // vertical
-        var blendedLayout = blendLayouts([this.userLayout, alphabeticalLayout], [weightX, weightY]);
-        applyLayoutList(blendedLayout);
-        return true;
+        this.layouts.collage.p1 = leftmost;
+        this.layouts.collage.p2 = rightmost;
+
+        this.layouts.collage.persist();
       }
-      else {
-        return false;
+
+      if (this.sortState !== 'transitioning'){
+        this.changeSortState('transitioning');
       }
+
+      this.update2(position1, position2)
+
+    },
+
+    update2: function(position1, position2) {
+      var leftmost   = position1.x < position2.x ? position1 : position2;
+      var rightmost  = position1.x < position2.x ? position2 : position1;
+//      var topmost    = position1.y < position2.y ? position1 : position2;
+//      var bottommost = position1.y < position2.y ? position2 : position1;
+
+      // Figure out the weighting of each layout
+      var diff = new THREE.Vector3().subVectors(rightmost, leftmost);
+//      var weightX = diff.x / (diff.x + diff.y); // horizontal
+//      var weightY = diff.y / (diff.x + diff.y); // vertical
+//        var weightX = diff.x / diff.length(); // horizontal
+//        var weightY = diff.y / diff.length(); // vertical
+
+//      // todo - these (layout?) objects should not be created here
+//      var alphabeticalLayout = listLayout(
+//        this.planesAlpha,
+//        bottommost,
+//        new THREE.Vector3(bottommost.x, topmost.y, bottommost.z)
+//      );
+
+      // reposition based off of p1 and p2
+//      this.layouts.alpha.update();
+
+      this.layouts.stack.p1.x = leftmost.x;
+      this.layouts.stack.p1.y = leftmost.y;
+      this.layouts.stack.p1.z = this.z;
+      this.layouts.stack.p2.copy(this.layouts.stack.p1);
+
+      this.layouts.collage.p1.x = leftmost.x;
+      this.layouts.collage.p1.y = leftmost.y;
+      this.layouts.collage.p1.z = this.z;
+      this.layouts.collage.p2.copy(leftmost);
+      this.layouts.collage.p2.x = rightmost.x;
+
+      this.layouts.collage.weight =  diff.x / 0.2;  // 20 cm
+      this.layouts.stack.weight = 1 / this.layouts.collage.weight;
+
+      for (var key in this.layouts){
+        this.layouts[key].updatePositions()
+      }
+
+      applyLayoutList(
+        this.blendLayouts()
+      );
+
+    },
+
+    // focuses the existing stuff to the nearest position
+    release: function(){
+      // todo - snap to position.
+      // stack - move p2 to p1
+      // collage - make hands horizontal
+      // alpha - lock to vertical
+
+      this.changeSortState(
+        this.closestLayout()
+      );
+
+      var layout = this.layouts[this.sortState];
+      // todo - animate
+      layout.onRelease(); // updates p1 and p2
+
+      this.update2(layout.p1, layout.p2);
+
+    },
+
+    closestLayout: function(){
+
+      var max = -Infinity, state = this.sortState;
+
+      for (var key in this.layouts){
+
+        if (this.layouts[key].weight > max){
+          max = this.layouts[key].weight;
+          state = key;
+        }
+
+      }
+
+      return state;
+
     },
 
     changeSortState: function(newSortState) {
       if (validSortStates.indexOf(newSortState) == -1 || newSortState == this.sortState) {
         return false;
       }
+      console.log('change state', newSortState);
 
-      if ( newSortState == "DYNAMIC_SORTED" ) {
-        for(var i=0; i<this.planeList.length; i++) {
-          this.planeList[i].interactable = false;
-        }
-      }
-      else if ( newSortState == "USER_SORTED" ) {
-        for(var i=0; i<this.planeList.length; i++) {
-          this.planeList[i].interactable = true;
-        }
+      var interactable = (newSortState === "collage");
+
+      // we just grab the plane from the first layout.. not so great, but they all should match up.
+      for(var i=0; i<this.layouts.collage.planes.length; i++) {
+        this.layouts.collage.planes[i].interactable = interactable;
       }
 
       this.sortState = newSortState;
+
+      if (this.onStateChange){
+        this.onStateChange(newSortState);
+      }
     },
 
     // Adds the given plane to list of planes managed by the container.
     // Returns true if the plane is successfully added.
     // Returns false if the plane is a duplicate and cannot be added.
-    addPlane: function(newPlane) {
-      if ( this.planeList.indexOf(newPlane) == -1 ) {
-        if ( this.sortState == "DYNAMIC_SORTED" ) {
-          newPlane.interactable = false;
-        }
-
-        this.userLayout.push(LayoutNode(newPlane, newPlane.mesh.position));
-
-        this.planeList.push(newPlane);
-        return true;
+    addPlane: function(plane) {
+      if ( this.sortState !== "collage" ) {
+        plane.interactable = false;
       }
-      else {
-        return false;
+
+      for (var key in this.layouts){
+        this.layouts[key].planes.push(plane);
+        this.layouts[key].planePositions.push(LayoutNode(plane, plane.mesh.position));
+        this.layouts[key].sort();
       }
+
+      return true;
     },
 
-    // Removes the given plane from the list of planes.
-    // Returns true if the plane was successfully removed.
-    // Returns false if the plane could not be found and was not removed.
-    removePlane: function(toRemove) {
-      var planeIndex;
-      if ( (planeIndex = this.planeList.indexOf(toRemove)) != -1 ) {
-        toRemove.interactable = true;
-        this.planeList.splice(planeIndex, 1);
+//    // Removes the given plane from the list of planes.
+//    // Returns true if the plane was successfully removed.
+//    // Returns false if the plane could not be found and was not removed.
+//    removePlane: function(toRemove) {
+//      var planeIndex;
+//      if ( (planeIndex = this.planes.indexOf(toRemove)) != -1 ) {
+//        toRemove.interactable = true;
+//        this.planes.splice(planeIndex, 1);
+//
+//        var userIndex;
+//        if ( (userIndex = this.userLayout.indexOf(toRemove)) != -1 ) {
+//          this.userLayout.splice(userIndex, 1);
+//        }
+//
+//        return true;
+//      }
+//      else {
+//        return false;
+//      }
+//    },
 
-        var userIndex;
-        if ( (userIndex = this.userLayout.indexOf(toRemove)) != -1 ) {
-          this.userLayout.splice(userIndex, 1);
+
+
+  // - Returns a weighted mean of the given layout node lists as an array of layout nodes
+  // - Assumes that each index of each list in layout lists refers to the
+  //   same node.
+  // - The length of the weightList and the layoutList must be equal.
+    blendLayouts: function(layoutLists, weightList) {
+
+      layoutLists = [];
+      weightList = [];
+
+      for (key in this.layouts){
+        layoutLists.push(this.layouts[key].planePositions);
+        weightList. push(this.layouts[key].weight        );
+      }
+
+      var weightSumList = [];
+      var vectorSumList = [];
+      var blendedLayoutList = [];
+
+      var layoutNode, vectorSum;
+
+
+      // For each node, calculate the weighted sum of vectors
+      // along with the sum of weights.
+      for( var i=0; i < layoutLists.length; i++ ) {
+
+        var layoutList = layoutLists[i],
+          weight = weightList[i];
+
+        for ( var j=0; j<layoutList.length; j++ ) {
+          layoutNode = layoutList[j];
+
+          vectorSum = new THREE.Vector3().copy(layoutNode.position).multiplyScalar(weight);
+
+          if (vectorSumList[j] === undefined) {
+
+            vectorSumList[j] = vectorSum;
+
+          } else {
+
+            vectorSumList[j].add(vectorSum);
+
+          }
+
+          if (weightSumList[j] === undefined) {
+
+            weightSumList[j] = weight;
+
+          } else {
+
+            weightSumList[j] += weight;
+
+          }
+
         }
+      }
 
-        return true;
+      //Calculate the weighted mean for each node
+      for ( var i=0; i < vectorSumList.length; i++) {
+        var vecSum = vectorSumList[i];
+        var plane = layoutLists[0][i].plane;
+        var weightSum = weightSumList[i];
+        blendedLayoutList[i] = LayoutNode(plane, new THREE.Vector3().copy(vecSum).divideScalar(weightSum));
       }
-      else {
-        return false;
-      }
-    },
 
-    // Save the current layout as the new cannonical "user defined layout"
-    persistLayout: function() {
-      this.userLayout = [];
-      for (var i=0; i<this.planeList.length; i++) {
-        this.userLayout.push(LayoutNode(this.planeList[i], this.planeList[i].mesh.position));
-      }
+      return blendedLayoutList;
     }
+
+
   };
 
   // Generates a LayoutNode object which is just a
   // simple structure to hold a plane and the position
   // generated for it.
   function LayoutNode(plane, position) {
-    var returnNode = {
-      "plane": plane,
-      "position": position
+    return {
+      plane:    plane,
+      position: position
     };
-    return returnNode;
   }
 
-  // If called with a sort comparitor, returns an array of layoutNodes specifying the InteractivePlane and the
-  // location in space according to the supplied sort comparitor function.
-  //
-  // if called with just start and end position, returns an object that containts the relevant
-  // calls to generate the layout with different sorting properties.
-  function listLayout(planeList, start, end, sortComparitor) {
-    var startPosition = new THREE.Vector3().copy(start);
-    var endPosition = new THREE.Vector3().copy(end);
-
-    // If only start and end position are given, utilize partial evaluation
-    // to allow a call formated like: listLayout(startPosition, endPosition).alphabetical();
-    if (arguments.length == 3) {
-      return {
-        alphabetical: (function() {
-          return listLayout(planeList, startPosition, endPosition, function(a,b) {
-            if ( a.mesh.name <= b.mesh.name ) { return -1; }
-            else { return 1; }
-          });
-        }),
-        chronological: (function() {
-          return listLayout(planeList, startPosition, endPosition, function(a,b) {
-            if ( a.uid <= b.uid ) { return -1; }
-            else { return 1; }
-          });
-        })
-      };
-    }
-    else if (arguments.length == 4) {
-      var layoutList = [];
-
-      // Sort the planelist alphabetically by "plane.mesh.name"
-      planeList.sort(sortComparitor);
-
-      // Generate the layout list full of layout nodes
-      for (var i=0; i<planeList.length; i++) {
-        var plane = planeList[i];
-        var listPercentage = (i*1.0) / (planeList.length*1.0); // force double division
-        listPercentage = Math.min(1.0, Math.max(0.0, listPercentage));
-        var position = new THREE.Vector3().copy(startPosition).lerp(endPosition, listPercentage);
-
-        layoutList.push(LayoutNode(plane, position));
-      }
-
-      return layoutList;
-    }
-    else {
-      return false;
-    }
-  }
-
-  // - Retruns a weighted mean of the given layout node lists as an array of layout nodes
-  // - Assumes that each index of each list in layout lists referes to the
-  //   same node.
-  // - The length of the weightList and the layoutList must be equal.
-  function blendLayouts(layoutLists, weightList) {
-    var ittr = 0;
-    var weightSumList = [];
-    var vectorSumList = [];
-    var blendedLayoutList = [];
-
-    // Confirm arguments are valid(ish)
-    if( layoutLists === undefined || weightList === undefined) { return false; }
-    else if ( !(Array.isArray(layoutLists)) || !(Array.isArray(layoutLists))) { return false; }
-    else if ( layoutLists.length != weightList.length ) { return false; }
-    else if ( layoutLists.length === 0 ) { return false; }
-
-    // For each node, calculate the weighted sum of vectors
-    // along with the sum of weights.
-    for( var i=0; i < layoutLists.length; i++ ) {
-      var layoutList = layoutLists[i];
-      var weight = weightList[i];
-      for ( var j=0; j<layoutList.length; j++ ) {
-        var layoutNode = layoutList[j];
-        if (vectorSumList[j] === undefined) { vectorSumList[j] = new THREE.Vector3().copy(layoutNode.position).multiplyScalar(weight); }
-        else { vectorSumList[j].add(new THREE.Vector3().copy(layoutNode.position).multiplyScalar(weight)); }
-
-        if (weightSumList[j] === undefined) { weightSumList[j] = weight; }
-        else { weightSumList[j] += weight; }
-      }
-    }
-
-    //Calculate the weighted mean for each node
-    for ( var i=0; i < vectorSumList.length; i++) {
-      vecSum = vectorSumList[i];
-      var plane = layoutLists[0][i].plane;
-      var weightSum = weightSumList[i];
-      blendedLayoutList[i] = LayoutNode(plane, new THREE.Vector3().copy(vecSum).divideScalar(weightSum));
-    }
-
-    return blendedLayoutList;
-  }
-
-  // Itterate through a layout list and move the given elements to the
+  // Iterate through a layout list and move the given elements to the
   // given positions.
   function applyLayoutList(layoutList) {
     for(var i=0; i<layoutList.length; i++) {
       var node = layoutList[i];
       var plane = node.plane;
       plane.mesh.position.copy(node.position);
+      plane.lastPosition.copy(node.position);
     }
   }
 }).call(this);

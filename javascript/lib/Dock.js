@@ -22,6 +22,8 @@ window.Dock = function(scene, planeMesh, controller, options){
   this.imageMinHeight = -0.007;
 
   this.imageRemoveCallbacks = [];
+
+  this.interactable = true;
 };
 
 window.Dock.prototype = {
@@ -126,6 +128,13 @@ window.Dock.prototype = {
 
     interactablePlane.mesh.position.copy(interactablePlane.originPosition);
 
+  },
+
+  setInteractable: function(interactable){
+    this.plane.interactable = interactable;
+    for (var i =0; i < this.images.length; i++){
+      this.images[i].interactable = interactable;
+    }
   }
 
 }
