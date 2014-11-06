@@ -141,10 +141,14 @@ angular.module('directives', [])
           moveY: false
         });
 
-        dock.pushImage("images/trains/" + images[0]);
-        dock.pushImage("images/trains/" + images[1]);
-        dock.pushImage("images/trains/" + images[2]);
-        dock.pushImage("images/trains/" + images[3]);
+//        dock.pushImage("images/trains/" + images[0]);
+//        dock.pushImage("images/trains/" + images[1]);
+//        dock.pushImage("images/trains/" + images[2]);
+//        dock.pushImage("images/trains/" + images[3]);
+        dock.pushImage("images/landscapes/landscape1.jpg");
+        dock.pushImage("images/landscapes/landscape2.jpg");
+        dock.pushImage("images/landscapes/landscape3.jpg");
+        dock.pushImage("images/landscapes/landscape4.jpg");
 
         dock.setInteractable(false);
 
