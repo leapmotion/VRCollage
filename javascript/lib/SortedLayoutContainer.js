@@ -60,7 +60,6 @@
     // assumes that updatePositions has been recently called, but without actually moving the planes (!)
     // todo - adding a plane when in non-collage mode will cause bad ordering.
     persist: function(){
-      console.log('persist');
 
       this.planePositionOffsets = [];
       this.updatePositions(); // updates the positions stored
@@ -68,6 +67,7 @@
       // hax for collage mode
       this.xEnd = new THREE.Vector3().subVectors(this.p2, this.p1).x;
       this.yEnd = new THREE.Vector3().subVectors(this.p2, this.p1).y;
+      console.log('persist', this.xEnd.toPrecision(3));
 
       return
 
@@ -138,14 +138,13 @@
         layout.p1.copy(origP1).lerp(destP1, animationStep);
         layout.p2.copy(origP2).lerp(destP2, animationStep);
 
-        layout.updatePositions()
+        layout.updatePositions();
 
         applyLayoutList(
           window.sortedLayoutContainer.blendLayouts()
         );
 
         if (animationStep < 0.99) {
-//          console.log('a');
           window.requestAnimationFrame(animate);
         } else {
 
@@ -171,7 +170,7 @@
     this.y = -0.05;
     this.x = -0.15;
 
-    this.mode = "horizontal";
+    this.setMode("horizontal");
 
     this.layouts = {
 
@@ -274,7 +273,10 @@
 //      this.layouts.stack.p1.z = this.z;
 //      this.layouts.stack.p2.copy(this.layouts.stack.p1);
 
-      if (this.mode == "stacked" || this.mode == "horizontal") {
+      // stacked should not allow left hand motion`
+
+      // only one layout: collage
+      if (this.mode == "horizontal" || this.lastMode == "horizontal") {
         this.layouts.collage.p1.x = leftmost.x;
         this.layouts.collage.p2.x = rightmost.x;
       } else {
@@ -282,32 +284,33 @@
         this.layouts.collage.p2.x = this.x;
       }
 
-      if (this.mode == "stacked" || this.mode == "vertical"){
+      if (this.mode == "vertical" || this.lastMode == "vertical" ){
         this.layouts.collage.p1.y = leftmost.y;
         this.layouts.collage.p2.y = rightmost.y;
       } else {
         this.layouts.collage.p1.y = this.y;
         this.layouts.collage.p2.y = this.y;
       }
+      this.layouts.collage.p1.z = this.z;
+
 
       if (this.mode == "stacked"){
-        this.layouts.collage.weight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.05; // travel 5cm before locking in
+        this.layouts.collage.weight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.2;
       } else if (this.mode =="horizontal"){
         this.layouts.collage.weight = diff.x / this.layouts.collage.xEnd ;
       } else if (this.mode =="vertical"){
         this.layouts.collage.weight = diff.y / this.layouts.collage.yEnd ;
       }
 
-      this.layouts.collage.p1.z = this.z;
 
       if (this.mode =="stacked" && this.layouts.collage.weight > 1) {
         if (diff.x > diff.y){
-          console.log('go horizontal from stack');
-          this.mode = "horizontal";
+          this.setMode("horizontal");
         } else {
-          console.log('go vertical from stack');
-          this.mode = "vertical";
+          this.setMode("vertical");
         }
+      } else if (this.layouts.collage.weight < 0.5) {
+        this.setMode("stacked");
       }
 
 //      this.layouts.collage.weight = clamp( diff.x / this.layouts.collage.xEnd );  // 20 cm
@@ -328,9 +331,16 @@
 
     },
 
+    // fade in letters on change
+    setMode: function(mode){
+      if (mode === this.mode) return;
+      console.log(this.mode, " -> ", mode);
+      this.lastMode = this.mode;
+      this.mode = mode;
+    },
+
     // focuses the existing stuff to the nearest position
     release: function(){
-      // todo - snap to position.
       // stack - move p2 to p1
       // collage - make hands horizontal
       // alpha - lock to vertical
@@ -342,15 +352,11 @@
       var layout = this.layouts[this.sortState];
       if (layout.onRelease) layout.onRelease(); // updates p1 and p2
 
-      if ( (layout.weight < 0.55 && this.mode == 'horizontal' ) || (layout.weight < 2 && this.mode == 'stacked') ){
-        console.log('stacked');
-        this.mode = "stacked";
+      // all mode changes happen before release
+      if ( this.mode == 'stacked' ){
         layout.animateTo(500, layout.p1.clone(), layout.p1.clone().add(new THREE.Vector3(0.01, -0.01, -0.01)));
-      } else {
-        if (this.mode == "horizontal"){
-          console.log('horizontal');
-          layout.animateTo(500, layout.p1.clone(), layout.p2.clone().setX(layout.xEnd) );
-        }
+      } else if (this.mode == "horizontal"){
+        layout.animateTo(500, layout.p1.clone(), layout.p2.clone().setX(layout.xEnd) );
       }
 
     },
@@ -390,7 +396,7 @@
       if (validSortStates.indexOf(newSortState) == -1 || newSortState == this.sortState) {
         return false;
       }
-      console.log('change state', newSortState, "current mode:", this.mode);
+      console.log(this.sortState, " -> ", newSortState);
 
       var interactable = (newSortState === "collage") && this.mode == "horizontal";
 
