@@ -10,9 +10,9 @@
       this.mesh.position.set(0,0,-0.2);
       this.mesh.material = new THREE.MeshPhongMaterial( { color: 0x00FF00, shading: THREE.SmoothShading } );
       this.mesh.scale.set(0.03,0.03,0.03);
+      this.mesh.visible = false;
       //this.mesh.visible = false;
       this.parent.add(this.mesh);
-      console.log("ADDED ARROW MESH");
     }.bind(this));
   };
 

@@ -231,10 +231,10 @@ angular.module('directives', [])
 
         Leap.loopController.on('twoHand.end', function() {
           if (handArrow1.mesh !== undefined) {
-            //handArrow1.mesh.visible = false;
+            handArrow1.mesh.visible = false;
           }
           if (handArrow2.mesh !== undefined) {
-            //handArrow2.mesh.visible = false;
+            handArrow2.mesh.visible = false;
           }
         });
 
