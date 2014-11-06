@@ -1,6 +1,7 @@
 (function() {
 
   window.HandArrow = function(parent) {
+    this.followRadius = 0.5;
     this.parent = parent;
     this.mesh = undefined;
 
@@ -18,6 +19,9 @@
     update: function(toFollow, toPointTo) {
       if ( this.mesh !== undefined ) {
         // TODO: do some stuff.
+        var diff = new THREE.Vector3().copy(toPointTo).sub(toFollow);
+        var direction = new THREE.Vector3().copy(diff).normalize();
+        this.mesh.position = new  THREE.Vector3().copy(toFollow).add(new THREE.Vector3().copy(direction).multiplyScalar(diff.length() / 2.0));
       }
 
     }
