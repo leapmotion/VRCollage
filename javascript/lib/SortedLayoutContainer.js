@@ -67,9 +67,9 @@
       // hax for collage mode
       this.xEnd = new THREE.Vector3().subVectors(this.p2, this.p1).x;
       this.yEnd = new THREE.Vector3().subVectors(this.p2, this.p1).y;
-      console.log('persist', this.xEnd.toPrecision(3));
+      console.log('persist, x:', this.xEnd.toPrecision(3));
 
-      return
+//      return
 
       for (var i=0; i<this.planes.length; i++) {
 
@@ -225,12 +225,14 @@
         var leftmost   = position1.x < position2.x ? position1 : position2;
         var rightmost  = position1.x < position2.x ? position2 : position1;
 
-
         this.layouts.collage.p1.x = leftmost.x;
-  //      this.layouts.collage.p1.y = leftmost.y;
-        this.layouts.collage.p1.z = this.z;
-        this.layouts.collage.p2.copy(leftmost);
         this.layouts.collage.p2.x = rightmost.x;
+
+        this.layouts.collage.p1.y = this.y;
+        this.layouts.collage.p2.y = this.y;
+
+        this.layouts.collage.p1.z = this.z;
+        this.layouts.collage.p2.z = this.z;
 
         this.layouts.collage.persist();
       }
@@ -291,6 +293,7 @@
         this.layouts.collage.p2.y = this.y;
       }
       this.layouts.collage.p1.z = this.z;
+      this.layouts.collage.p2.z = this.z;
 
 
       if (this.mode == "stacked"){
@@ -531,7 +534,6 @@
   // Iterate through a layout list and move the given elements to the
   // given positions.
   function applyLayoutList(layoutList) {
-//    console.log('apply', layoutList);
     for(var i=0; i<layoutList.length; i++) {
       var node = layoutList[i];
       var plane = node.plane;
