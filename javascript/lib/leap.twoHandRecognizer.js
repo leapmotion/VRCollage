@@ -16,7 +16,7 @@ Leap.plugin('twoHandRecognizer', function(scope){
     if ( controller.handQueue !== undefined && controller.handQueue.length >= 2 ) {
       var comp1 = calcHandOutAndOpenAmount(controller.handQueue[0]);
       var comp2 = calcHandOutAndOpenAmount(controller.handQueue[1]);
-      return Math.min(comp1, comp2);
+      return [comp1, comp2];
     }
     else {
       return 0;
@@ -26,20 +26,21 @@ Leap.plugin('twoHandRecognizer', function(scope){
   return {
     frame: function(frame){
       var outOpen = outOpenComponent();
+      var outOpenMin = Math.min(outOpen[0], outOpen[1]);
 
       if ( gestureState == "INACTIVE" ) {
-        if ( controller.handQueue !== undefined && controller.handQueue.length >= 2 && outOpen >= 0.7) {
-          controller.emit("twoHand.start", controller.handQueue[0], controller.handQueue[1]);
+        if ( controller.handQueue !== undefined && controller.handQueue.length >= 2 && outOpenMin >= 0.7) {
+          controller.emit("twoHand.start", controller.handQueue[0], controller.handQueue[1], outOpen[0], outOpen[1]);
           gestureState = "ACTIVE";
         }
       }
       else if( gestureState == "ACTIVE" ) {
-        if ( controller.handQueue === undefined || controller.handQueue.length < 2 || outOpen < 0.6) {
-          controller.emit("twoHand.end");
+        if ( controller.handQueue === undefined || controller.handQueue.length < 2 || outOpenMin < 0.6) {
+          controller.emit("twoHand.end", outOpen[0], outOpen[1]);
           gestureState = "INACTIVE";
         }
         else {
-          controller.emit("twoHand.update", controller.handQueue[0], controller.handQueue[1]);
+          controller.emit("twoHand.update", controller.handQueue[0], controller.handQueue[1], outOpen[0], outOpen[1]);
         }
       }
     }
