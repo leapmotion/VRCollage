@@ -69,7 +69,7 @@
       this.yEnd = new THREE.Vector3().subVectors(this.p2, this.p1).y;
       console.log('persist, x:', this.xEnd.toPrecision(3));
 
-//      return
+      return
 
       for (var i=0; i<this.planes.length; i++) {
 
@@ -95,7 +95,7 @@
 
       for (i = 0; i < this.planes.length; i++) {
         plane = this.planes[i];
-        listPercentage = i / (this.planes.length - 1);
+        listPercentage = this.planes.length == 1 ? 0.5 : i / (this.planes.length - 1);
         listPercentage = Math.min(1.0, Math.max(0.0, listPercentage));
 
         position = new THREE.Vector3()
