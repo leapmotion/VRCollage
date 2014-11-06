@@ -48,38 +48,6 @@ var images = [
 ];
 
 
-function createText(text) {
-
-  var material = new THREE.MeshFaceMaterial( [
-    new THREE.MeshPhongMaterial( { color: 0xaaaaaa, shading: THREE.FlatShading } ), // front
-    new THREE.MeshPhongMaterial( { color: 0xaaaaaa, shading: THREE.SmoothShading } ) // side
-  ] );
-
-  var textGeo = new THREE.TextGeometry( text, {
-    size: 20,
-    height: 2,
-    curveSegments: 4,
-
-    bevelThickness: 1.5,
-    bevelSize: 1.5,
-    bevelEnabled: true
-  });
-
-
-  textGeo.computeBoundingBox();
-  textGeo.computeVertexNormals();
-
-  var mesh = new THREE.Mesh( textGeo, material );
-  mesh.name = "text";
-
-  mesh.position.x = -0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
-
-  return mesh;
-}
-
-
-
-
 
 angular.module('directives', [])
   .directive('scene', function() {
@@ -214,7 +182,6 @@ angular.module('directives', [])
         text.position.setY(120);
         scene.add(text);
 
-        // Example hand arrow.
         var handArrow1 = new HandArrow(scene);
         var handArrow2 = new HandArrow(scene);
 
@@ -240,6 +207,13 @@ angular.module('directives', [])
             handArrow2.mesh.visible = false;
           }
         });
+
+
+//        var collageText = createText('Collage');
+//        var stackText   = createText('Stack');
+//        text.position.setZ(-250);
+//        text.position.setY(120);
+//        scene.add(text);
 
         Leap.loopController.on('hand', function(hand){
           return;
