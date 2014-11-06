@@ -191,11 +191,14 @@ angular.module('directives', [])
           sortedLayoutContainer.addPlane(data[0]);
         });
 
-        Leap.loopController.on('handBracket.update', function(points){
-          sortedLayoutContainer.update(points[0], points[1]);
+        Leap.loopController.on('twoHand.update', function(hand1, hand2){
+          sortedLayoutContainer.update(
+            (new THREE.Vector3).fromArray(hand1.palmPosition),
+            (new THREE.Vector3).fromArray(hand2.palmPosition)
+          );
         });
 
-        Leap.loopController.on('handBracket.end', function(points){
+        Leap.loopController.on('twoHand.end', function(){
           sortedLayoutContainer.release();
         });
 

@@ -148,7 +148,6 @@
           window.requestAnimationFrame(animate);
         } else {
 
-          console.log('done');
           window.sortedLayoutContainer.setInteractable(
             (window.sortedLayoutContainer.sortState === "collage") && window.sortedLayoutContainer.mode === "horizontal"
           );
