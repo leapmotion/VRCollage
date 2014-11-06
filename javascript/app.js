@@ -11,7 +11,9 @@ Leap.loop()
   })
   .use('proximity')
   .use('pinchEvent')
-  .use('handBracket');
+  .use('handBracket')
+  .use('singleHandRecognizer')
+  .use('twoHandRecognizer');
 
 Leap.loopController.setBackground(true);
 
