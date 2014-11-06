@@ -39,7 +39,9 @@
     this.p1 = new THREE.Vector3;
     this.p2 = new THREE.Vector3;
 
-    this.weight = 0;
+    this.horizontalWeight = 0;
+    this.verticalWeight = 0;
+    this.stackedWeight = 0;
 
     this.sorter = options.sorter;
     this.onRelease = options.onRelease;
@@ -108,19 +110,15 @@
       }
 
 
-      if (window.sortedLayoutContainer.mode == "horizontal"){
+      if (this.planePositionOffsets.length > 0){
 
-        if (this.planePositionOffsets.length > 0){
+        for (i = 0; i < this.planes.length; i++){
 
-          for (i = 0; i < this.planes.length; i++){
+          this.planePositions[i].position.add(
+            this.planePositionOffsets[i].clone().multiplyScalar(this.horizontalWeight)
+          )
 
-            this.planePositions[i].position.add(
-              this.planePositionOffsets[i].clone().multiplyScalar(this.weight)
-            )
-
-          }
         }
-
       }
 
     },
@@ -138,8 +136,6 @@
 
       window.sortedLayoutContainer.setInteractable(false);
 
-
-      this.weight = 1;
 
       var animate = function(timeHittingScreen){
 
@@ -295,7 +291,7 @@
       this.calcWeight();
 
 
-      if (this.mode =="stacked" && this.layouts.collage.weight > 1) {
+      if (this.mode =="stacked" && this.layouts.collage.stackedWeight > 1) {
 //        if (diff.x > diff.y){
           this.setMode("horizontal");
           this.calcWeight(); // recalc after mode change
@@ -308,7 +304,7 @@
 //        } else {
 //          this.setMode("vertical");
 //        }
-      } else if (this.layouts.collage.weight < 0.5) {
+      } else if (this.layouts.collage.horizontalWeight < 0.5) {
         this.setMode("stacked");
       }
 
@@ -326,13 +322,9 @@
       var layout = this.layouts.collage;
       var diff = (new THREE.Vector3).subVectors(layout.p2, layout.p1);
 
-      if (this.mode == "stacked"){
-        layout.weight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.2;
-      } else if (this.mode =="horizontal"){
-        layout.weight = diff.x / layout.xEnd ;
-      } else if (this.mode =="vertical"){
-        layout.weight = diff.y / layout.yEnd ;
-      }
+      layout.stackedWeight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.2;
+      layout.horizontalWeight = diff.x / layout.xEnd ;
+      layout.verticalWeight = diff.x / layout.yEnd ;
 
     },
 
@@ -350,9 +342,7 @@
       // collage - make hands horizontal
       // alpha - lock to vertical
 
-      this.changeSortState(
-        this.closestLayout() // always collage
-      );
+      this.changeSortState('collage');
 
       var layout = this.layouts[this.sortState];
       if (layout.onRelease) layout.onRelease(); // updates p1 and p2
@@ -361,28 +351,28 @@
       if ( this.mode == 'stacked' ){
         layout.animateTo(500, layout.p1.clone(), layout.p1.clone().add(new THREE.Vector3(0.01, -0.01, -0.01)));
       } else if (this.mode == "horizontal" && layout.p2.x < (layout.xEnd / 2)){
-        console.log('releasing with minimum width');
+        console.log('would be releasing with minimum width');
 //        layout.animateTo(500, layout.p1.clone(), layout.p2.clone().setX(layout.xEnd / 2) );
       }
 
     },
 
-    closestLayout: function(){
-
-      var max = -Infinity, state = this.sortState;
-
-      for (var key in this.layouts){
-
-        if (this.layouts[key].weight > max){
-          max = this.layouts[key].weight;
-          state = key;
-        }
-
-      }
-
-      return state;
-
-    },
+//    closestLayout: function(){
+//
+//      var max = -Infinity, state = this.sortState;
+//
+//      for (var key in this.layouts){
+//
+//        if (this.layouts[key].weight > max){
+//          max = this.layouts[key].weight;
+//          state = key;
+//        }
+//
+//      }
+//
+//      return state;
+//
+//    },
 
     setInteractable: function(interactable){
 
@@ -441,10 +431,12 @@
 
       layoutLists = [];
       weightList = [];
+      
+      var weightKey = this.mode + "Weight"; // hax until proper multi layout again
 
       for (key in this.layouts){
         layoutLists.push(this.layouts[key].planePositions);
-        weightList. push(this.layouts[key].weight        );
+        weightList. push(this.layouts[key][weightKey]        );
       }
 
       var weightSumList = [];
