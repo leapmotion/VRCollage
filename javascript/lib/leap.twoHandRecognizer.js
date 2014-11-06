@@ -6,7 +6,8 @@ Leap.plugin('twoHandRecognizer', function(scope){
   var gestureState = "INACTIVE";
 
   function calcHandOutAndOpenAmount(hand) {
-    var inverseYComponent = 1 - Math.abs(hand.direction[2]);
+    var flattenedYComponent = hand.direction[2] > 0 ? 0 : hand.direction[2];
+    var inverseYComponent = 1 - Math.abs(flattenedYComponent);
     var inverseGrabStrength = 1 - hand.grabStrength;
 
     return inverseYComponent * inverseGrabStrength;
