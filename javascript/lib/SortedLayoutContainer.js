@@ -44,6 +44,8 @@
     this.sorter = options.sorter;
     this.onRelease = options.onRelease;
 
+    this.animating = false;
+
   };
 
   Layout.prototype = {
@@ -66,7 +68,7 @@
 
       // hax for collage mode
       this.xEnd = new THREE.Vector3().subVectors(this.p2, this.p1).x;
-      this.yEnd = new THREE.Vector3().subVectors(this.p2, this.p1).y;
+//      this.yEnd = new THREE.Vector3().subVectors(this.p2, this.p1).y;
       console.log('persist, x:', this.xEnd.toPrecision(3));
 
       return
@@ -107,30 +109,34 @@
         this.planePositions.push(LayoutNode(plane, position));
       }
 
-      if (this.planePositionOffsets.length > 0){
 
-        for (i = 0; i < this.planes.length; i++){
+      if (window.sortedLayoutContainer.mode == "horizontal"){
 
-          this.planePositions[i].position.add(
-            this.planePositionOffsets[i].clone().multiplyScalar(this.weight)
-          )
+        if (this.planePositionOffsets.length > 0){
 
+          for (i = 0; i < this.planes.length; i++){
+
+            this.planePositions[i].position.add(
+              this.planePositionOffsets[i].clone().multiplyScalar(this.weight)
+            )
+
+          }
         }
+
       }
 
     },
 
     // time should be in ms
-    animateTo: function(time, destP1, destP2){
-      console.log('animateto', arguments);
-
+    animateTo: function(time, destP1, destP2, easing){
       var animationStep;
-
       var startTime = Date.now();
 
+      easing || (easing = 'easeInOutQuad');
       var layout = this;
       var origP1 = this.p1.clone();
       var origP2 = this.p2.clone();
+      this.animating = true;
 
       window.sortedLayoutContainer.setInteractable(false);
 
@@ -139,7 +145,7 @@
 
       var animate = function(timeHittingScreen){
 
-        animationStep = EasingFunctions.easeInOutQuad(
+        animationStep = EasingFunctions[easing](
           ( (Date.now() - startTime) / time )
         );
 
@@ -155,7 +161,7 @@
         if (animationStep < 0.99) {
           window.requestAnimationFrame(animate);
         } else {
-
+          layout.animating = false;
           window.sortedLayoutContainer.setInteractable(
             (window.sortedLayoutContainer.sortState === "collage") && window.sortedLayoutContainer.mode === "horizontal"
           );
@@ -227,8 +233,9 @@
     // Update will return false if the current container state does not support
     // programatic layout
     update: function(position1, position2) {
+      if (this.layouts.collage.animating) return;
 
-      if (this.sortState == 'collage'){
+      if (this.sortState == 'collage' && this.mode == "horizontal"){
         // todo - DRY this shite.
         var leftmost   = position1.x < position2.x ? position1 : position2;
         var rightmost  = position1.x < position2.x ? position2 : position1;
@@ -284,6 +291,9 @@
 
       // stacked should not allow left hand motion`
 
+      var origP1 = this.layouts.collage.p1.clone();
+      var origP2 = this.layouts.collage.p2.clone();
+
       // only one layout: collage
       if (this.mode == "horizontal" || this.lastMode == "horizontal") {
         this.layouts.collage.p1.x = leftmost.x;
@@ -316,20 +326,19 @@
       if (this.mode =="stacked" && this.layouts.collage.weight > 1) {
         if (diff.x > diff.y){
           this.setMode("horizontal");
+          this.layouts.collage.weight = diff.x / this.layouts.collage.xEnd ; // todo - dry
+          var layout = this.layouts.collage;
+          var newP1 = this.layouts.collage.p1.clone();
+          var newP2 = this.layouts.collage.p2.clone();
+          this.layouts.collage.p1 = origP1;
+          this.layouts.collage.p2 = origP2;
+          layout.animateTo(500, newP1, newP2, 'linear');
         } else {
           this.setMode("vertical");
         }
       } else if (this.layouts.collage.weight < 0.5) {
         this.setMode("stacked");
       }
-
-//      this.layouts.collage.weight = clamp( diff.x / this.layouts.collage.xEnd );  // 20 cm
-//      this.layouts.collage.weight = diff.x / this.layouts.collage.xEnd
-//      this.layouts.stack.weight   = clamp( 1 - this.layouts.collage.weight );
-//      this.layouts.stack.weight   = 1 - this.layouts.collage.weight ;
-
-//      console.log("Closest Layout", this.closestLayout(), "stack:", this.layouts.stack.weight.toPrecision(2), "collage:", this.layouts.collage.weight.toPrecision(2));
-//      console.log("Closest Layout", this.closestLayout(), "collage:", this.layouts.collage.weight.toPrecision(2));
 
       for (var key in this.layouts){
         this.layouts[key].updatePositions()
