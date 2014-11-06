@@ -195,8 +195,8 @@ angular.module('directives', [])
         text.position.setY(120);
         scene.add(text);
 
-
-
+        // Example hand arrow.
+        //var handArrow = new HandArrow(scene);
 
         Leap.loopController.on('hand', function(hand){
           return;
