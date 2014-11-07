@@ -90,7 +90,8 @@
       // hax for collage mode
       this.xEnd = new THREE.Vector3().subVectors(this.p2, this.p1).x;
 //      this.yEnd = new THREE.Vector3().subVectors(this.p2, this.p1).y;
-      console.log('persist, x:', this.xEnd.toPrecision(3));
+//      console.log('persist, x:', this.xEnd.toPrecision(3));
+//      return;
 
       for (var i=0; i<this.planes.length; i++) {
 
@@ -193,10 +194,12 @@
   // SortedLayoutContainer Constructor
   // Optional argument "planes" is a list of InteractivePlanes to be added to the container on creation
   // Optional argument "sortState" is a string given one of the validSortStates listed above.
-  window.SortedLayoutContainer = function(planes, sortState){
-    this.z = -0.25; // this is a global, to be set only by pushing or pulling on the stack with one hand.
-    this.y = -0.05;
-    this.x = -0.15;
+  window.SortedLayoutContainer = function(sortState){
+
+    // this is a global, to be set only by pushing or pulling on the stack with one hand.
+    // warning: there's a known issue where a zDepth greatly different from the dock zDepth will cause zError to be
+    // multiplied with every unstack, causing images to zoom far away.
+    this.position = new THREE.Vector3(-0.15,-0.05,-0.25);
 
     this.modeCallbacks = [];
     this.setMode("horizontal");
@@ -257,11 +260,11 @@
         this.layout.p1.x = leftmost.x;
         this.layout.p2.x = rightmost.x;
 
-        this.layout.p1.y = this.y;
-        this.layout.p2.y = this.y;
+        this.layout.p1.y = this.position.y;
+        this.layout.p2.y = this.position.y;
 
-        this.layout.p1.z = this.z;
-        this.layout.p2.z = this.z;
+        this.layout.p1.z = this.position.z;
+        this.layout.p2.z = this.position.z;
 
         this.layout.persist();
       }
@@ -296,19 +299,19 @@
         this.layouts.collage.p1.x = leftmost.x;
         this.layouts.collage.p2.x = rightmost.x;
       } else {
-        this.layouts.collage.p1.x = this.x;
-        this.layouts.collage.p2.x = this.x;
+        this.layouts.collage.p1.x = this.position.x;
+        this.layouts.collage.p2.x = this.position.x;
       }
 
       if (this.mode == "vertical" || this.lastMode == "vertical" ){
         this.layouts.collage.p1.y = leftmost.y;
         this.layouts.collage.p2.y = rightmost.y;
       } else {
-        this.layouts.collage.p1.y = this.y;
-        this.layouts.collage.p2.y = this.y;
+        this.layouts.collage.p1.y = this.position.y;
+        this.layouts.collage.p2.y = this.position.y;
       }
-      this.layouts.collage.p1.z = this.z;
-      this.layouts.collage.p2.z = this.z;
+      this.layouts.collage.p1.z = this.position.z;
+      this.layouts.collage.p2.z = this.position.z;
 
       this.calcWeights();
 

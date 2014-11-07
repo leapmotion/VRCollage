@@ -139,7 +139,9 @@ angular.module('directives', [])
         );
         dockMesh.name = "dock";
 
-        dockMesh.position.set(0, -0.15, -0.45);
+        var zDepth = -0.40;
+
+        dockMesh.position.set(0, -0.15, zDepth);
 
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
@@ -163,9 +165,9 @@ angular.module('directives', [])
 
         window.dock = dock;
 
-        var sortedLayoutContainer = window.sortedLayoutContainer = new SortedLayoutContainer(null, "collage", function(newState){
+        var sortedLayoutContainer = window.sortedLayoutContainer = new SortedLayoutContainer("collage");
 
-        });
+        sortedLayoutContainer.position.setZ(zDepth);
 
         // When an image is removed from the doc, add it to the container.
         dock.imageRemoveCallbacks.push(function(data) {
