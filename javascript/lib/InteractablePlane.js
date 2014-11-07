@@ -64,6 +64,18 @@ window.InteractablePlane = function(planeMesh, controller, options){
   }
 
   this.bindMove();
+  this.highlightMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(this.mesh.geometry.parameters.width+0.005, this.mesh.geometry.parameters.height+0.005),
+    new THREE.MeshBasicMaterial({
+      color: 0x00ff00,
+    })
+  );
+
+  this.mesh.add(this.highlightMesh);
+
+  this.highlightMesh.position.set(0,0,-0.00001);
+
+  this.highlightMesh.visible = false;
 
 };
 
@@ -90,7 +102,17 @@ window.InteractablePlane.prototype = {
   // This is analagous to your typical scroll event.
   travel: function(callback){
     this.travelCallbacks.push(callback);
-    return this
+    return this;
+  },
+
+  // Toggles highlight on and off
+  highlight: function(set) {
+    if ( set !== undefined ) {
+      this.highlightMesh.visible = set;
+    }
+    else {
+      return this.highlightMesh.visible;
+    }
   },
 
   // This is analagous to your typical scroll event.
