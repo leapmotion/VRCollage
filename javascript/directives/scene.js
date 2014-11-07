@@ -340,8 +340,13 @@ angular.module('directives', [])
           }
         });
 
+        Leap.loopController.on('playback.ajax:complete', function(player){
+          player.play();
+        });
+
         document.getElementById('auto-part1-link').onclick = function(){
           player.setRecording(recordings.p1);
+          player.play();
           return false;
         };
 

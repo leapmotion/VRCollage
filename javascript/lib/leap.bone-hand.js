@@ -268,8 +268,9 @@
     var handMesh;
     handMesh = hand.data('handMesh');
     if (handMesh) {
-      return handMesh.replace();
+      handMesh.replace();
     }
+    return handMesh = hand.data('handMesh', null);
   };
 
   Leap.plugin('boneHand', function(options) {
