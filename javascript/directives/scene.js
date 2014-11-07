@@ -238,12 +238,26 @@ angular.module('directives', [])
         });
 
 
+        //
+        // Add grid
+        //
+//
+//        var grid = new THREEGrid();
+//        grid.position.setZ(0);
+//
+//        scene.add(
+//          grid
+//        );
+
+
+
 //        var collageText = createText('Collage');
 //        var stackText   = createText('Stack');
 //        text.position.setZ(-250);
 //        text.position.setY(120);
 //        scene.add(text);
 
+        // now defunkt cursor work
         Leap.loopController.on('hand', function(hand){
           return;
           if (hand.data('cursor')) return;
