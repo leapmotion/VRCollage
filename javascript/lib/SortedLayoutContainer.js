@@ -210,6 +210,8 @@
 
     };
 
+    this.layout = this.layouts.collage;
+
     for (var key in this.layouts){
       validSortStates.push(key);
     }
@@ -225,6 +227,7 @@
 
     begin: function(position1, position2){
       if (this.layouts.collage.animating) return;
+      console.log('gesticulation begins');
 
       if (this.sortState == 'collage' && this.mode == "horizontal"){
         // todo - DRY this shite.
@@ -297,8 +300,9 @@
       this.calcWeight();
 
 
-      if (this.mode =="stacked" && this.layouts.collage.stackedWeight > 1) {
-//        if (diff.x > diff.y){
+      if (this.mode =="stacked") {
+
+        if (this.layouts.collage.stackedWeight > 1){
           this.setMode("horizontal");
           this.calcWeight(); // recalc after mode change
           var layout = this.layouts.collage;
@@ -306,12 +310,16 @@
           var newP2 = this.layouts.collage.p2.clone();
           this.layouts.collage.p1 = origP1;
           this.layouts.collage.p2 = origP2;
+          this.stopAnimation();
           layout.animateTo(500, newP1, newP2, 'linear');
-//        } else {
-//          this.setMode("vertical");
-//        }
+        }
+
+        return // don't animate when stacked (!)
+
       } else if (this.layouts.collage.horizontalWeight < 0.5) {
+
         this.setMode("stacked");
+
       }
 
       for (var key in this.layouts){
@@ -322,6 +330,10 @@
         this.blendLayouts()
       );
 
+    },
+
+    stopAnimation: function(){
+      this.layout.animating = false;
     },
 
     calcWeight: function(){
@@ -338,30 +350,44 @@
     setMode: function(mode){
       if (mode === this.mode) return;
       console.log(this.mode, " -> ", mode);
+
+      if (mode == "stacked"){
+        console.log("animating to stack");
+        this.stopAnimation();
+        this.animate(mode);
+      }
+
       this.lastMode = this.mode;
       this.mode = mode;
     },
 
     // focuses the existing stuff to the nearest position
     release: function(){
+      console.log('gesticulation finished');
       // stack - move p2 to p1
       // collage - make hands horizontal
       // alpha - lock to vertical
 
       this.changeSortState('collage');
 
-      var layout = this.layouts[this.sortState];
-      if (layout.onRelease) layout.onRelease(); // updates p1 and p2
+      if (this.layout.onRelease) this.layout.onRelease();
+
+      this.animate();
 
       // all mode changes happen before release
-      if ( this.mode == 'stacked' ){
-        var midPoint = (new THREE.Vector3).addVectors(layout.p1, layout.p2).divideScalar(2);
-        layout.animateTo(500, midPoint, midPoint.clone().add(new THREE.Vector3(0.01, -0.01, -0.01)));
-      } else if (this.mode == "horizontal" && layout.p2.x < (layout.xEnd / 2)){
-        console.log('would be releasing with minimum width');
+//      else if (this.mode == "horizontal" && layout.p2.x < (layout.xEnd / 2)){
+//        console.log('would be releasing with minimum width');
 //        layout.animateTo(500, layout.p1.clone(), layout.p2.clone().setX(layout.xEnd / 2) );
-      }
+//      }
 
+    },
+
+    // animates to the current mode
+    animate: function(mode){
+      if ( (mode || this.mode) == 'stacked' ){
+        var midPoint = (new THREE.Vector3).addVectors(this.layout.p1, this.layout.p2).divideScalar(2);
+        this.layout.animateTo(500, midPoint, midPoint.clone().add(new THREE.Vector3(0.01, -0.01, -0.01)));
+      }
     },
 
 //    closestLayout: function(){
