@@ -117,7 +117,7 @@ angular.module('directives', [])
         scene.add(light);
 
 
-        var dockWidth = 0.5;
+        var dockWidth = 1;
         var dockHeight = dockWidth * 0.15;
 
 
@@ -132,13 +132,14 @@ angular.module('directives', [])
         );
         dockMesh.name = "dock";
 
-        dockMesh.position.set(dockWidth / 2 - 0.1, -0.1, -0.25);
+        dockMesh.position.set(0, -0., -0.45);
 
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
           resize: false,
           moveZ: false,
-          moveY: false
+          moveY: false,
+          moveX: false
         });
 
 //        dock.pushImage("images/trains/" + images[0]);
