@@ -276,13 +276,22 @@ angular.module('directives', [])
         });
 
 
+        var isReady = false;
+
         dock.on('imageLoad', function(){
 
           if (!Leap.loopController.streaming()){
             render()
           }
 
+          if (!isReady) {
+            VRClient.ready();
+            isReady = true;
+          }
+
         });
+
+
 
       }
     };
