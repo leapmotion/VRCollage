@@ -423,7 +423,17 @@
         this.layouts.collage.planes[i].interactable = interactable;
       }
 
-      dock.mesh.visible = interactable;
+      new TWEEN.Tween( dock.mesh.material )
+        .to( { opacity: 1 * interactable }, 500 )
+        .onUpdate( function(){
+
+          for (var i = 0; i < dock.images.length; i++){
+            dock.images[i].mesh.material.opacity = this.opacity;
+          }
+
+        } )
+        .start();
+
       dock.setInteractable(interactable);
 
     },

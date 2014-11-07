@@ -127,7 +127,9 @@ angular.module('directives', [])
             wireframe: false,
             color: 0xffffff,
             map: THREE.ImageUtils.loadTexture("images/foto-viewer.jpg"),
-            side: THREE.DoubleSide // allow reverse raycasting.
+            side: THREE.DoubleSide, // allow reverse raycasting.
+            transparent: true,
+            opacity: 1
           })
         );
         dockMesh.name = "dock";
@@ -211,7 +213,7 @@ angular.module('directives', [])
         });
 
         Leap.loopController.on('twoHand.update', function(hand1, hand2) {
-          handArrow1.update(hand1.palmPosition, hand2.palmPosition);
+          handArrow1.update(hand1.palmPosition, hand2.palmPosition );
           handArrow2.update(hand2.palmPosition, hand1.palmPosition);
         });
 
@@ -270,6 +272,7 @@ angular.module('directives', [])
 
         // By controlling render from frame, we make sure that rendering happens immediately after frame processing.
         Leap.loopController.on('frame', function(){
+          TWEEN.update();
           render();
         });
 

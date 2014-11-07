@@ -18,10 +18,14 @@
 
   window.HandArrow.prototype = {
     update: function(toFollow, toPointTo) {
-      var follow = new THREE.Vector3(toFollow[0], toFollow[1], toFollow[2]);
-      var pointTo = new THREE.Vector3(toPointTo[0], toPointTo[1], toPointTo[2]);
+
+      var follow = (new THREE.Vector3).fromArray(toFollow);
+
+      var pointTo = (new THREE.Vector3).fromArray(toPointTo);
+
       if ( this.mesh !== undefined ) {
         var diff = new THREE.Vector3().copy(pointTo).sub(follow);
+
         var direction = new THREE.Vector3().copy(diff).normalize();
         this.mesh.position.copy(new  THREE.Vector3().copy(follow).add(new THREE.Vector3().copy(direction).multiplyScalar(this.followRadius)));
         this.mesh.lookAt(pointTo);
