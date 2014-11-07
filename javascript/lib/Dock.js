@@ -29,12 +29,6 @@ window.Dock = function(scene, planeMesh, controller, options){
 window.Dock.prototype = {
 
   emit: function(eventName, data) {
-    // note: not ie-compatible indexOf:
-    if (['imageRemove'].indexOf(eventName) === -1) {
-      console.error("Invalid event name:", eventName);
-      return;
-    }
-
     var callbacks = this[eventName + "Callbacks"];
     for (var i = 0; i < callbacks.length; i++){
 
@@ -67,6 +61,8 @@ window.Dock.prototype = {
 
         image.travel( this.onImageTravel.bind(this) );
         image.release( this.onRelease.bind(this) );
+
+        this.emit("imageLoad");
 
       }.bind(this)
     );
@@ -137,6 +133,16 @@ window.Dock.prototype = {
     for (var i =0; i < this.images.length; i++){
       this.images[i].safeSetInteractable(interactable);
     }
+
+  },
+
+  on: function(eventName, callback){
+
+    var callbackKey = eventName + "Callbacks";
+
+    this[callbackKey] || (this[callbackKey] = []);
+
+    this[callbackKey].push(callback);
 
   }
 

@@ -266,7 +266,6 @@ angular.module('directives', [])
           Arrows.update();
           vrControls.update();
           vrEffect.render(scene, camera);
-
         };
         render();
 
@@ -276,6 +275,14 @@ angular.module('directives', [])
           render();
         });
 
+
+        dock.on('imageLoad', function(){
+
+          if (!Leap.loopController.streaming()){
+            render()
+          }
+
+        });
 
       }
     };
