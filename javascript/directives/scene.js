@@ -139,7 +139,7 @@ angular.module('directives', [])
         );
         dockMesh.name = "dock";
 
-        var zDepth = -0.40;
+        var zDepth = -0.39;
 
         dockMesh.position.set(0, -0.15, zDepth);
 
