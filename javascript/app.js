@@ -11,7 +11,6 @@ Leap.loop()
   })
   .use('proximity')
   .use('pinchEvent')
-  .use('handBracket')
   .use('singleHandRecognizer')
   .use('twoHandRecognizer');
 
