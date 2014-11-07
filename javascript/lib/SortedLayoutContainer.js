@@ -394,10 +394,6 @@
 
       this.changeSortState('collage');
 
-      if (this.layout.onRelease) this.layout.onRelease();
-
-      this.animate();
-
     },
 
 //    closestLayout: function(){
