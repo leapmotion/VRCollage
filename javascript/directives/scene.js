@@ -105,6 +105,10 @@ angular.module('directives', [])
           camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
           renderer.setSize(window.innerWidth, window.innerHeight);
+
+          if (!Leap.loopController.streaming()){
+            render()
+          }
         };
 
         window.addEventListener('resize', onResize, false);
