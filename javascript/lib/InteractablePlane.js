@@ -20,6 +20,7 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.options.moveX  !== undefined    || (this.options.moveX   = true );
   this.options.moveY  !== undefined    || (this.options.moveY   = true );
   this.options.moveZ  !== undefined    || (this.options.moveZ   = false );
+  this.options.highlight  !== undefined|| (this.options.highlight = true); // this can be configured through this.highlightMesh
 
   this.mesh = planeMesh;
   this.controller = controller;
@@ -64,18 +65,8 @@ window.InteractablePlane = function(planeMesh, controller, options){
   }
 
   this.bindMove();
-  this.highlightMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(this.mesh.geometry.parameters.width+0.005, this.mesh.geometry.parameters.height+0.005),
-    new THREE.MeshBasicMaterial({
-      color: 0x00ff00,
-    })
-  );
 
-  this.mesh.add(this.highlightMesh);
-
-  this.highlightMesh.position.set(0,0,-0.00001);
-
-  this.highlightMesh.visible = false;
+  if (this.options.highlight) this.bindHighlight();
 
 };
 
@@ -106,13 +97,37 @@ window.InteractablePlane.prototype = {
   },
 
   // Toggles highlight on and off
-  highlight: function(set) {
-    if ( set !== undefined ) {
-      this.highlightMesh.visible = set;
+  highlight: function(highlight) {
+    if ( highlight !== undefined ) {
+      this.highlightMesh.visible = highlight;
     }
     else {
       return this.highlightMesh.visible;
     }
+  },
+
+  bindHighlight: function(){
+
+    this.highlightMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(this.mesh.geometry.parameters.width+0.005, this.mesh.geometry.parameters.height+0.005),
+      new THREE.MeshBasicMaterial({
+        color: 0x81d41d
+      })
+    );
+    this.mesh.add(this.highlightMesh);
+    this.highlightMesh.position.set(0,0,-0.00001);
+    this.highlightMesh.visible = false;
+
+    this.touch(function(){
+      if (!this.interactable) return;
+
+      this.highlight(true);
+    }.bind(this));
+
+    this.release(function(){
+      this.highlight(false);
+    }.bind(this));
+
   },
 
   // This is analagous to your typical scroll event.

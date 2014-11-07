@@ -139,7 +139,8 @@ angular.module('directives', [])
           resize: false,
           moveZ: false,
           moveY: false,
-          moveX: false
+          moveX: false,
+          highlight: false
         });
 
 //        dock.pushImage("images/trains/" + images[0]);
