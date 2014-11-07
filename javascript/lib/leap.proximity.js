@@ -99,7 +99,7 @@ Leap.plugin('proximity', function(scope){
     // There is an issue here where handPoints is not indexed per hand
     // check where index is used, refactor. oops.
     // test pictures and resizing.
-    checkLines: function(hand, handPoints){
+    checkLines: function(hand, lines){
       var mesh = this.mesh, state, intersectionPoint, key;
 
 
@@ -112,11 +112,11 @@ Leap.plugin('proximity', function(scope){
       var worldPosition = (new THREE.Vector3).setFromMatrixPosition( this.mesh.matrixWorld );
 
       // j because this is inside a loop for every hand
-      for (var j = 0; j < handPoints.length; j++){
+      for (var j = 0; j < lines.length; j++){
 
         key = hand.id + '-' + j;
 
-        intersectionPoint = mesh.intersectedByLine(handPoints[j][0], handPoints[j][1], worldPosition);
+        intersectionPoint = mesh.intersectedByLine(lines[j][0], lines[j][1], worldPosition);
 
         if (intersectionPoint){
           this.intersectionPoints[key] = intersectionPoint;

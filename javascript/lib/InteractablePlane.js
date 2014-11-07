@@ -217,7 +217,7 @@ window.InteractablePlane.prototype = {
       // simple verlet integration
       newPosition.subVectors(this.mesh.position, this.lastPosition);
 
-      if ( newPosition.length() > 0.01){
+      if ( newPosition.length() > 0.02){
         console.warn("high speed plane direction, stalling");
         newPosition.copy(this.mesh.position);
       } else {
@@ -401,8 +401,10 @@ window.InteractablePlane.prototype = {
 
       }
 
-      if (proximity.intersectionCount() == 0) {
+      // not sure why, but sometimes getting multiple 0 proximity release events
+      if (proximity.intersectionCount() == 0 && this.touched) {
         this.touched = false;
+        console.log('release', this.mesh.name, proximity.intersectionCount());
         this.emit('release', this);
       }
 
