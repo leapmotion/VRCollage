@@ -290,7 +290,7 @@ angular.module('directives', [])
             render()
           }
 
-          if (!isReady) {
+          if (!VRClientReady) {
             console.log("VRClient ready");
             VRClient.ready();
             VRClientReady = true;
