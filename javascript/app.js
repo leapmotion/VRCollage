@@ -19,7 +19,36 @@ Leap.loopController.setBackground(true);
 Leap.loopController.on('ready', function(){
   console.log('Leap Motion Controller ready');
   ga('send', 'event', 'Leap', 'ready');
+
+  var connection = this.connection;
+  this.connection.on('focus', function(){
+    if (!VRClientReady) return;
+
+    connection.reportFocus(VRClientFocused);
+  });
+
 });
+
+
+var VRClientReady = false;
+var VRClientFocused = true;
+VRClient.onFocus = function(){
+  VRClientFocused = true;
+
+  var connection = Leap.loopController.connection;
+  if (!connection) return;
+
+  connection.reportFocus(true);
+};
+
+VRClient.onBlur = function(){
+  VRClientFocused = false;
+
+  var connection = Leap.loopController.connection;
+  if (!connection) return;
+
+  connection.reportFocus(false);
+};
 
 
 angular.module('index', ['factories', 'directives']);

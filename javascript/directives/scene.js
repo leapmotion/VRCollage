@@ -284,8 +284,6 @@ angular.module('directives', [])
         });
 
 
-        var isReady = false;
-
         dock.on('imageLoad', function(image){
 
           if (!Leap.loopController.streaming()){
@@ -295,7 +293,7 @@ angular.module('directives', [])
           if (!isReady) {
             console.log("VRClient ready");
             VRClient.ready();
-            isReady = true;
+            VRClientReady = true;
           }
 
           // https://developers.google.com/analytics/devguides/collection/analyticsjs/events

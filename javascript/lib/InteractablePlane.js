@@ -214,10 +214,10 @@ window.InteractablePlane.prototype = {
     if ( intersectionCount < this.fingersRequiredForMove) {
       // inertia
       // simple verlet integration
-      newPosition.subVectors(this.mesh.position, this.lastPosition)
+      newPosition.subVectors(this.mesh.position, this.lastPosition);
 
       if ( newPosition.length() > 0.01){
-        console.warn("high speed plane direction, slowing stalling");
+        console.warn("high speed plane direction, stalling");
         newPosition.copy(this.mesh.position);
       } else {
         newPosition.multiplyScalar(this.drag).add(this.mesh.position);
