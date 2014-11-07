@@ -37,6 +37,7 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.travelCallbacks  = [];
   this.touchCallbacks  = [];
   this.releaseCallbacks  = [];
+  this.touched = false;
 
   // note: movement constraints are implemented for X,Y, but not grab.
   this.movementConstraintsX = [];
@@ -370,24 +371,23 @@ window.InteractablePlane.prototype = {
     // this ties InteractablePlane to boneHand plugin - probably should have callbacks pushed out to scene.
     proximity.in( function(hand, intersectionPoint, key, index){
 
-      var firstTouch;
-
       // Let's try out a one-way state machine
       // This doesn't allow intersections to count if I'm already pinching
       // So if they want to move after a pinch, they have to take hand out of picture and re-place.
       if (hand.data('resizing')) return;
       setBoneMeshColor(hand, index, 0xffffff);
 
-      firstTouch = proximity.intersectionCount() > 0;
-
       this.intersections[key] = intersectionPoint.clone().sub(this.mesh.position);
 
-      if (firstTouch) this.emit('touch', this);
+      if (!this.touched) {
+        this.touched = true;
+        console.log('touch', this.mesh.name);
+        this.emit('touch', this);
+      }
 
     }.bind(this) );
 
     proximity.out( function(hand, intersectionPoint, key, index){
-      console.log('release', this.mesh.name);
 
 //      setBoneMeshColor(hand, index, 0x222222);
       setBoneMeshColor(hand, index, 0xffffff);
@@ -401,7 +401,10 @@ window.InteractablePlane.prototype = {
 
       }
 
-      if (proximity.intersectionCount() == 0) this.emit('release', this);
+      if (proximity.intersectionCount() == 0) {
+        this.touched = false;
+        this.emit('release', this);
+      }
 
     }.bind(this) );
 
@@ -585,9 +588,7 @@ window.InteractablePlane.prototype = {
 
     if (!interactable) { this.interactable = false; return }
 
-    console.log("intersections on ", this.mesh.name, ": ", this.intersectionCount());
-
-    if ( this.moveProximity.intersectionCount() >= this.fingersRequiredForMove ){
+    if ( this.touched ){
 
       console.log('deferring interactability', this.mesh.name);
 

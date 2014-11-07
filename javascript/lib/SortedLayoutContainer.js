@@ -143,6 +143,7 @@
     },
 
     // time should be in ms
+    // Should probably be replaced with tween.js
     animateTo: function(time, destP1, destP2, easing){
       var animationStep;
       var startTime = Date.now();
