@@ -131,10 +131,13 @@ window.Dock.prototype = {
   },
 
   setInteractable: function(interactable){
-    this.plane.interactable = interactable;
+
+    this.plane.safeSetInteractable(interactable);
+
     for (var i =0; i < this.images.length; i++){
-      this.images[i].interactable = interactable;
+      this.images[i].safeSetInteractable(interactable);
     }
+
   }
 
 }

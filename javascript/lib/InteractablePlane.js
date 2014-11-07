@@ -90,6 +90,23 @@ window.InteractablePlane.prototype = {
 
   },
 
+  unbind: function(eventName, callback) {
+    var callbacks = this[eventName + "Callbacks"];
+
+    for (var i = 0; i < callbacks.length; i++){
+
+      if (callbacks[i] == callback){
+
+        callbacks.splice(i,1);
+        console.log('unbound', callback);
+        return true
+
+      }
+
+    }
+
+  },
+
   // This is analagous to your typical scroll event.
   travel: function(callback){
     this.travelCallbacks.push(callback);
@@ -352,6 +369,7 @@ window.InteractablePlane.prototype = {
 
     // this ties InteractablePlane to boneHand plugin - probably should have callbacks pushed out to scene.
     proximity.in( function(hand, intersectionPoint, key, index){
+
       var firstTouch;
 
       // Let's try out a one-way state machine
@@ -369,6 +387,7 @@ window.InteractablePlane.prototype = {
     }.bind(this) );
 
     proximity.out( function(hand, intersectionPoint, key, index){
+      console.log('release', this.mesh.name);
 
 //      setBoneMeshColor(hand, index, 0x222222);
       setBoneMeshColor(hand, index, 0xffffff);
@@ -548,6 +567,42 @@ window.InteractablePlane.prototype = {
     }
 
     return out;
+  },
+
+  intersectionCount: function(){
+    var i = 0;
+    for (var key in this.intersections){
+      i++
+    }
+    return i;
+  },
+
+  // This checks for intersection points before making self interactable
+  // If there are any, it will wait for the plane to be untouched before becoming live again.
+  safeSetInteractable: function(interactable){
+
+    console.log('safe set', interactable);
+
+    if (!interactable) { this.interactable = false; return }
+
+    console.log("intersections on ", this.mesh.name, ": ", this.intersectionCount());
+
+    if ( this.moveProximity.intersectionCount() >= this.fingersRequiredForMove ){
+
+      console.log('deferring interactability', this.mesh.name);
+
+      var callback = function(){
+
+        console.log('making interactable', this.mesh.name);
+        this.interactable = true;
+        this.unbind('release', callback);
+
+      }.bind(this);
+
+      this.release(callback);
+
+    }
+
   },
 
   // could be optimized to reuse vectors between frames
