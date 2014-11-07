@@ -165,7 +165,7 @@ angular.module('directives', [])
 
         window.dock = dock;
 
-        var sortedLayoutContainer = window.sortedLayoutContainer = new SortedLayoutContainer("collage");
+        var sortedLayoutContainer = window.sortedLayoutContainer = new PlaneStack("collage");
 
         sortedLayoutContainer.position.setZ(zDepth);
 

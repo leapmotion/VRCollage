@@ -191,10 +191,10 @@
 
   };
 
-  // SortedLayoutContainer Constructor
+  // PlaneStack Constructor
   // Optional argument "planes" is a list of InteractivePlanes to be added to the container on creation
   // Optional argument "sortState" is a string given one of the validSortStates listed above.
-  window.SortedLayoutContainer = function(sortState){
+  window.PlaneStack = function(sortState){
 
     // this is a global, to be set only by pushing or pulling on the stack with one hand.
     // warning: there's a known issue where a zDepth greatly different from the dock zDepth will cause zError to be
@@ -246,7 +246,7 @@
   };
 
   // Pubic Methods
-  window.SortedLayoutContainer.prototype = {
+  window.PlaneStack.prototype = {
 
     begin: function(position1, position2){
       if (this.layouts.collage.animating) return;
