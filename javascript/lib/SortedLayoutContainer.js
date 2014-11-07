@@ -58,12 +58,31 @@
 
     },
 
+    getMidpoint: function(){
+      return (new THREE.Vector3).addVectors(this.p2, this.p1).divideScalar(2);
+    },
+
     // save position of planes in layout
     // stored as offsets from the lerp percentage positions
     // these get scaled on later.
     // assumes that updatePositions has been recently called, but without actually moving the planes (!)
     // todo - adding a plane when in non-collage mode will cause bad ordering.
     persist: function(){
+
+//      don't sort for now, - it would be better to do this with a full-layout-lerp, as originally designed with ApplyLayouts, that they don't jump when entering the stack.
+//      // start be ordering from midpoint.  Could DRY midpoint?
+//      var midpoint = this.getMidpoint();
+//
+//      var distances = {}, plane, vec3 = new THREE.Vector3;
+//      for (var i=0; i < this.planes.length; i++){
+//        plane = this.planes[i];
+//        distances[plane.mesh.name] = vec3.subVectors(midpoint, plane.mesh.position).length()
+//      }
+//
+//      this.planes.sort( function(a,b) {
+//        return distances[a.mesh.name] < distances[b.mesh.name] ? -1 : 1;
+//      });
+
 
       this.planePositionOffsets = [];
       this.updatePositions(); // updates the positions stored
@@ -234,16 +253,16 @@
         var leftmost   = position1.x < position2.x ? position1 : position2;
         var rightmost  = position1.x < position2.x ? position2 : position1;
 
-        this.layouts.collage.p1.x = leftmost.x;
-        this.layouts.collage.p2.x = rightmost.x;
+        this.layout.p1.x = leftmost.x;
+        this.layout.p2.x = rightmost.x;
 
-        this.layouts.collage.p1.y = this.y;
-        this.layouts.collage.p2.y = this.y;
+        this.layout.p1.y = this.y;
+        this.layout.p2.y = this.y;
 
-        this.layouts.collage.p1.z = this.z;
-        this.layouts.collage.p2.z = this.z;
+        this.layout.p1.z = this.z;
+        this.layout.p2.z = this.z;
 
-        this.layouts.collage.persist();
+        this.layout.persist();
       }
 
       this.changeSortState('transitioning');
@@ -297,13 +316,12 @@
 
         if (this.layouts.collage.stackedWeight > 1){
           this.setMode("horizontal");
-          console.log("animate out");
           this.calcWeights(); // recalc after mode change
           this.stopAnimation();
           this.animate();
         }
 
-        return // don't animate when stacked (!)
+        return // don't animate when stacked
 
       } else if (this.layouts.collage.stackedWeight < 1) {
 
@@ -328,7 +346,7 @@
     // animates to the current mode
     animate: function(mode){
       var midPoint = (new THREE.Vector3).addVectors(this.layout.p1, this.layout.p2).divideScalar(2);
-      var offsetPoint = midPoint.clone().add(new THREE.Vector3(0.01, -0.01, -0.01));
+      var offsetPoint = midPoint.clone().add(new THREE.Vector3(0.01, -0.01, 0));
 
       if ( (mode || this.mode) == 'stacked' ){
         this.layout.animateTo(500, midPoint, offsetPoint);
@@ -359,7 +377,6 @@
       console.log(this.mode, " -> ", mode);
 
       if (mode == "stacked"){
-        console.log("animating to stack");
         this.stopAnimation();
         this.animate(mode);
       }
@@ -380,12 +397,6 @@
       if (this.layout.onRelease) this.layout.onRelease();
 
       this.animate();
-
-      // all mode changes happen before release
-//      else if (this.mode == "horizontal" && layout.p2.x < (layout.xEnd / 2)){
-//        console.log('would be releasing with minimum width');
-//        layout.animateTo(500, layout.p1.clone(), layout.p2.clone().setX(layout.xEnd / 2) );
-//      }
 
     },
 
