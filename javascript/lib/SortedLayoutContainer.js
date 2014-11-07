@@ -222,12 +222,8 @@
 
   // Pubic Methods
   window.SortedLayoutContainer.prototype = {
-    // Takes two hand positions
-    // if the container's current state allows programatic layout (as opposed to manual user layout )
-    // will sort the InteractablePlane(s) in the container accordingly (and return true).
-    // Update will return false if the current container state does not support
-    // programatic layout
-    update: function(position1, position2) {
+
+    begin: function(position1, position2){
       if (this.layouts.collage.animating) return;
 
       if (this.sortState == 'collage' && this.mode == "horizontal"){
@@ -247,8 +243,18 @@
         this.layouts.collage.persist();
       }
 
+      this.changeSortState('transitioning');
+
+    },
+
+    // Takes two hand positions
+    // if the container's current state allows programatic layout (as opposed to manual user layout )
+    // will sort the InteractablePlane(s) in the container accordingly (and return true).
+    // Update will return false if the current container state does not support
+    // programatic layout
+    update: function(position1, position2) {
+
       if (this.sortState !== 'transitioning'){
-        this.changeSortState('transitioning');
       }
 
       this.update2(position1, position2)

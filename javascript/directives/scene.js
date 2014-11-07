@@ -164,6 +164,13 @@ angular.module('directives', [])
           sortedLayoutContainer.addPlane(data[0]);
         });
 
+        Leap.loopController.on('twoHand.start', function(hand1, hand2){
+          sortedLayoutContainer.begin(
+            (new THREE.Vector3).fromArray(hand1.palmPosition),
+            (new THREE.Vector3).fromArray(hand2.palmPosition)
+          );
+        });
+
         Leap.loopController.on('twoHand.update', function(hand1, hand2){
           sortedLayoutContainer.update(
             (new THREE.Vector3).fromArray(hand1.palmPosition),
