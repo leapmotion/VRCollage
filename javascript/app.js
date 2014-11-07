@@ -17,6 +17,11 @@ Leap.loop()
 
 Leap.loopController.setBackground(true);
 
+Leap.loopController.on('ready', function(){
+  console.log('Leap Motion Controller ready');
+  ga('send', 'event', 'Leap', 'ready');
+});
+
 
 angular.module('index', ['factories', 'directives']);
 

@@ -192,6 +192,10 @@ angular.module('directives', [])
           sortedLayoutContainer.release();
         });
 
+        sortedLayoutContainer.on('mode', function(mode){
+          ga('send', 'event', 'Mode', mode);
+        });
+
 // leap proximity does not at all do well with angled objects:
 //        dockMesh.position.set(-90, 130 - dockHeight / 2, -300);
 //        dockMesh.rotation.set(0, Math.PI / 4, 0, 0);
@@ -289,6 +293,7 @@ angular.module('directives', [])
           }
 
           if (!isReady) {
+            console.log("VRClient ready");
             VRClient.ready();
             isReady = true;
           }

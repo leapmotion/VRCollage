@@ -192,11 +192,12 @@
   // SortedLayoutContainer Constructor
   // Optional argument "planes" is a list of InteractivePlanes to be added to the container on creation
   // Optional argument "sortState" is a string given one of the validSortStates listed above.
-  window.SortedLayoutContainer = function(planes, sortState, onStateChange){
+  window.SortedLayoutContainer = function(planes, sortState){
     this.z = -0.25; // this is a global, to be set only by pushing or pulling on the stack with one hand.
     this.y = -0.05;
     this.x = -0.15;
 
+    this.modeCallbacks = [];
     this.setMode("horizontal");
 
     this.layouts = {
@@ -236,7 +237,6 @@
     }
 
     this.sortState = null;
-    this.onStateChange = onStateChange;
 
     this.changeSortState(sortState);
   };
@@ -383,6 +383,7 @@
 
       this.lastMode = this.mode;
       this.mode = mode;
+      this.emit("mode", mode);
     },
 
     // focuses the existing stuff to the nearest position
@@ -450,9 +451,6 @@
 
       this.sortState = newSortState;
 
-      if (this.onStateChange){
-        this.onStateChange(newSortState);
-      }
     },
 
     // Adds the given plane to list of planes managed by the container.
@@ -474,6 +472,25 @@
 
     planeCount: function(){
       return this.layout.planes.length;
+    },
+
+    emit: function(eventName, data) {
+      var callbacks = this[eventName + "Callbacks"];
+      for (var i = 0; i < callbacks.length; i++){
+
+        // could use arguments.slice here.
+        callbacks[i].call(this, data);
+      }
+    },
+
+    on: function(eventName, callback){
+
+      var callbackKey = eventName + "Callbacks";
+
+      this[callbackKey] || (this[callbackKey] = []);
+
+      this[callbackKey].push(callback);
+
     },
 
 

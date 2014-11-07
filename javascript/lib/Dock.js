@@ -22,20 +22,12 @@ window.Dock = function(scene, planeMesh, controller, options){
   this.imageMinHeight = -0.007;
 
   this.imageRemoveCallbacks = [];
+  this.imageLoadCallbacks = [];
 
   this.interactable = true;
 };
 
 window.Dock.prototype = {
-
-  emit: function(eventName, data) {
-    var callbacks = this[eventName + "Callbacks"];
-    for (var i = 0; i < callbacks.length; i++){
-
-      // could use arguments.slice here.
-      callbacks[i].call(this, data);
-    }
-  },
 
   pushImage: function(url){
 
@@ -134,6 +126,15 @@ window.Dock.prototype = {
       this.images[i].safeSetInteractable(interactable);
     }
 
+  },
+
+  emit: function(eventName, data) {
+    var callbacks = this[eventName + "Callbacks"];
+    for (var i = 0; i < callbacks.length; i++){
+
+      // could use arguments.slice here.
+      callbacks[i].call(this, data);
+    }
   },
 
   on: function(eventName, callback){
