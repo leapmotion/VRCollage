@@ -16,7 +16,8 @@ Leap.loop()
     pauseOnHand: true,
     loop: false,
     overlay: false,
-    resumeOnHandLost: false
+    resumeOnHandLost: false,
+    autoPlay: false
   })
   .use('twoHandRecognizer');
 
