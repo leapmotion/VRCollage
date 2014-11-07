@@ -166,6 +166,7 @@ angular.module('directives', [])
         });
 
         Leap.loopController.on('twoHand.start', function(hand1, hand2){
+          if ( sortedLayoutContainer.planeCount() < 1) return;
           sortedLayoutContainer.begin(
             (new THREE.Vector3).fromArray(hand1.palmPosition),
             (new THREE.Vector3).fromArray(hand2.palmPosition)
@@ -173,6 +174,7 @@ angular.module('directives', [])
         });
 
         Leap.loopController.on('twoHand.update', function(hand1, hand2){
+          if ( sortedLayoutContainer.planeCount() < 1) return;
           sortedLayoutContainer.update(
             (new THREE.Vector3).fromArray(hand1.palmPosition),
             (new THREE.Vector3).fromArray(hand2.palmPosition)
@@ -180,6 +182,7 @@ angular.module('directives', [])
         });
 
         Leap.loopController.on('twoHand.end', function(){
+          if ( sortedLayoutContainer.planeCount() < 1) return;
           sortedLayoutContainer.release();
         });
 

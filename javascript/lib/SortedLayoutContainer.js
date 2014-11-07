@@ -455,6 +455,10 @@
       return true;
     },
 
+    planeCount: function(){
+      return this.layout.planes.length;
+    },
+
 
   // - Returns a weighted mean of the given layout node lists as an array of layout nodes
   // - Assumes that each index of each list in layout lists refers to the
