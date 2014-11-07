@@ -422,7 +422,7 @@
 
       // we just grab the plane from the first layout.. not so great, but they all should match up.
       for(var i=0; i<this.layouts.collage.planes.length; i++) {
-        this.layouts.collage.planes[i].interactable = interactable;
+        this.layouts.collage.planes[i].safeSetInteractable(interactable);
       }
 
       new TWEEN.Tween( dock.mesh.material )

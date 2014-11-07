@@ -584,6 +584,8 @@ window.InteractablePlane.prototype = {
 
   // This checks for intersection points before making self interactable
   // If there are any, it will wait for the plane to be untouched before becoming live again.
+  // Note that this may need a little more tuning.  As it is right now, a touch/release may flicker, causing this to be not safe enough.
+  // Thus leaving in console.logs for now.
   safeSetInteractable: function(interactable){
 
     if (!interactable) { this.interactable = false; return }
