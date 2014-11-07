@@ -12,6 +12,12 @@ Leap.loop()
   .use('proximity')
   .use('pinchEvent')
   .use('singleHandRecognizer')
+  .use('playback', {
+    pauseOnHand: true,
+    loop: false,
+    overlay: false,
+    resumeOnHandLost: false
+  })
   .use('twoHandRecognizer');
 
 Leap.loopController.setBackground(true);

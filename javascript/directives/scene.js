@@ -106,9 +106,10 @@ angular.module('directives', [])
           camera.updateProjectionMatrix();
           renderer.setSize(window.innerWidth, window.innerHeight);
 
-          if (!Leap.loopController.streaming()){
-            render()
-          }
+          // expicit render call as:
+          // user may not have leap
+          // if they do, they probably won't have hand in frame, causing render
+          render()
         };
 
         window.addEventListener('resize', onResize, false);
@@ -308,6 +309,49 @@ angular.module('directives', [])
         });
 
 
+        var player = Leap.loopController.plugins.playback.player;
+
+        // these objects get "frames" added to them later
+        // todo - loading graphic
+        var recordings = {
+          p1: {
+            url: "recordings/remove-photos-57fps.json.lz"
+          },
+          p2: {
+            url: "recordings/stack-images-51fps.json.lz"
+          },
+          p3: {
+            url: "recordings/spread-photos-55fps.json.lz"
+          }
+        };
+
+        Leap.loopController.on('playback.playbackFinished', function(){
+          console.log('finished', arguments);
+
+          player.clear();
+
+          if (player.recording == recordings.p1){
+            document.getElementById('auto-part2-span').style.display = "block";
+          }
+          if (player.recording == recordings.p2){
+            document.getElementById('auto-part3-span').style.display = "block";
+          }
+        });
+
+        document.getElementById('auto-part1-link').onclick = function(){
+          player.setRecording(recordings.p1);
+          return false;
+        };
+
+        document.getElementById('auto-part2-link').onclick = function(){
+          player.setRecording(recordings.p2);
+          return false;
+        };
+
+        document.getElementById('auto-part3-link').onclick = function(){
+          player.setRecording(recordings.p3);
+          return false;
+        };
 
       }
     };
