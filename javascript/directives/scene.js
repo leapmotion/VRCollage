@@ -282,7 +282,7 @@ angular.module('directives', [])
 
         var isReady = false;
 
-        dock.on('imageLoad', function(){
+        dock.on('imageLoad', function(image){
 
           if (!Leap.loopController.streaming()){
             render()
@@ -292,6 +292,15 @@ angular.module('directives', [])
             VRClient.ready();
             isReady = true;
           }
+
+          // https://developers.google.com/analytics/devguides/collection/analyticsjs/events
+          image.touch( function(){
+            ga('send', 'event', 'Images', 'Touch', image.mesh.name);
+          });
+
+          image.release( function(){
+            ga('send', 'event', 'Images', 'Release', image.mesh.name);
+          });
 
         });
 

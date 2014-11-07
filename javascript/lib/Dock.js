@@ -62,7 +62,7 @@ window.Dock.prototype = {
         image.travel( this.onImageTravel.bind(this) );
         image.release( this.onRelease.bind(this) );
 
-        this.emit("imageLoad");
+        this.emit("imageLoad", image);
 
       }.bind(this)
     );
