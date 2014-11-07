@@ -146,7 +146,7 @@
         layout.p1.copy(origP1).lerp(destP1, animationStep);
         layout.p2.copy(origP2).lerp(destP2, animationStep);
 
-        window.sortedLayoutContainer.calcWeight();
+        window.sortedLayoutContainer.calcWeights();
         layout.updatePositions();
 
         applyLayoutList(
@@ -297,14 +297,14 @@
       this.layouts.collage.p1.z = this.z;
       this.layouts.collage.p2.z = this.z;
 
-      this.calcWeight();
+      this.calcWeights();
 
 
       if (this.mode =="stacked") {
 
         if (this.layouts.collage.stackedWeight > 1){
           this.setMode("horizontal");
-          this.calcWeight(); // recalc after mode change
+          this.calcWeights(); // recalc after mode change
           var layout = this.layouts.collage;
           var newP1 = this.layouts.collage.p1.clone();
           var newP2 = this.layouts.collage.p2.clone();
@@ -336,11 +336,11 @@
       this.layout.animating = false;
     },
 
-    calcWeight: function(){
+    calcWeights: function(){
       var layout = this.layouts.collage;
       var diff = (new THREE.Vector3).subVectors(layout.p2, layout.p1);
 
-      layout.stackedWeight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.2;
+      layout.stackedWeight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.3;
       layout.horizontalWeight = diff.x / layout.xEnd ;
       layout.verticalWeight = diff.x / layout.yEnd ;
 
