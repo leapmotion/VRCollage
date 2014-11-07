@@ -256,15 +256,8 @@
     // Update will return false if the current container state does not support
     // programatic layout
     update: function(position1, position2) {
+      if (this.layouts.collage.animating) return;
 
-      if (this.sortState !== 'transitioning'){
-      }
-
-      this.update2(position1, position2)
-
-    },
-
-    update2: function(position1, position2) {
       var leftmost   = position1.x < position2.x ? position1 : position2;
       var rightmost  = position1.x < position2.x ? position2 : position1;
 //      var topmost    = position1.y < position2.y ? position1 : position2;
@@ -274,8 +267,8 @@
       var diff = new THREE.Vector3().subVectors(rightmost, leftmost);
 
       // save in case we need to animate later
-      var origP1 = this.layouts.collage.p1.clone();
-      var origP2 = this.layouts.collage.p2.clone();
+      var origP1 = this.layout.p1.clone();
+      var origP2 = this.layout.p2.clone();
 
       // stacked should not allow left hand motion`
       // only one layout: collage
@@ -304,19 +297,15 @@
 
         if (this.layouts.collage.stackedWeight > 1){
           this.setMode("horizontal");
+          console.log("animate out");
           this.calcWeights(); // recalc after mode change
-          var layout = this.layouts.collage;
-          var newP1 = this.layouts.collage.p1.clone();
-          var newP2 = this.layouts.collage.p2.clone();
-          this.layouts.collage.p1 = origP1;
-          this.layouts.collage.p2 = origP2;
           this.stopAnimation();
-          layout.animateTo(500, newP1, newP2, 'linear');
+          this.animate();
         }
 
         return // don't animate when stacked (!)
 
-      } else if (this.layouts.collage.horizontalWeight < 0.5) {
+      } else if (this.layouts.collage.stackedWeight < 1) {
 
         this.setMode("stacked");
 
@@ -336,11 +325,29 @@
       this.layout.animating = false;
     },
 
+    // animates to the current mode
+    animate: function(mode){
+      var midPoint = (new THREE.Vector3).addVectors(this.layout.p1, this.layout.p2).divideScalar(2);
+      var offsetPoint = midPoint.clone().add(new THREE.Vector3(0.01, -0.01, -0.01));
+
+      if ( (mode || this.mode) == 'stacked' ){
+        this.layout.animateTo(500, midPoint, offsetPoint);
+      } else {
+        var newP1 = this.layout.p1.clone();
+        var newP2 = this.layout.p2.clone();
+
+        this.layout.p1 = midPoint;
+        this.layout.p2 = offsetPoint;
+
+        this.layout.animateTo(500, newP1, newP2);
+      }
+    },
+
     calcWeights: function(){
       var layout = this.layouts.collage;
       var diff = (new THREE.Vector3).subVectors(layout.p2, layout.p1);
 
-      layout.stackedWeight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.3;
+      layout.stackedWeight = Math.sqrt(diff.x * diff.x + diff.y * diff.y) / 0.2;
       layout.horizontalWeight = diff.x / layout.xEnd ;
       layout.verticalWeight = diff.x / layout.yEnd ;
 
@@ -382,14 +389,6 @@
 
     },
 
-    // animates to the current mode
-    animate: function(mode){
-      if ( (mode || this.mode) == 'stacked' ){
-        var midPoint = (new THREE.Vector3).addVectors(this.layout.p1, this.layout.p2).divideScalar(2);
-        this.layout.animateTo(500, midPoint, midPoint.clone().add(new THREE.Vector3(0.01, -0.01, -0.01)));
-      }
-    },
-
 //    closestLayout: function(){
 //
 //      var max = -Infinity, state = this.sortState;
@@ -408,8 +407,9 @@
 //    },
 
     setInteractable: function(interactable){
+      // note: this method may be being over-called.
 
-      console.log('interactable', interactable);
+//      console.log('interactable', interactable);
 
       // we just grab the plane from the first layout.. not so great, but they all should match up.
       for(var i=0; i<this.layouts.collage.planes.length; i++) {
