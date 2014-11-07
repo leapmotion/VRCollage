@@ -328,8 +328,6 @@ angular.module('directives', [])
         };
 
         Leap.loopController.on('playback.playbackFinished', function(){
-          console.log('finished', arguments);
-
           player.clear();
 
           if (player.recording == recordings.p1){
@@ -352,11 +350,13 @@ angular.module('directives', [])
 
         document.getElementById('auto-part2-link').onclick = function(){
           player.setRecording(recordings.p2);
+          player.play();
           return false;
         };
 
         document.getElementById('auto-part3-link').onclick = function(){
           player.setRecording(recordings.p3);
+          player.play();
           return false;
         };
 
