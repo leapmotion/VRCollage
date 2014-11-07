@@ -57,5 +57,9 @@ VRClient.onBlur = function(){
 };
 
 
-angular.module('index', ['factories', 'directives']);
+angular.module('index', ['directives']);
 
+
+
+// Trying to figure out where to go next?
+// Check out directives/scene.js
