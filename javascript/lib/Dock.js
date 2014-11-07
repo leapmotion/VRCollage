@@ -49,6 +49,15 @@ window.Dock.prototype = {
         image.travel( this.onImageTravel.bind(this) );
         image.release( this.onRelease.bind(this) );
 
+        // https://developers.google.com/analytics/devguides/collection/analyticsjs/events
+        image.touch( function(){
+          ga('send', 'event', 'Images', 'Touch', image.mesh.name);
+        });
+
+        image.release( function(){
+          ga('send', 'event', 'Images', 'Release', image.mesh.name);
+        });
+
       }.bind(this)
     );
 
