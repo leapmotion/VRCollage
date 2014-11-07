@@ -381,7 +381,7 @@ window.InteractablePlane.prototype = {
 
       if (!this.touched) {
         this.touched = true;
-        console.log('touch', this.mesh.name);
+//        console.log('touch', this.mesh.name);
         this.emit('touch', this);
       }
 
@@ -404,7 +404,7 @@ window.InteractablePlane.prototype = {
       // not sure why, but sometimes getting multiple 0 proximity release events
       if (proximity.intersectionCount() == 0 && this.touched) {
         this.touched = false;
-        console.log('release', this.mesh.name, proximity.intersectionCount());
+//        console.log('release', this.mesh.name, proximity.intersectionCount());
         this.emit('release', this);
       }
 
@@ -586,23 +586,26 @@ window.InteractablePlane.prototype = {
   // If there are any, it will wait for the plane to be untouched before becoming live again.
   safeSetInteractable: function(interactable){
 
-    console.log('safe set', interactable);
-
     if (!interactable) { this.interactable = false; return }
 
     if ( this.touched ){
 
-      console.log('deferring interactability', this.mesh.name);
+//      console.log('deferring interactability', this.mesh.name);
 
       var callback = function(){
 
-        console.log('making interactable', this.mesh.name);
+//        console.log('making interactable', this.mesh.name);
         this.interactable = true;
         this.unbind('release', callback);
 
       }.bind(this);
 
       this.release(callback);
+
+    } else {
+
+//      console.log('instant interactability', this.mesh.name);
+      this.interactable = true;
 
     }
 
