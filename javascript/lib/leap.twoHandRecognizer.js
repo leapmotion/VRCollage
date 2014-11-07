@@ -1,5 +1,9 @@
+// Port from unity by @dplemmons
 // this should get a new name, now that it includes grabEvent.
+// Uses handQueue from singleHandRecognizer for always using the two oldest hands.
 Leap.plugin('twoHandRecognizer', function(scope){
+
+  this.use('singleHandRecognizer');
 
   var controller = this;
 

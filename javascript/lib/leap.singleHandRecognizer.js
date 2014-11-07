@@ -1,3 +1,4 @@
+// Port from unity by @dplemmons
 // this should get a new name, now that it includes grabEvent.
 Leap.plugin('singleHandRecognizer', function(scope){
 
@@ -7,14 +8,14 @@ Leap.plugin('singleHandRecognizer', function(scope){
 
   // Depending on the comparitor, true or false, will perform an intersection or difference respectfully
   function HandDiffOrIntersection(list1, list2, comparitor) {
-    retArr = [];
+    var retArr = [];
 
     for ( var i=0; i<list1.length; i++ ) {
-      listOneHand = list1[i];
+      var listOneHand = list1[i];
       var found = false;
 
       for( var j=0; j<list2.length; j++ ) {
-        listTwoHand = list2[j];
+        var listTwoHand = list2[j];
         if ( listOneHand.id == listTwoHand.id ) {
           found = true;
           break;
@@ -42,10 +43,10 @@ Leap.plugin('singleHandRecognizer', function(scope){
   return {
 
     frame: function(frame){
-      latestHands = frame.hands;
-      newHands = DifferenceHandModelLists(latestHands, m_lastHands);
-      recurringHands = IntersectionHandModelLists(m_lastHands, latestHands);
-      lostHands = DifferenceHandModelLists(m_lastHands, latestHands);
+      var latestHands = frame.hands;
+      var newHands = DifferenceHandModelLists(latestHands, m_lastHands);
+      var recurringHands = IntersectionHandModelLists(m_lastHands, latestHands);
+      var lostHands = DifferenceHandModelLists(m_lastHands, latestHands);
 
       for(var i=0;i<newHands.length;i++) {
         controller.emit("hand.start", newHands[i]);

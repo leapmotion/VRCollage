@@ -11,7 +11,6 @@ Leap.loop()
   })
   .use('proximity')
   .use('pinchEvent')
-  .use('singleHandRecognizer')
   .use('playback', {
     pauseOnHand: true,
     loop: false,
