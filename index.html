@@ -76,19 +76,66 @@
 
   <div id="noLeapWarning">
     <p>
-      Please plug in your Leap Motion Controller.
-      <br/>It should be worn on the oculus rift, or be otherwise head-mounted.
+      <span id="controllerStatusMessage">Please plug in your Leap Motion Controller.</span>
+      <br/>Is Controller on your <a href="#" id="selectDesktop">Desktop</a> or mounted to your <a href="#" id="selectOculus" class="active">Oculus rift</a>?
     </p>
     <p>
       No Controller? No problem.
-      Try automatic mode: <a href="#" id="auto-part1-link">Select Photos</a>.
-      <span id="auto-part2-span" class="hidden"><a href="#" id="auto-part2-link">Stack Photos</a>.</span>
-      <span id="auto-part3-span" class="hidden"><a href="#" id="auto-part3-link">Spread Photos</a>.</span>
+      Try automatic mode:
     </p>
+    <ol>
+      <li><a href="#" id="auto-part1-link">Select Photos</a>.</li>
+      <li id="auto-part2-span" class="hidden"><a href="#" id="auto-part2-link">Stack Photos</a>.</li>
+      <li id="auto-part3-span" class="hidden"><a href="#" id="auto-part3-link">Spread Photos</a>.</li>
+    </ol>
   </div>
 
 
+  <script>
 
+
+var transform = Leap.loopController.plugins.transform;
+
+var HMDTransforms = {
+  quaternion: transform.quaternion,
+  scale: transform.scale,
+  position: transform.position
+};
+
+var DesktopTransforms = {
+  quaternion: new THREE.Quaternion,
+  scale: transform.scale, // stay in m
+  position: new THREE.Vector3(0,-0.2,-0.3)
+};
+
+useDesktopMode = function(){
+  console.log('use desktop');
+
+  transform.quaternion = DesktopTransforms.quaternion;
+  transform.scale      = DesktopTransforms.scale;
+  transform.position   = DesktopTransforms.position;
+
+  document.getElementById('selectDesktop').className = "active";
+  document.getElementById('selectOculus').className = "";
+
+};
+
+useHMDMode = function(){
+  console.log('use hmd');
+
+  transform.quaternion = HMDTransforms.quaternion;
+  transform.scale      = HMDTransforms.scale;
+  transform.position   = HMDTransforms.position;
+
+  document.getElementById('selectDesktop').className = "";
+  document.getElementById('selectOculus').className = "active";
+
+};
+
+document.getElementById('selectDesktop').onclick = useDesktopMode;
+document.getElementById('selectOculus').onclick = useHMDMode;
+
+  </script>
 
 
   </body>

@@ -56,7 +56,6 @@ VRClient.onBlur = function(){
   connection.reportFocus(false);
 };
 
-
 angular.module('index', ['directives']);
 
 
