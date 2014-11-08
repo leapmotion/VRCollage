@@ -4,7 +4,7 @@ window.createText = function(text, options) {
 
   options || (options = {});
 
-  var color = options.color || 0xaaaaaa;
+  var color = options.color || 0x81d41d;
 
   options.size || (options.size = 20);
   options.height || (options.height = 2);

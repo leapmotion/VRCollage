@@ -206,10 +206,16 @@ angular.module('directives', [])
 
         scene.add(dockMesh);
 
-        var text = createText('place images..');
-        text.position.setZ(-250);
-        text.position.setY(120);
-        scene.add(text);
+//        var text = createText('Move images up..');
+//        text.position.setZ(-250);
+//        text.position.setY(120);
+//        scene.add(text);
+
+
+        var help = new HelpMessage;
+        help.mesh.position.set(0, 0.17, zDepth - 0.01);
+        scene.add(help.mesh);
+
 
         // must be global so that blur and focus can access it in app.js
         window.cursor = new VRCursor();
@@ -312,6 +318,7 @@ angular.module('directives', [])
 
 
         var render = function() {
+          cursor.update();
           Arrows.update();
           vrControls.update();
           vrEffect.render(scene, camera);
