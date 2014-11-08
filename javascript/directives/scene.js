@@ -239,7 +239,27 @@ angular.module('directives', [])
         	cursor.enable();
         };
 
-        
+
+
+        var gridMat = new THREE.MeshPhongMaterial({
+          wireframe: false,
+          color: 0xffffff,
+          map: THREE.ImageUtils.loadTexture("images/Grid-01.png")
+        });
+
+        var grid = new THREE.Mesh(
+          new THREE.PlaneGeometry(10, 10),
+          gridMat
+        );
+        grid.name = "grid";
+        scene.add(grid);
+
+        grid.rotation.set(-Math.PI / 2, 0, 0);
+        grid.position.set(0, -1.23, zDepth - 0.02);
+
+
+
+
 
         var handArrow1 = new HandArrow(scene);
         var handArrow2 = new HandArrow(scene);
