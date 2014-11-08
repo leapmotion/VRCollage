@@ -102,7 +102,10 @@ window.Dock.prototype = {
 //      this.arrangeImages();
 
       // this is crappy to have here
-      this.scene.getObjectByName( "text").visible = false;
+      var text = this.scene.getObjectByName("text");
+      if (text) {
+        text.visible = false;
+      }
 
     }
   },
