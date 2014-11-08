@@ -20,6 +20,9 @@ Leap.loop()
   })
   .use('twoHandRecognizer');
 
+
+// This is fairly important - it prevents the framerate from dropping while there are no hands in the frame.
+// Should probably default to true in LeapJS.
 Leap.loopController.loopWhileDisconnected = true;
 
 Leap.loopController.on('ready', function(){
