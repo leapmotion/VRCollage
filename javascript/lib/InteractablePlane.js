@@ -547,10 +547,10 @@ window.InteractablePlane.prototype = {
       finger = hand.fingers[i];
 
       out.push(
-        [
-          (new THREE.Vector3).fromArray(finger.metacarpal.nextJoint),
-          (new THREE.Vector3).fromArray(finger.metacarpal.prevJoint)
-        ],
+//        [
+//          (new THREE.Vector3).fromArray(finger.metacarpal.nextJoint),
+//          (new THREE.Vector3).fromArray(finger.metacarpal.prevJoint)
+//        ],
         [
           (new THREE.Vector3).fromArray(finger.proximal.nextJoint),
           (new THREE.Vector3).fromArray(finger.proximal.prevJoint)
