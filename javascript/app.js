@@ -25,9 +25,9 @@ Leap.loop()
 // Should probably default to true in LeapJS.
 Leap.loopController.loopWhileDisconnected = true;
 
-Leap.loopController.on('ready', function(){
-  console.log('Leap Motion Controller ready');
-  ga('send', 'event', 'Leap', 'ready');
+Leap.loopController.on('streamingStarted', function(){
+  console.log('Leap Motion Controller streaming');
+  ga('send', 'event', 'Leap', 'streaming');
 
   var connection = this.connection;
   this.connection.on('focus', function(){
