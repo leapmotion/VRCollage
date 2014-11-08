@@ -79,6 +79,7 @@ angular.module('directives', [])
         boneHand.HandMesh.create();
 
         Leap.loopController.plugins.transform.effectiveParent = camera;
+        window.camera = camera;
 
 
         var canvas = element.find('canvas')[0];

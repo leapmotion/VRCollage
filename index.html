@@ -108,7 +108,7 @@ var HMDTransforms = {
 var DesktopTransforms = {
   quaternion: new THREE.Quaternion,
   scale: transform.scale, // stay in m
-  position: new THREE.Vector3(0,-0.2,-0.3)
+  position: new THREE.Vector3(0,-0.3,-0.3)
 };
 
 useDesktopMode = function(){
@@ -118,8 +118,11 @@ useDesktopMode = function(){
   transform.scale      = DesktopTransforms.scale;
   transform.position   = DesktopTransforms.position;
 
+  transform.effectiveParent = null;
+
   document.getElementById('selectDesktop').className = "active";
   document.getElementById('selectOculus').className = "";
+
 
 };
 
@@ -129,6 +132,8 @@ useHMDMode = function(){
   transform.quaternion = HMDTransforms.quaternion;
   transform.scale      = HMDTransforms.scale;
   transform.position   = HMDTransforms.position;
+
+  transform.effectiveParent = window.camera;
 
   document.getElementById('selectDesktop').className = "";
   document.getElementById('selectOculus').className = "active";
