@@ -20,7 +20,7 @@ Leap.loop()
   })
   .use('twoHandRecognizer');
 
-Leap.loopController.setBackground(true);
+Leap.loopController.loopWhileDisconnected = true;
 
 Leap.loopController.on('ready', function(){
   console.log('Leap Motion Controller ready');
