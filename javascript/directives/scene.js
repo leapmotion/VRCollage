@@ -300,6 +300,15 @@ angular.module('directives', [])
           render();
         });
 
+        var renderWithoutLeap = function() {
+          if ( Leap.loopController.streaming() ) return;
+
+          render();
+          window.requestAnimationFrame(renderWithoutLeap);
+        };
+
+        renderWithoutLeap();
+
 
         dock.on('imageLoad', function(image){
 
