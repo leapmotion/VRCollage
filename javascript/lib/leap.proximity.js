@@ -118,8 +118,20 @@ Leap.plugin('proximity', function(scope){
 
         intersectionPoint = mesh.intersectedByLine(lines[j][0], lines[j][1], worldPosition);
 
+        // if there already was an intersection point,
+        // And the new one is good in z but off in x and y,
+        // don't emit an out event.
+        if ( !intersectionPoint && this.intersectionPoints[key] && mesh.intersectionPoint ) {
+
+//          console.log('found newly lost intersection point');
+          intersectionPoint = mesh.intersectionPoint
+
+        }
+
         if (intersectionPoint){
+
           this.intersectionPoints[key] = intersectionPoint;
+
         } else if (this.intersectionPoints[key]) {
           delete this.intersectionPoints[key];
         }
