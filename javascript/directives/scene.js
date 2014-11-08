@@ -142,7 +142,7 @@ angular.module('directives', [])
 
         var zDepth = -0.39;
 
-        dockMesh.position.set(0.1, -0.15, zDepth);
+        dockMesh.position.set(0.1, -0.2, zDepth);
 
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
