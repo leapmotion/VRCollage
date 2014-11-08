@@ -211,6 +211,30 @@ angular.module('directives', [])
         text.position.setY(120);
         scene.add(text);
 
+        // must be global so that blur and focus can access it in app.js
+        window.cursor = new VRCursor();
+
+        // can't customize position of cursor without messing things up.
+        // note: VRCursor will have to be upgraded in order to allow always being in front of mesh.
+        cursor.setMode('centered');
+        cursor.init(renderer.domElement, camera, scene);
+
+        cursor.ready.then(function() {
+          scene.add(cursor.layout);
+        	cursor.enable();
+        });
+
+        // enable or disable cursor on VRclient focus & blur callbacks
+        VRClient.onBlur = function() {
+        	cursor.disable();
+        };
+
+        VRClient.onFocus = function() {
+        	cursor.enable();
+        };
+
+        
+
         var handArrow1 = new HandArrow(scene);
         var handArrow2 = new HandArrow(scene);
 

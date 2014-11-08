@@ -41,6 +41,8 @@ var VRClientFocused = true;
 VRClient.onFocus = function(){
   VRClientFocused = true;
 
+  cursor.enable();
+
   var connection = Leap.loopController.connection;
   if (!connection) return;
 
@@ -50,11 +52,14 @@ VRClient.onFocus = function(){
 VRClient.onBlur = function(){
   VRClientFocused = false;
 
+  cursor.disable();
+
   var connection = Leap.loopController.connection;
   if (!connection) return;
 
   connection.reportFocus(false);
 };
+
 
 angular.module('index', ['directives']);
 
