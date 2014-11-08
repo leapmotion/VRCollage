@@ -132,7 +132,7 @@ angular.module('directives', [])
           new THREE.MeshPhongMaterial({
             wireframe: false,
             color: 0xffffff,
-            map: THREE.ImageUtils.loadTexture("images/foto-viewer.jpg"),
+            map: THREE.ImageUtils.loadTexture("images/foto-viewer-dark.png"),
             side: THREE.DoubleSide, // allow reverse raycasting.
             transparent: true,
             opacity: 1

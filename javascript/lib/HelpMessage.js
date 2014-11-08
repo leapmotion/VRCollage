@@ -33,6 +33,10 @@ window.HelpMessage = function(){
 
   }.bind(this));
 
+  Leap.loopController.on('ready', function(){
+    this.mesh.visible = false;
+  }.bind(this));
+
 //  this.mesh.addEventListener('mouseover', onMouseover);
 //  this.mesh.addEventListener('mouseout', onMouseout);
 
