@@ -42,7 +42,7 @@ function VRCursor(mode) {
 
       // cursor mesh
       self.cursor = new THREE.Mesh(
-        new THREE.SphereGeometry( 0.05, 5, 5 ),
+        new THREE.SphereGeometry( 0.005, 5, 5 ),
         new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, side: THREE.DoubleSide } )
       );
 
@@ -260,8 +260,9 @@ VRCursor.prototype.updatePositionMouseSync = function(headQuat) {
 VRCursor.prototype.updatePositionCentered = function(headQuat) {
   var headQuat = this.headQuat();
   var cursorPivot = this.cursorPivot;
-  var pivotQuat = new THREE.Quaternion();
-  pivotQuat.multiply(headQuat);
+//  var pivotQuat = new THREE.Quaternion();
+  var pivotQuat = headQuat;
+//  pivotQuat.multiply(headQuat);
   cursorPivot.setRotationFromQuaternion(pivotQuat);
   cursorPivot.position.copy( this.camera.position )
 };
@@ -451,8 +452,9 @@ VRCursor.prototype.updateCursorIntersection = function() {
   if (mouse && this.mode == this.modes.mono) {
     raycaster.set( camera.position, mouse );
   } else {
+    cursor.updateMatrixWorld(true);
     var cursorPosition = cursor.matrixWorld;
-    vector = new THREE.Vector3().setFromMatrixPosition(cursorPosition);
+    var vector = new THREE.Vector3().setFromMatrixPosition(cursorPosition);
 
     // Draws RAY
     // var geometry = new THREE.Geometry();
@@ -466,7 +468,8 @@ VRCursor.prototype.updateCursorIntersection = function() {
   }
 
 
-  var intersects = raycaster.intersectObjects( this.context.children );
+//  var intersects = raycaster.intersectObjects( this.context.children );
+  var intersects = raycaster.intersectObjects( window.backdrop.children );
 
   var intersected;
   var i;
@@ -482,8 +485,13 @@ VRCursor.prototype.updateCursorIntersection = function() {
   for (i = 0; i < intersects.length; ++i) {
     intersected = intersects[0].object;
 
+    if (!intersected.visible) continue;
+
+//    console.log('intersects', intersects.length, "objects. First:", intersected.name);
+
     if (intersected !== objectMouseOver) {
       if (objectMouseOver !== null) {
+
         objectMouseOver.dispatchEvent(events.mouseOutEvent);
       }
       if (intersected !== null) {
