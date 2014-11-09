@@ -259,6 +259,8 @@ angular.module('directives', [])
             console.log('playback click');
             backdrop.visible = false;
 
+            // prevent hands from moving with camera now.
+            Leap.loopController.plugins.transform.effectiveParent = scene;
             player.setRecording(recordings.p1);
             player.play();
             ga('send', 'event', 'Click', 'autoplay');
