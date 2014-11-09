@@ -122,6 +122,8 @@ useDesktopMode = function(){
 
   transform.effectiveParent = null;
 
+  Leap.loopController.setOptimizeHMD(false);
+
   document.getElementById('selectDesktop').className = "active";
   document.getElementById('selectOculus').className = "";
 
@@ -136,6 +138,8 @@ useHMDMode = function(){
   transform.position   = HMDTransforms.position;
 
   transform.effectiveParent = window.camera;
+
+  Leap.loopController.setOptimizeHMD(true);
 
   document.getElementById('selectDesktop').className = "";
   document.getElementById('selectOculus').className = "active";
