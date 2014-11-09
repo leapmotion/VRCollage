@@ -520,7 +520,17 @@ angular.module('directives', [])
           }
         });
 
+        var loadingText;
+        Leap.loopController.on('playback.ajax:begin', function(player){
+          loadingText = createText('Loading..');
+          loadingText.position.setZ(-0.3);
+          loadingText.position.setY(0.07);
+          scene.add(loadingText);
+        });
+
         Leap.loopController.on('playback.ajax:complete', function(player){
+          // not sure why, but this also seems to be disappearing on its own sometimes..
+          scene.remove(loadingText);
           player.play();
         });
 

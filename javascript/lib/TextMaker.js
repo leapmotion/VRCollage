@@ -6,12 +6,12 @@ window.createText = function(text, options) {
 
   var color = options.color || 0x81d41d;
 
-  options.size || (options.size = 20);
-  options.height || (options.height = 2);
+  options.size || (options.size = 0.03); // scale?
+  options.height || (options.height = 0.005); // z-dpeth
   options.curveSegments || (options.curveSegments = 4);
-  options.bevelThickness || (options.bevelThickness = 1.5);
-  options.bevelSize || (options.bevelSize = 1.5);
-  options.bevelEnabled || (options.bevelEnabled = 2);
+  options.bevelThickness || (options.bevelThickness = 0.015);
+  options.bevelSize || (options.bevelSize = 0.015);
+  options.bevelEnabled || (options.bevelEnabled = false);
 
   var material = new THREE.MeshFaceMaterial( [
     new THREE.MeshPhongMaterial( { color: color, shading: THREE.FlatShading } ), // front
