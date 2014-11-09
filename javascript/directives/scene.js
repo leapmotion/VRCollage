@@ -130,7 +130,6 @@ angular.module('directives', [])
         var dockMesh = new THREE.Mesh(
           new THREE.PlaneGeometry(dockWidth, dockHeight),
           new THREE.MeshPhongMaterial({
-            wireframe: false,
             color: 0xffffff,
             map: THREE.ImageUtils.loadTexture("images/foto-viewer-dark.png"),
             side: THREE.DoubleSide, // allow reverse raycasting.
@@ -142,7 +141,7 @@ angular.module('directives', [])
 
         var zDepth = -0.39;
 
-        dockMesh.position.set(0.1, -0.2, zDepth);
+        dockMesh.position.set(0.1, -0.16, zDepth);
 
         // for now, we don't create a scrollable object, but just let it be moved in the view
         var dock = new Dock(scene, dockMesh, Leap.loopController, {
@@ -213,9 +212,115 @@ angular.module('directives', [])
 //        scene.add(text);
 
 
-        var help = new HelpMessage;
-        help.mesh.position.set(0, 0.17, zDepth - 0.01);
-        scene.add(help.mesh);
+        // these should be on a plane covering everything up...
+
+        var zOffset = 0.01;
+        var backdropDepth = zDepth + zOffset;
+        var dialogHeight = 0.09;
+
+        var backdrop = new THREE.Mesh(
+          new THREE.PlaneGeometry(10, 10),
+          new THREE.MeshPhongMaterial({
+            color: 0x000000,
+            specular: 0x000000
+          })
+        );
+        backdrop.name = "backdrop";
+//        backdrop.visible = false;
+        scene.add(backdrop);
+
+        // we use this for checking intersections later.
+        window.backdrop = backdrop;
+
+        backdrop.position.set(0, 0, backdropDepth);
+
+
+        var pluginLeap = new THREEDialog({
+          name: 'pluginLeap-ui',
+          height: 0.36,
+          bg:    'images/intro/plug-in-leap.png',
+          onClick: function(){
+            console.log('pluginLeap click');
+            ga('send', 'event', 'Click', 'pluginLeap');
+          }
+        });
+        pluginLeap.mesh.position.set(-0.2, dialogHeight, zOffset);
+        backdrop.add(pluginLeap.mesh);
+//        scene.add(pluginLeap.mesh);
+
+
+        var playback = new THREEDialog({
+          name: 'playback-ui',
+          height: 0.18,
+          bg:    'images/intro/auto-play.png',
+          hover: 'images/intro/auto-play-ok.png',
+          click: 'images/intro/auto-play-ok.png',
+          onClick: function(){
+            console.log('playback click');
+            backdrop.visible = false;
+
+            player.setRecording(recordings.p1);
+            player.play();
+            ga('send', 'event', 'Click', 'autoplay');
+          }
+        });
+        playback.mesh.position.set(0.2, dialogHeight, zOffset);
+        backdrop.add(playback.mesh);
+
+
+        var HMDMode = new THREEDialog({
+          name: 'HMDMode-ui',
+          height: 0.2,
+          bg:    'images/intro/hmd.png',
+          hover: 'images/intro/hmd-ok.png',
+          click: 'images/intro/hmd-ok.png',
+          onClick: function(){
+            console.log('hmd click');
+            backdrop.visible = false;
+            cursor.cursor.visible = false;
+            window.useHMDMode();
+            ga('send', 'event', 'Click', 'HMDMode');
+          }
+        });
+        HMDMode.mesh.position.set(-0.15, dialogHeight, zOffset);
+        HMDMode.mesh.visible = false;
+        backdrop.add(HMDMode.mesh);
+
+
+        var desktopMode = new THREEDialog({
+          name: 'DesktopMode-ui',
+          height: 0.2,
+          bg:    'images/intro/desktop.png',
+          hover: 'images/intro/desktop-ok.png',
+          click: 'images/intro/desktop-ok.png',
+          onClick: function(){
+            console.log('desktop click');
+            backdrop.visible = false;
+            cursor.cursor.visible = false;
+            window.useDesktopMode();
+            ga('send', 'event', 'Click', 'DesktopMode');
+          }
+        });
+        desktopMode.mesh.position.set(0.15, dialogHeight, zOffset);
+        desktopMode.mesh.visible = false;
+        backdrop.add(desktopMode.mesh);
+
+
+
+        Leap.loopController.on('streamingStarted', function(){
+
+          pluginLeap.mesh.visible = false;
+          playback.mesh.visible = false;
+
+          pluginLeap.mesh.dispatchEvent({type: 'click'});
+
+          desktopMode.mesh.visible = true;
+          HMDMode.mesh.visible = true;
+
+          document.getElementById('desktopVsHMDMode').className = '';
+          document.getElementById('controllerStatusMessage').className = 'hidden';
+
+        });
 
 
         // must be global so that blur and focus can access it in app.js
@@ -228,6 +333,9 @@ angular.module('directives', [])
 
         cursor.ready.then(function() {
           scene.add(cursor.layout);
+          console.log(cursor.layout.position);
+          cursor.cursor.position.setZ(-0.35);
+          cursor.cursor.material.color.setHex(0x81d41d);
         	cursor.enable();
         });
 
@@ -243,8 +351,8 @@ angular.module('directives', [])
 
 
         var gridMat = new THREE.MeshPhongMaterial({
-          wireframe: false,
           color: 0xffffff,
+          specular: 0x000000,
           map: THREE.ImageUtils.loadTexture("images/Grid-01.png")
         });
 
@@ -287,18 +395,6 @@ angular.module('directives', [])
             handArrow2.mesh.visible = false;
           }
         });
-
-
-        //
-        // Add grid
-        //
-//
-//        var grid = new THREEGrid();
-//        grid.position.setZ(0);
-//
-//        scene.add(
-//          grid
-//        );
 
 
 
@@ -401,15 +497,22 @@ angular.module('directives', [])
             url: "recordings/spread-photos-55fps.json.lz"
           }
         };
+        var p1link = document.getElementById('auto-part1-link');
+        var p2link = document.getElementById('auto-part2-link');
+        var p3link = document.getElementById('auto-part3-link');
 
         Leap.loopController.on('playback.playbackFinished', function(){
           player.clear();
 
           if (player.recording == recordings.p1){
-            document.getElementById('auto-part2-span').style.display = "block";
+            if (p2link){
+              document.getElementById('auto-part2-span').style.display = "block";
+            }
           }
           if (player.recording == recordings.p2){
-            document.getElementById('auto-part3-span').style.display = "block";
+            if (p3link) {
+              document.getElementById('auto-part3-span').style.display = "block";
+            }
           }
         });
 
@@ -417,23 +520,29 @@ angular.module('directives', [])
           player.play();
         });
 
-        document.getElementById('auto-part1-link').onclick = function(){
-          player.setRecording(recordings.p1);
-          player.play();
-          return false;
-        };
+        if (p1link){
+          p1link.onclick = function(){
+            player.setRecording(recordings.p1);
+            player.play();
+            return false;
+          };
+        }
 
-        document.getElementById('auto-part2-link').onclick = function(){
-          player.setRecording(recordings.p2);
-          player.play();
-          return false;
-        };
+        if (p2link){
+          p2link.onclick = function(){
+            player.setRecording(recordings.p2);
+            player.play();
+            return false;
+          }
+        }
 
-        document.getElementById('auto-part3-link').onclick = function(){
-          player.setRecording(recordings.p3);
-          player.play();
-          return false;
-        };
+        if (p3link) {
+          p3link.onclick = function () {
+            player.setRecording(recordings.p3);
+            player.play();
+            return false;
+          };
+        }
 
       }
     };

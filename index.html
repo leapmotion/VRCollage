@@ -39,7 +39,7 @@
     <script src="javascript/lib/Dock.js"></script>
     <script src="javascript/lib/LeapDataPlotter.js"></script> <!-- could be removed -->
     <script src="javascript/lib/PlaneStack.js"></script>
-    <script src="javascript/lib/HelpMessage.js"></script>
+    <script src="javascript/lib/THREEDialog.js"></script>
 
     <!-- Webgl Fonts -->
     <script src="javascript/fonts/helvetiker_regular.typeface.js"></script>
@@ -81,17 +81,18 @@
   <div id="noLeapWarning">
     <p>
       <span id="controllerStatusMessage">Please plug in your Leap Motion Controller.</span>
-      <br/>Is Controller on your <a href="#" id="selectDesktop">Desktop</a> or mounted to your <a href="#" id="selectOculus" class="active">Oculus rift</a>?
+      <span id="desktopVsHMDMode" class="hidden">
+        Is Controller on your <a href="#" id="selectDesktop">Desktop</a> or mounted to your <a href="#" id="selectOculus" class="active">Oculus rift</a>?
+      </span>
     </p>
     <p>
-      No Controller? No problem.
-      Try automatic mode:
+      No Controller? Try automatic mode: <a href="#" id="auto-part1-link">Select Photos</a>.
     </p>
-    <ol>
-      <li><a href="#" id="auto-part1-link">Select Photos</a>.</li>
+    <!-- <ol>
+      <li>.</li>
       <li id="auto-part2-span" class="hidden"><a href="#" id="auto-part2-link">Stack Photos</a>.</li>
       <li id="auto-part3-span" class="hidden"><a href="#" id="auto-part3-link">Spread Photos</a>.</li>
-    </ol>
+    </ol> -->
   </div>
 
 
