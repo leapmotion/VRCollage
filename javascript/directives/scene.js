@@ -259,8 +259,7 @@ angular.module('directives', [])
             console.log('playback click');
             backdrop.visible = false;
 
-            // prevent hands from moving with camera now.
-            Leap.loopController.plugins.transform.effectiveParent = scene;
+            useDesktopMode();
             player.setRecording(recordings.p1);
             player.play();
             ga('send', 'event', 'Click', 'autoplay');
@@ -490,7 +489,9 @@ angular.module('directives', [])
         // todo - loading graphic
         var recordings = {
           p1: {
-            url: "recordings/remove-photos-57fps.json.lz"
+//            url: "recordings/remove-photos-2-56fps.json.lz"
+//            url: "recordings/remove-photos-3-53fps.json.lz"
+            url: "recordings/remove-photos-3-110fps.json.lz"
           },
           p2: {
             url: "recordings/stack-images-51fps.json.lz"
