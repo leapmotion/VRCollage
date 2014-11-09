@@ -258,6 +258,7 @@ angular.module('directives', [])
           onClick: function(){
             console.log('playback click');
             backdrop.visible = false;
+            cursor.cursor.visible = false;
 
             useDesktopMode();
             player.setRecording(recordings.p1);
