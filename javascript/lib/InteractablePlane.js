@@ -212,6 +212,7 @@ window.InteractablePlane.prototype = {
       }
     }
 
+    // todo - experiment with spring physics, like what's seen in beer-pong
     if ( intersectionCount < this.fingersRequiredForMove) {
       // inertia
       // simple verlet integration
@@ -364,6 +365,7 @@ window.InteractablePlane.prototype = {
     );
 
     // this ties InteractablePlane to boneHand plugin - probably should have callbacks pushed out to scene.
+    // happens on every frame before the 'frame' event handler below
     proximity.in( function(hand, intersectionPoint, key, index){
 
       // Let's try out a one-way state machine

@@ -1,6 +1,7 @@
 // Accepts a point in 3d space and a radius length
 
 Leap.plugin('proximity', function(scope){
+  'use strict';
 
   var proximities = [];
 
@@ -12,12 +13,123 @@ Leap.plugin('proximity', function(scope){
     }
   };
 
+  // Takes four vec3 points in global space
+  // Returns a point or false.
+  // http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+  var intersectionPointBetweenLines = function(l1a, l1b, l2a, l2b){
+
+    // at this point, r and s are on the same plane. Might make sense to do the 2d solution here.
+    var r = (new THREE.Vector3).subVectors(l1b, l1a);
+
+    var s = (new THREE.Vector3).subVectors(l2b, l2a);
+
+//    var rxs = r.cross(s);
+    var rxs = ( r.x * s.y ) - ( r.y * s.x );
+
+
+    console.assert(!isNaN(r.x));
+    console.assert(!isNaN(r.y));
+    console.assert(!isNaN(r.z));
+
+    console.assert(!isNaN(s.x));
+    console.assert(!isNaN(s.y));
+    console.assert(!isNaN(s.z));
+
+//    console.assert(!isNaN(rxs.x));
+//    console.assert(!isNaN(rxs.y));
+//    console.assert(!isNaN(rxs.z));
+
+    // t = (q − p) × s / (r × s)
+    var diff = l2a.clone().sub(l1a);
+
+    var diffxs = ( diff.x * s.y ) - ( diff.y * s.x );
+    var diffxr = ( diff.x * r.y ) - ( diff.y * r.x );
+
+    var t = diffxs / rxs;
+    var u = diffxr / rxs;
+
+    if (isNaN(t)) return false;
+    if (isNaN(u)) return false;
+
+    if ( t < 0 || t > 1 ) return false;
+    if ( u < 0 || u > 1 ) return false;
+
+    return l1a.clone().add(
+      r.multiplyScalar(t)
+    );
+
+  };
+
+  // todo - not sure what happens with dynamic z.
+  var testIntersectionPointBetweenLines = function(){
+
+    var point;
+    point = intersectionPointBetweenLines(
+      new THREE.Vector3(0,0,0),
+      new THREE.Vector3(1,0,0),
+      new THREE.Vector3(0.5,-1,0),
+      new THREE.Vector3(0.5,1,0)
+    );
+
+    console.assert(point);
+    console.assert(point.equals(new THREE.Vector3(0.5,0,0)));
+
+    // nonintersecting
+    point = intersectionPointBetweenLines(
+      new THREE.Vector3(0,0,0),
+      new THREE.Vector3(1,0,0),
+      new THREE.Vector3(0,0.2,0),
+      new THREE.Vector3(1,0.4,0)
+    );
+
+    console.assert(point === false);
+
+    // nonintersecting with z
+    point = intersectionPointBetweenLines(
+      new THREE.Vector3(0,0,0),
+      new THREE.Vector3(1,0,0),
+      new THREE.Vector3(0,0.2,0),
+      new THREE.Vector3(1,0.4,0.4)
+    );
+
+    console.assert(point === false);
+
+    // past end of line a
+    point = intersectionPointBetweenLines(
+      new THREE.Vector3(0,0,0),
+      new THREE.Vector3(1,0,0),
+      new THREE.Vector3(1.5,-1,0),
+      new THREE.Vector3(1.5,1,0)
+    );
+
+    console.assert(point === false);
+
+
+    // past end of line b
+    point = intersectionPointBetweenLines(
+      new THREE.Vector3(0,0,0),
+      new THREE.Vector3(1,0,0),
+      new THREE.Vector3(0.5,-2,0),
+      new THREE.Vector3(0.5,-1,0)
+    );
+
+    console.assert(point === false);
+
+  };
+
   // accepts one option: mode
   // mode: 'points', the default, will be "in" when any of the points are within the mesh.
   //   Expects points to be vec3s from the origin.
   // mode:
 
   var Proximity = function(mesh, handPoints, options){
+    setTimeout( // pop out of angular scope.
+      function(){
+        testIntersectionPointBetweenLines()
+      },
+      0
+    );
+
     options || (options = {});
     this.options = options;
 
@@ -29,6 +141,11 @@ Leap.plugin('proximity', function(scope){
     // These are both keyed by the string: hand.id + handPointIndex
     this.states = {};
     this.intersectionPoints = {}; // checkLines: one for each handPoint.  Position in world space.
+
+    // Similar to above, but also includes point on the plane, but not on the plane segment.
+    // This is used for responding to between-frame motion
+    this.possibleIntersectionPoints = {};
+
     this.distances = {}; // checkPoints: one for each handPoint
     this.lengths = {}; // checkPoints: one for each handPoint
   };
@@ -99,6 +216,7 @@ Leap.plugin('proximity', function(scope){
     // There is an issue here where handPoints is not indexed per hand
     // check where index is used, refactor. oops.
     // test pictures and resizing.
+    // Todo - this loop is giant, and should be split in to methods for compiler optimization.
     checkLines: function(hand, lines){
       var mesh = this.mesh, state, intersectionPoint, key;
 
@@ -118,9 +236,65 @@ Leap.plugin('proximity', function(scope){
 
         intersectionPoint = mesh.intersectedByLine(lines[j][0], lines[j][1], worldPosition);
 
-        // if there already was an intersection point,
-        // And the new one is good in z but off in x and y,
+        var lastIntersectionPoint = this.possibleIntersectionPoints[key];
+
+        // 1: store lastIntersectionPoint at all times
+        // 2: only return values for good intersectionpoints from mesh.intersectedByLine
+        // 3:  use it to tune intersectionpoint.
+        // This works for both when the hand has entered the plane, and when it has passed through entirely.
+        if ( this.states[key] === 'out' && intersectionPoint && lastIntersectionPoint ){
+
+          // check all four edges,
+          // take the one that actually has a cross
+          // if two have a cross (e.g., the intersection travels completely through the place), get the minimum distance one
+
+          // calc corners
+          var corners = mesh.corners();
+
+          var minLenSq = Infinity;
+          var closestEdgeIntersectionPoint = null;
+
+          for (var i = 0; i < 4; i++){
+
+            var point = intersectionPointBetweenLines(
+              corners[i],
+              corners[(i+1) % 4],
+              lastIntersectionPoint,
+              intersectionPoint
+            );
+
+            if (!point) continue;
+
+
+            console.assert(!isNaN(point.x));
+            console.assert(!isNaN(point.y));
+            console.assert(!isNaN(point.z));
+
+            var lengthSq = (new THREE.Vector3).subVectors(point, lastIntersectionPoint).lengthSq();
+
+            console.log('edge #:', i, 'line #:', j, "distance:", Math.sqrt(lengthSq) );
+
+            if (lengthSq < minLenSq){
+              minLenSq = lengthSq;
+              closestEdgeIntersectionPoint = point;
+            }
+
+          }
+
+          if (closestEdgeIntersectionPoint) {
+
+            console.log('edge intersection', closestEdgeIntersectionPoint, "between", intersectionPoint, "and", lastIntersectionPoint);
+
+            intersectionPoint = closestEdgeIntersectionPoint;
+
+          }
+
+        }
+
+        // if there already was a valid intersection point,
+        // And the new one is valid in z but off in x and y,
         // don't emit an out event.
+        // This allows high-speed motions out.
         if ( !intersectionPoint && this.intersectionPoints[key] && mesh.intersectionPoint ) {
 
 //          console.log('found newly lost intersection point');
@@ -133,7 +307,19 @@ Leap.plugin('proximity', function(scope){
           this.intersectionPoints[key] = intersectionPoint;
 
         } else if (this.intersectionPoints[key]) {
+
           delete this.intersectionPoints[key];
+
+        }
+
+        if (mesh.intersectionPoint){
+
+          this.possibleIntersectionPoints[key] = mesh.intersectionPoint; // mesh.intersectionPoint may be on plane, but not segment.
+
+        } else {
+
+          delete this.possibleIntersectionPoints[key];
+
         }
 
         state = intersectionPoint ? 'in' : 'out';

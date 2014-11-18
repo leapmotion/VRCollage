@@ -21,6 +21,9 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
     throw "Not sure if geometry is supported"
   }
 
+  this.lastIntersectionPoint || (this.lastIntersectionPoint = new THREE.Vector3);
+  this.lastIntersectionPoint = this.intersectionPoint; // reference copy if object, value copy if null.
+
   var p0 = worldPosition || this.position; // note that this is local, which would be buggy for nested objects (!)
   var l0 = lineStart;
   // the normal of any face will be the normal of the plane.
@@ -68,9 +71,12 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
   // we're on the line!
 
 
+
   // store intersection point for later use, whether it's on the segment or not.
   // This will be useful for frame travel of farther than a plane half.
   this.intersectionPoint = intersectionPoint;
+
+
 
 
 
