@@ -296,7 +296,6 @@ angular.module('directives', [])
           hover: 'images/intro/desktop-ok.png',
           click: 'images/intro/desktop-ok.png',
           onClick: function(){
-            console.log('desktop click');
             backdrop.visible = false;
             cursor.cursor.visible = false;
             window.useDesktopMode();
@@ -490,8 +489,6 @@ angular.module('directives', [])
         // todo - loading graphic
         var recordings = {
           p1: {
-//            url: "recordings/remove-photos-2-56fps.json.lz"
-//            url: "recordings/remove-photos-3-53fps.json.lz"
             url: "recordings/remove-photos-3-110fps.json.lz"
           },
           p2: {

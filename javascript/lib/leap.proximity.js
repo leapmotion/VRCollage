@@ -242,6 +242,11 @@ Leap.plugin('proximity', function(scope){
         // 2: only return values for good intersectionpoints from mesh.intersectedByLine
         // 3:  use it to tune intersectionpoint.
         // This works for both when the hand has entered the plane, and when it has passed through entirely.
+        // TODO: there is currently an issue where multiple lines hit this condition in the same frame,
+        // and they have disparate offset lengths
+        // In that case, the foremost line should push the image, but what happens here and in InteractablePlane#getPosition
+        // is the lines are averaged and then move the image
+        // InteractablePlane should be aware of this adjustment (perhaps doing so itself)
         if ( this.states[key] === 'out' && intersectionPoint && lastIntersectionPoint ){
 
           // check all four edges,
@@ -272,7 +277,7 @@ Leap.plugin('proximity', function(scope){
 
             var lengthSq = (new THREE.Vector3).subVectors(point, lastIntersectionPoint).lengthSq();
 
-            console.log('edge #:', i, 'line #:', j, "distance:", Math.sqrt(lengthSq) );
+//            console.log('edge #:', i, 'line #:', j, "distance:", Math.sqrt(lengthSq) );
 
             if (lengthSq < minLenSq){
               minLenSq = lengthSq;
@@ -283,7 +288,7 @@ Leap.plugin('proximity', function(scope){
 
           if (closestEdgeIntersectionPoint) {
 
-            console.log('edge intersection', closestEdgeIntersectionPoint, "between", intersectionPoint, "and", lastIntersectionPoint);
+//            console.log('edge intersection', closestEdgeIntersectionPoint, "between", intersectionPoint, "and", lastIntersectionPoint);
 
             intersectionPoint = closestEdgeIntersectionPoint;
 

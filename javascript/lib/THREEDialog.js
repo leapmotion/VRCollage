@@ -36,7 +36,7 @@ window.THREEDialog = function(options){
   this.mesh.addEventListener('click', function(event){
     // return early if clicked?
 
-    console.log('click', arguments);
+    console.log('click', event.target.name);
 
     if (this.clickMap) {
       this.setMap(this.clickMap);
@@ -93,8 +93,6 @@ window.THREEDialog.prototype = {
   setAspect: function(texture){
 
     var aspect = texture.image.height / texture.image.width; // this may need to be inverted.
-
-    console.log(this.options.name, aspect);
 
     this.mesh.scale.setY(aspect)
 
