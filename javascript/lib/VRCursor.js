@@ -238,7 +238,9 @@ VRCursor.prototype.onMouseClicked = function(e) {
   if (target.tagName == 'BODY' ||
     target.tagName == 'CANVAS' &&
     this.objectMouseOver) {
-      this.objectMouseOver.dispatchEvent(this.events.clickEvent);
+      if ( this.objectMouseOver.allAncestors( function(){ return this.visible } ) ){
+        this.objectMouseOver.dispatchEvent(this.events.clickEvent);
+      }
   }
 }
 
@@ -485,17 +487,15 @@ VRCursor.prototype.updateCursorIntersection = function() {
   for (i = 0; i < intersects.length; ++i) {
     intersected = intersects[0].object;
 
-    if (!intersected.visible) continue;
-
-//    console.log('intersects', intersects.length, "objects. First:", intersected.name);
-
     if (intersected !== objectMouseOver) {
       if (objectMouseOver !== null) {
 
         objectMouseOver.dispatchEvent(events.mouseOutEvent);
       }
       if (intersected !== null) {
-        intersected.dispatchEvent(events.mouseOverEvent);
+        if (intersected.allAncestors( function(){ return this.visible } ) ) {
+          intersected.dispatchEvent(events.mouseOverEvent);
+        }
       }
 
       this.objectMouseOver = intersected;
