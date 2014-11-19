@@ -9,7 +9,6 @@ Leap.plugin('pinchEvent', function(scope){
 
   var controller = this;
 
-  // todo - add hand lost events.
   this.on('handLost', function(hand){
 
     if (hand.data('pinchEvent.pinching')){

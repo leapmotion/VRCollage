@@ -106,11 +106,6 @@ angular.module('directives', [])
           camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
           renderer.setSize(window.innerWidth, window.innerHeight);
-
-          // expicit render call as:
-          // user may not have leap
-          // if they do, they probably won't have hand in frame, causing render
-          render()
         };
 
         window.addEventListener('resize', onResize, false);
@@ -435,35 +430,17 @@ angular.module('directives', [])
         });
 
 
-        var render = function() {
+        // By controlling render from frameEnd, we make sure that rendering happens immediately after frame processing.
+        Leap.loopController.on('frameEnd', function(timeStamp) {
+          TWEEN.update();
           cursor.update();
           Arrows.update();
           vrControls.update();
           vrEffect.render(scene, camera);
-        };
-        render();
-
-        // By controlling render from frame, we make sure that rendering happens immediately after frame processing.
-        Leap.loopController.on('frame', function(){
-          TWEEN.update();
-          render();
         });
-
-        var renderWithoutLeap = function() {
-          if ( Leap.loopController.streaming() ) return;
-
-          render();
-          window.requestAnimationFrame(renderWithoutLeap);
-        };
-
-        renderWithoutLeap();
 
 
         dock.on('imageLoad', function(image){
-
-          if (!Leap.loopController.streaming()){
-            render()
-          }
 
           if (!VRClientReady) {
             console.log("VRClient ready");
