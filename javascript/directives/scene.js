@@ -105,7 +105,7 @@ angular.module('directives', [])
         onResize = function() {
           camera.aspect = window.innerWidth / window.innerHeight;
           camera.updateProjectionMatrix();
-          renderer.setSize(window.innerWidth, window.innerHeight);
+          vrEffect.setSize( window.innerWidth, window.innerHeight );
         };
 
         window.addEventListener('resize', onResize, false);
