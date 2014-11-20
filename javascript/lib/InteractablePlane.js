@@ -548,15 +548,16 @@ window.InteractablePlane.prototype = {
     for (var i = 0; i < 5; i++){
       finger = hand.fingers[i];
 
+      if (i > 0){ // no thumb proximal
+        out.push(
+          [
+            (new THREE.Vector3).fromArray(finger.proximal.nextJoint),
+            (new THREE.Vector3).fromArray(finger.proximal.prevJoint)
+          ]
+        );
+      }
+
       out.push(
-//        [
-//          (new THREE.Vector3).fromArray(finger.metacarpal.nextJoint),
-//          (new THREE.Vector3).fromArray(finger.metacarpal.prevJoint)
-//        ],
-        [
-          (new THREE.Vector3).fromArray(finger.proximal.nextJoint),
-          (new THREE.Vector3).fromArray(finger.proximal.prevJoint)
-        ],
         [
           (new THREE.Vector3).fromArray(finger.medial.nextJoint),
           (new THREE.Vector3).fromArray(finger.medial.prevJoint)
@@ -566,6 +567,7 @@ window.InteractablePlane.prototype = {
           (new THREE.Vector3).fromArray(finger.distal.prevJoint)
         ]
       );
+
     }
 
     return out;
