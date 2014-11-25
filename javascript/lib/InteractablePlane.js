@@ -133,7 +133,8 @@ window.InteractablePlane.prototype = {
       })
     );
     this.mesh.add(this.highlightMesh);
-    this.highlightMesh.position.set(0,0,-0.00001);
+    // todo - this should subtract the normal
+    this.highlightMesh.position.set(0,0,-0.0001);
     this.highlightMesh.visible = false;
 
     this.touch(function(){
