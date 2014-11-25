@@ -49,7 +49,7 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.fingersRequiredForMove = 1;
 
   this.tempVec3 = new THREE.Vector3;
-  this.drag = 1 - 0.12; // 0.06 is the damping
+  this.drag = 1 - 0.12;
 //  this.drag = 0;
   this.lastPosition = planeMesh.position.clone();
 
@@ -220,12 +220,8 @@ window.InteractablePlane.prototype = {
 
     // todo - experiment with spring physics, like what's seen in beer-pong
     if ( intersectionCount < this.fingersRequiredForMove) {
-      // inertia
-      // simple verlet integration
-      newPosition.subVectors(this.mesh.position, this.lastPosition);
 
-      newPosition.multiplyScalar(this.drag).add(this.mesh.position);
-
+      newPosition.copy(this.mesh.position);
 
     } else {
 
@@ -343,6 +339,17 @@ window.InteractablePlane.prototype = {
     }
 
     return overlappingFingers > 0 ? averageDistance / overlappingFingers : 0;
+  },
+
+  // On a frame where there's no interaction, run the physics engine
+  // does spring return and velocity
+  stepPhysics: function(newPosition){
+
+    // inertia
+    // simple verlet integration
+    newPosition.subVectors(this.mesh.position, this.lastPosition);
+
+    newPosition.multiplyScalar(this.drag).add(this.mesh.position);
 
   },
 
@@ -428,11 +435,26 @@ window.InteractablePlane.prototype = {
       var i, moveX, moveY, moveZ, newPosition = this.tempVec3;
 
       if (this.options.moveX || this.options.moveY){
+
         this.getPosition( newPosition );
+
+      } else {
+
+        newPosition.copy(this.mesh.position)
+
       }
 
       if (this.options.moveZ){
-        newPosition.z = this.mesh.position.z + this.getZReposition(frame.hands);
+
+        newPosition.z += this.getZReposition(frame.hands);
+
+      }
+
+      if ( newPosition.equals( this.mesh.position ) ) {
+
+        // there's been no change, give it up to inertia and springs
+        this.stepPhysics(newPosition);
+
       }
 
       this.lastPosition.copy(this.mesh.position);
