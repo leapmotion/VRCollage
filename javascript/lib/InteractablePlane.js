@@ -256,16 +256,19 @@ window.InteractablePlane.prototype = {
       // for each finger tip
       // if there's no side yet, ray cast both ways until it gets a side
       // if these is a side, average the distances which have crossed.
-      // for now, the delta offset = Min(0, offset), allowing it to be pushed away from but not suck towards the fingertip
       // later, we should apply moments and get rotations.
+      // there should be a simpler way of doing this
+      // whereby instead of raycasting, we just look to see if the point has cross the plane between this frame and the last.
+      // may be more performant as well.
       for (var j = 0; j < 5; j++){
 
         finger = hand.fingers[j];
         key = hand.id + "-" + j;
 
-        rayCasterDirection.set(0,0,-1); //.applyMatrix4(this.mesh.matrixWorld).normalize(); // normalize may not be necessary here?
+        // todo - pop out rayCasterDirection.clone().setLength(0.01)
+        rayCasterDirection.set(0,0,-1); //todo .applyMatrix4(this.mesh.matrixWorld).normalize(); // normalize may not be necessary here?
         rayCaster.set(
-          (new THREE.Vector3).fromArray(finger.tipPosition).add(rayCasterDirection.clone().setLength(0.01) ),
+          (new THREE.Vector3).fromArray(finger.tipPosition).add(rayCasterDirection.clone().setLength(0.01) ), // 1cm in front of  fingertip
           rayCasterDirection
         );
 
@@ -275,7 +278,7 @@ window.InteractablePlane.prototype = {
           // we always multiply the opposite direction, to figure out how much across we are
           rayCaster.ray.direction.multiplyScalar( this.physicalFingerSides[key] * -1 );
           // having some distance between the origin point here prevents low-speed passthrough
-          rayCaster.ray.origin.fromArray(finger.tipPosition).add( rayCasterDirection.clone().setLength(0.01 * this.physicalFingerSides[key]) );
+          rayCaster.ray.origin.fromArray(finger.tipPosition).add( rayCasterDirection.clone().setLength(0.01 * this.physicalFingerSides[key]) ); // todo - can you even pass a negative number in to setlength?
           overlap = rayCaster.intersectObject(this.mesh)[0];
 
 
@@ -416,12 +419,16 @@ window.InteractablePlane.prototype = {
     this.controller.on('frame', function(frame){
       if (!this.interactable) return false;
 
-      var i, moveX, moveY, moveZ;
+      this.tempVec3.set(0,0,0)
+      var i, moveX, moveY, moveZ, newPosition = this.tempVec3;
 
+      if (this.options.moveX || this.options.moveY){
+        this.getPosition( newPosition );
+      }
 
-      var newPosition = this.getPosition( this.tempVec3.set(0,0,0) );
-
-      newPosition.z += this.getZReposition(frame.hands);
+      if (this.options.moveZ){
+        newPosition.z = this.mesh.position.z + this.getZReposition(frame.hands);
+      }
 
       this.lastPosition.copy(this.mesh.position);
 
@@ -464,7 +471,7 @@ window.InteractablePlane.prototype = {
 
 
       // note - include moveZ here when implemented.
-      if (moveX || moveY ) this.emit('travel', this, this.mesh);
+      if ( moveX || moveY || moveZ ) this.emit( 'travel', this, this.mesh );
 
 
     }.bind(this) );
