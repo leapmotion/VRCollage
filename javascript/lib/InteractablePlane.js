@@ -243,11 +243,18 @@ window.InteractablePlane.prototype = {
   getZReposition: function(hands){
     var rayCaster = this.rayCaster;
     var rayCasterDirection = this.rayCasterDirection;
-    var hand, finger, key, overlap;
+    var hand, finger, key, overlap, fingerTipOffset;
     this.mesh.matrixWorld.needsUpdate = true; // this is a bit of an unnecessary security.
 
     var averageDistance = 0;
     var overlappingFingers = 0;
+
+    rayCasterDirection.set(0,0,-1); //todo .applyMatrix4(this.mesh.matrixWorld).normalize(); // normalize may not be necessary here?
+
+    // todo IIRC, this is pretty important for histeresis
+    // Ofcourse, this means that it's not great for high-speed application
+    // should revisit.
+    fingerTipOffset = rayCasterDirection.clone().setLength(0.01);
 
     for (var i =0; i < hands.length; i++){
       hand = hands[i];
@@ -265,10 +272,8 @@ window.InteractablePlane.prototype = {
         finger = hand.fingers[j];
         key = hand.id + "-" + j;
 
-        // todo - pop out rayCasterDirection.clone().setLength(0.01)
-        rayCasterDirection.set(0,0,-1); //todo .applyMatrix4(this.mesh.matrixWorld).normalize(); // normalize may not be necessary here?
         rayCaster.set(
-          (new THREE.Vector3).fromArray(finger.tipPosition).add(rayCasterDirection.clone().setLength(0.01) ), // 1cm in front of  fingertip
+          (new THREE.Vector3).fromArray(finger.tipPosition).add( fingerTipOffset ), // 1cm in front of  fingertip
           rayCasterDirection
         );
 
@@ -278,7 +283,7 @@ window.InteractablePlane.prototype = {
           // we always multiply the opposite direction, to figure out how much across we are
           rayCaster.ray.direction.multiplyScalar( this.physicalFingerSides[key] * -1 );
           // having some distance between the origin point here prevents low-speed passthrough
-          rayCaster.ray.origin.fromArray(finger.tipPosition).add( rayCasterDirection.clone().setLength(0.01 * this.physicalFingerSides[key]) ); // todo - can you even pass a negative number in to setlength?
+          rayCaster.ray.origin.fromArray(finger.tipPosition).add( fingerTipOffset.clone().multiplyScalar(this.physicalFingerSides[key]) );
           overlap = rayCaster.intersectObject(this.mesh)[0];
 
 
@@ -317,7 +322,7 @@ window.InteractablePlane.prototype = {
           } else {
 
             rayCaster.ray.direction.multiplyScalar( -1 );
-            rayCaster.ray.origin.fromArray(finger.tipPosition).add( rayCasterDirection.clone().setLength(-0.01) );
+            rayCaster.ray.origin.fromArray(finger.tipPosition).sub( fingerTipOffset );
 
             overlap = rayCaster.intersectObject(this.mesh)[0];
 
