@@ -50,8 +50,13 @@ window.InteractablePlane = function(planeMesh, controller, options){
 
   this.tempVec3 = new THREE.Vector3;
   this.drag = 1 - 0.12;
+  this.density = 1;
+  this.mass = this.mesh.geometry.parameters.width * this.mesh.geometry.parameters.height * this.density;
+  // Spring constant of a restoring force (this should start null, but todo)
+  this.returnSpring = this.mass * 0.1; // just for fun
 //  this.drag = 0;
-  this.lastPosition = planeMesh.position.clone();
+  this.lastPosition     = planeMesh.position.clone();
+  this.originalPosition = planeMesh.position.clone();
 
   // keyed by handId-fingerIndex
   // 1 or -1 to indicate which side of the mesh a finger is "on"
@@ -191,6 +196,7 @@ window.InteractablePlane.prototype = {
 
     this.mesh.position.add( this.mesh.parent.position ); // should be the diff between the old and new parent world positions
     this.lastPosition.copy(this.mesh.position);  // reset velocity (!)
+    this.originalPosition.copy(this.mesh.position);
 
     this.mesh.parent.remove(this.mesh);
     newParent.add(this.mesh);
@@ -339,6 +345,7 @@ window.InteractablePlane.prototype = {
     }
 
     return overlappingFingers > 0 ? averageDistance / overlappingFingers : 0;
+
   },
 
   // On a frame where there's no interaction, run the physics engine
@@ -349,7 +356,19 @@ window.InteractablePlane.prototype = {
     // simple verlet integration
     newPosition.subVectors(this.mesh.position, this.lastPosition);
 
-    newPosition.multiplyScalar(this.drag).add(this.mesh.position);
+    // Add a force. f = ma = kx, a = dv/dt -> change in velocity during a time-step. -> kx/m
+    if (this.returnSpring){
+
+
+      var offset = this.mesh.position.clone().sub(this.originalPosition);
+
+      newPosition.add( offset.multiplyScalar( - this.returnSpring / this.mass ) );
+
+    }
+
+    newPosition.multiplyScalar(this.drag);
+
+    newPosition.add(this.mesh.position);
 
   },
 
