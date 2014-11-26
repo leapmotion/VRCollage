@@ -40,6 +40,7 @@
   <li>Parented Angled Plane</li>
   <li>Discs</li>
   <li>Hoverstate</li> <!-- We could do a hoverstate, but it might be much cooler to have glow-in-hand -->
+  <li>Scale?</li>
 </ul>
 
 <h3>
@@ -96,7 +97,7 @@
   var longThrow = button.longThrow;
   var base = new THREE.Mesh(new THREE.BoxGeometry(0.1, longThrow, longThrow), new THREE.MeshPhongMaterial({color: 0x222222}));
   base.position.set(0.1, 0, 0);
-//  base.rotateY(Math.PI / 4); // todo - once we can parent.
+  base.rotateY(Math.PI / 2); // todo - once we can parent.
 
   imageMesh.position.set(
     0,

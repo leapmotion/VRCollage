@@ -248,7 +248,7 @@ window.InteractablePlane.prototype = {
     var averageDistance = 0;
     var overlappingFingers = 0;
 
-    rayCasterDirection.set(0,0,-1); //todo .applyMatrix4(this.mesh.matrixWorld).normalize(); // normalize may not be necessary here?
+    rayCasterDirection.set(0,0,-1).applyMatrix4(this.mesh.matrixWorld).normalize(); // normalize may not be necessary here?
 
     // todo IIRC, this is pretty important for histeresis
     // Ofcourse, this means that it's not great for high-speed application
