@@ -10,6 +10,9 @@
 
   <script src="javascript/lib/leap.proximity.js"></script>
   <script src="javascript/lib/InteractablePlane.js"></script>
+  <script src="javascript/lib/leap.button.js"></script>
+
+  <script src="javascript/lib/OrbitControls.js"></script>
 
   <style>
     body {
@@ -71,23 +74,31 @@
   var renderer = Leap.loopController.plugins.boneHand.renderer;
   camera.position.set( 0, 0.3, 0.6);
 
-
-  var axisHelper = new THREE.AxisHelper( 0.1 );
-  scene.add( axisHelper );
+  var controls = new THREE.OrbitControls( camera );
 
 
-
-  var imgGeometry = new THREE.PlaneGeometry(0.1, 0.2);
+  var planeGeo = new THREE.PlaneGeometry(0.1, 0.2);
   var material = new THREE.MeshPhongMaterial({
     side: THREE.DoubleSide // necessary for z-movement, which requires raycasting.
   });
-  var imageMesh = new THREE.Mesh(imgGeometry, material);
-  imageMesh.position.setY(0.2);
-  imageMesh.position.setX(0.15);
+  var imageMesh = new THREE.Mesh(planeGeo, material);
+
+  imageMesh.position.setY(0.1);
+  imageMesh.position.setX(0.1);
   imageMesh.name = "button";
-  var button = new InteractablePlane(imageMesh, Leap.loopController, {moveZ: true, moveX: false, moveY: false});
   scene.add(imageMesh);
 
+  // maybe should move plane constructor args in to pushbotton? Maybe not so can do disc?
+  var button = new PushButton(
+    new InteractablePlane(imageMesh, Leap.loopController, {moveZ: true, moveX: false, moveY: false})
+  );
+
+
+  var longThrow = button.longThrow;
+  var base = new THREE.Mesh(new THREE.BoxGeometry(0.1, longThrow, longThrow), new THREE.MeshPhongMaterial({color: 0x222222}));
+  base.position.set(imageMesh.position.x,imageMesh.position.y - imageMesh.geometry.parameters.height / 2 + longThrow / 2, longThrow / 2);
+
+  scene.add(base);
 
 </script>
 
