@@ -51,12 +51,14 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.fingersRequiredForMove = 1;
 
   this.tempVec3 = new THREE.Vector3;
+
   this.drag = 1 - 0.12;
   this.density = 1;
   this.mass = this.mesh.geometry.parameters.width * this.mesh.geometry.parameters.height * this.density;
-  // Spring constant of a restoring force (this should start null, but todo)
-  this.returnSpring = this.mass * 0.1; // just for fun
-//  this.drag = 0;
+
+  // Spring constant of a restoring force
+  this.returnSpring = null;
+
   this.lastPosition     = planeMesh.position.clone();
   this.originalPosition = planeMesh.position.clone();
 

@@ -1,5 +1,6 @@
 var PushButton = function(interactablePlane){
   this.plane = interactablePlane;
+  this.plane.returnSpring = this.plane.mass;
 
   this.longThrow  = -0.05;
   this.shortThrow = -0.03;
@@ -40,7 +41,6 @@ PushButton.prototype.releasedConstraint = function(z){
   if (z < origZ + this.longThrow){
     if (!this.pressed && this.canChangeState){
       this.canChangeState = false;
-      console.log('press');
       this.emit('press');
     }
     return origZ + this.longThrow;
@@ -61,7 +61,6 @@ PushButton.prototype.pressedConstraint = function(z){
   if (z < origZ + this.longThrow){
     if (this.pressed && this.canRelease) {
       this.canRelease = false;
-      console.log('release');
       this.emit('release');
     }
     return origZ + this.longThrow;
