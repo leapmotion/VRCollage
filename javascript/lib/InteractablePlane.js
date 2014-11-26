@@ -40,9 +40,7 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.touched = false;
 
   // note: movement constraints are implemented for X,Y, but not grab.
-  this.movementConstraintsX = [];
-  this.movementConstraintsY = [];
-  this.movementConstraintsZ = [];
+  this.movementConstraints = {};
 
   // If this is ever increased above one, that initial finger can not be counted when averaging position
   // otherwise, it causes jumpyness.
@@ -172,18 +170,17 @@ window.InteractablePlane.prototype = {
   // e.g. plane.constrainMovement({y: function(y){ return y > 0.04 } });
   // Todo - it would be great to have a "bouncy constraint" option, which would act like the scroll limits on OSX
   constrainMovement: function(options){
-    if (options['x']) this.movementConstraintsX.push(options['x']);
-    if (options['y']) this.movementConstraintsY.push(options['y']);
-    if (options['z']) this.movementConstraintsZ.push(options['z']);
+    if (options['x']) this.movementConstraints.x = options['x'];
+    if (options['y']) this.movementConstraints.y = options['y'];
+    if (options['z']) this.movementConstraints.z = options['z'];
 
     return this;
   },
 
   clearMovementConstraints: function(){
-    this.movementConstraintsX = [];
-    this.movementConstraintsY = [];
-    this.movementConstraintsZ = [];
+    this.movementConstraints = {};
   },
+
 
   // todo - handle rotations as well
   changeParent: function(newParent){
@@ -451,7 +448,7 @@ window.InteractablePlane.prototype = {
       if (!this.interactable) return false;
 
       this.tempVec3.set(0,0,0)
-      var i, moveX, moveY, moveZ, newPosition = this.tempVec3;
+      var i, moveX = false, moveY = false, moveZ = false, newPosition = this.tempVec3;
 
       if (this.options.moveX || this.options.moveY){
 
@@ -487,32 +484,43 @@ window.InteractablePlane.prototype = {
       // (Note: can't pick just any face normal, so that we can distort the mesh later on.
       // This will allow (but hopefully not require?) expertise to use.
 
-      if (this.options.moveX){
-        moveX = true;
-        for (i = 0; i < this.movementConstraintsX.length; i++){
-          if (!this.movementConstraintsX[i](newPosition.x)) {
-            moveX = false; break;
-          }
+      if (this.options.moveX ){
+        
+        if (this.movementConstraints.x){
+          newPosition.x = this.movementConstraints.x(newPosition.x);
         }
-        if (moveX) this.mesh.position.x = newPosition.x;
+        
+        if (newPosition.x != this.mesh.position.x){
+          this.mesh.position.x = newPosition.x;
+          moveX = true;
+        }
+        
       }
-      if (this.options.moveY){
-        moveY = true;
-        for (i = 0; i < this.movementConstraintsY.length; i++){
-          if (!this.movementConstraintsY[i](newPosition.y)) {
-            moveY = false; break;
-          }
+      
+      if (this.options.moveY ){
+        
+        if (this.movementConstraints.y){
+          newPosition.y = this.movementConstraints.y(newPosition.y);
         }
-        if (moveY) this.mesh.position.y = newPosition.y;
+        
+        if (newPosition.y != this.mesh.position.y){
+          this.mesh.position.y = newPosition.y;
+          moveY = true;
+        }
+        
       }
-      if (this.options.moveZ){
-        moveZ = true;
-        for (i = 0; i < this.movementConstraintsZ.length; i++){
-          if (!this.movementConstraintsZ[i](newPosition.z)) {
-            moveZ = false; break;
-          }
+      
+      if (this.options.moveZ ){
+        
+        if (this.movementConstraints.z){
+          newPosition.z = this.movementConstraints.z(newPosition.z);
         }
-        if (moveZ) this.mesh.position.z = newPosition.z;
+        
+        if (newPosition.z != this.mesh.position.z){
+          this.mesh.position.z = newPosition.z;
+          moveZ = true;
+        }
+        
       }
 
 
