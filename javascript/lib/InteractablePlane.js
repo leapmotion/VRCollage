@@ -266,6 +266,9 @@ window.InteractablePlane.prototype = {
       // there should be a simpler way of doing this
       // whereby instead of raycasting, we just look to see if the point has cross the plane between this frame and the last.
       // may be more performant as well.
+      // or, do like proximity
+      // rotate the whole damn thing flat, and then check the x and y of finger points, just like plane intersection
+      // that way, we could check more points for less.
       for (var j = 0; j < 5; j++){
 
         finger = hand.fingers[j];
@@ -283,8 +286,8 @@ window.InteractablePlane.prototype = {
           rayCaster.ray.direction.multiplyScalar( this.physicalFingerSides[key] * -1 );
           // having some distance between the origin point here prevents low-speed passthrough
           rayCaster.ray.origin.fromArray(finger.tipPosition).add( fingerTipOffset.clone().multiplyScalar(this.physicalFingerSides[key]) );
-          overlap = rayCaster.intersectObject(this.mesh)[0];
 
+          overlap = rayCaster.intersectObject(this.mesh)[0];
 
           // planes only have one intersection
           if (overlap){
@@ -294,6 +297,11 @@ window.InteractablePlane.prototype = {
 
           } else {
             // hand behind plane
+
+            // presumably there's a bug in raycasting
+            // where when the origin point is close enough to the object, it doesn't notice
+            // unsure what woudl cause this, compensating:
+            rayCaster.ray.origin.fromArray(finger.tipPosition);
 
             // check that we're still overlapping.  If not, blow everything up.
             rayCaster.ray.direction.multiplyScalar( -1 );
