@@ -59,8 +59,9 @@ window.InteractablePlane = function(planeMesh, controller, options){
   // Spring constant of a restoring force
   this.returnSpring = null;
 
-  this.lastPosition     = planeMesh.position.clone();
-  this.originalPosition = planeMesh.position.clone();
+  this.lastPosition = new THREE.Vector3;
+  this.originalPosition = new THREE.Vector3;
+  this.resetPosition();
 
   // keyed by handId-fingerIndex
   // 1 or -1 to indicate which side of the mesh a finger is "on"
@@ -81,6 +82,13 @@ window.InteractablePlane = function(planeMesh, controller, options){
 };
 
 window.InteractablePlane.prototype = {
+
+  resetPosition: function(){
+
+    this.lastPosition.copy(this.mesh.position);
+    this.originalPosition.copy(this.mesh.position);
+
+  },
 
   emit: function(eventName, data1, data2, data3, data4, data5){
 

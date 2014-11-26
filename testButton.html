@@ -39,6 +39,7 @@
   <li>Parented Plane</li>
   <li>Parented Angled Plane</li>
   <li>Discs</li>
+  <li>Hoverstate</li> <!-- We could do a hoverstate, but it might be much cooler to have glow-in-hand -->
 </ul>
 
 <h3>
@@ -72,7 +73,7 @@
   var scene = Leap.loopController.plugins.boneHand.scene;
   var camera = Leap.loopController.plugins.boneHand.camera;
   var renderer = Leap.loopController.plugins.boneHand.renderer;
-  camera.position.set( 0, 0.3, 0.6);
+  camera.position.set( 0, 0.3, 0.6 );
 
   var controls = new THREE.OrbitControls( camera );
 
@@ -84,11 +85,9 @@
   var imageMesh = new THREE.Mesh(planeGeo, material);
 
   imageMesh.position.setY(0.1);
-  imageMesh.position.setX(0.1);
   imageMesh.name = "button";
-  scene.add(imageMesh);
 
-  // maybe should move plane constructor args in to pushbotton? Maybe not so can do disc?
+  // maybe should move plane constructor args in to pushButton? Maybe not so can do disc?
   var button = new PushButton(
     new InteractablePlane(imageMesh, Leap.loopController, {moveZ: true, moveX: false, moveY: false})
   );
@@ -96,7 +95,16 @@
 
   var longThrow = button.longThrow;
   var base = new THREE.Mesh(new THREE.BoxGeometry(0.1, longThrow, longThrow), new THREE.MeshPhongMaterial({color: 0x222222}));
-  base.position.set(imageMesh.position.x,imageMesh.position.y - imageMesh.geometry.parameters.height / 2 + longThrow / 2, longThrow / 2);
+  base.position.set(0.1, 0, 0);
+//  base.rotateY(Math.PI / 4); // todo - once we can parent.
+
+  imageMesh.position.set(
+    0,
+    imageMesh.geometry.parameters.height / 2 - longThrow / 2,
+    -longThrow / 2
+  );
+  button.plane.resetPosition(); // resets the original position, etc to the current one
+  base.add(imageMesh);
 
   scene.add(base);
 

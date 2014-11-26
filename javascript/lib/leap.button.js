@@ -1,3 +1,7 @@
+// Never set the rotation of a button
+// All units, such as throw, are designed to go in the negative Z
+// Add it to a parent/pivot, and rotate that.
+
 var PushButton = function(interactablePlane){
   this.plane = interactablePlane;
   this.plane.returnSpring = this.plane.mass;
