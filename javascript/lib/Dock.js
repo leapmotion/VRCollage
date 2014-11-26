@@ -9,7 +9,12 @@ window.Dock = function(scene, planeMesh, controller, options){
   this.plane = new InteractablePlane(planeMesh, controller, options);
   var halfHeight = planeMesh.geometry.parameters.height / 2;
   var halfWidth  = planeMesh.geometry.parameters.width  / 2;
-  this.plane.constrainMovement({x: function(x){ return ( x < halfWidth && x > - halfWidth ) }});
+
+  this.plane.movementConstraints.x = function(x){
+    if (x > halfWidth) return halfWidth;
+    if (x < -halfHeight) return -halfHeight;
+    return x;
+  };
 
   this.mesh = planeMesh;
   this.scene = scene;
@@ -47,6 +52,12 @@ window.Dock.prototype = {
 
         var image = new InteractablePlane(imageMesh, this.controller, {moveZ: false, moveX: false});
         image.constrainMovement({y: function(y){ return y > this.imageMinHeight }.bind(this) });
+
+        image.movementConstraints.y = function(y) {
+          if ( y < this.imageMinHeight) return this.imageMinHeight;
+          return y
+        }.bind(this);
+
         this.images.push(image);
 
         this.arrangeImages();

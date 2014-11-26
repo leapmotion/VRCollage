@@ -39,7 +39,11 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.releaseCallbacks  = [];
   this.touched = false;
 
-  // note: movement constraints are implemented for X,Y, but not grab.
+  // Usage: pass in an options hash of function(s) keyed x,y,and/or z
+  // Functions will be called on every frame when the plane touched, with the new target coordinate in that dimension
+  // The return value of the function will replace the coordinate passed in
+  // e.g. plane.constrainMovement({y: function(y){ if (y > 0.04) return 0.04; return y; } });
+  // Todo - it would be great to have a "bouncy constraint" option, which would act like the scroll limits on OSX
   this.movementConstraints = {};
 
   // If this is ever increased above one, that initial finger can not be counted when averaging position
@@ -164,23 +168,9 @@ window.InteractablePlane.prototype = {
     return this
   },
 
-  // Usage: pass in an options hash of function(s) keyed x,y,and/or z
-  // Functions will be called on every frame when the plane touched, with the new target coordinate in that dimension
-  // The return value of the function will replace the coordinate passed in
-  // e.g. plane.constrainMovement({y: function(y){ if (y > 0.04) return 0.04; return y; } });
-  // Todo - it would be great to have a "bouncy constraint" option, which would act like the scroll limits on OSX
-  constrainMovement: function(options){
-    if (options['x']) this.movementConstraints.x = options['x'];
-    if (options['y']) this.movementConstraints.y = options['y'];
-    if (options['z']) this.movementConstraints.z = options['z'];
-
-    return this;
-  },
-
   clearMovementConstraints: function(){
     this.movementConstraints = {};
   },
-
 
   // todo - handle rotations as well
   changeParent: function(newParent){
@@ -356,7 +346,6 @@ window.InteractablePlane.prototype = {
     // Add a force. f = ma = kx, a = dv/dt -> change in velocity during a time-step. -> kx/m
     if (this.returnSpring){
 
-
       var offset = this.mesh.position.clone().sub(this.originalPosition);
 
       newPosition.add( offset.multiplyScalar( - this.returnSpring / this.mass ) );
@@ -404,6 +393,7 @@ window.InteractablePlane.prototype = {
     // this ties InteractablePlane to boneHand plugin - probably should have callbacks pushed out to scene.
     // happens on every frame before the 'frame' event handler below
     proximity.in( function(hand, intersectionPoint, key, index){
+      //console.log('in', key);
 
       // Let's try out a one-way state machine
       // This doesn't allow intersections to count if I'm already pinching
@@ -422,6 +412,7 @@ window.InteractablePlane.prototype = {
     }.bind(this) );
 
     proximity.out( function(hand, intersectionPoint, key, index){
+      //console.log('out', key);
 
 //      setBoneMeshColor(hand, index, 0x222222);
       setBoneMeshColor(hand, index, 0xffffff);
