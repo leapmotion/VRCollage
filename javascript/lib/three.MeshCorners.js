@@ -143,7 +143,7 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
 
 };
 
-// returns the absolute position in world space, factoring in scale and position relative to parent.
+// returns the absolute position in world space, factoring in scale, rotation, and position relative to parent.
 THREE.Mesh.prototype.corners = function(num){
 
   if (!isNaN(num)){
@@ -154,8 +154,6 @@ THREE.Mesh.prototype.corners = function(num){
 
     this.updateMatrixWorld( true );
 
-    var position = (new THREE.Vector3).setFromMatrixPosition( this.matrixWorld );
-
     if (this.geometry instanceof THREE.PlaneGeometry){
 
       var corners = this.geometry.corners();
@@ -165,8 +163,6 @@ THREE.Mesh.prototype.corners = function(num){
         corners[i] = (
             new THREE.Vector3( corners[i].x, corners[i].y, 0 )
               .multiply(this.scale)
-          ).add(
-            position
           );
 
       }
@@ -183,41 +179,5 @@ THREE.Mesh.prototype.corners = function(num){
   }
 
 };
-
-THREE.Mesh.prototype.cornersFromPosition = function(position, num){
-
-  if (!isNaN(num)){
-
-    return this.corners()[num]
-
-  }else{
-
-    if (this.geometry instanceof THREE.PlaneGeometry){
-
-      var corners = this.geometry.corners();
-
-      for (var i = 0; i < corners.length; i++){
-
-        corners[i] = (
-            new THREE.Vector3( corners[i].x, corners[i].y, 0 )
-              .multiply(this.scale)
-          ).add(
-            position
-          );
-
-      }
-
-      return corners;
-
-    }else{
-
-      // todo - support box, etc
-      throw("unsupported geometry");
-
-    }
-
-  }
-
-}
 
 }).call(this);

@@ -11,6 +11,8 @@
   <script src="javascript/lib/leap.proximity.js"></script>
   <script src="javascript/lib/InteractablePlane.js"></script>
 
+  <script src="javascript/lib/OrbitControls.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -36,6 +38,8 @@
   <li>Parented Plane</li>
   <li>Parented Angled Plane</li>
   <li>Discs</li>
+  <li>Scaled Plane</li>
+  <li>Stress test</li>
 </ul>
 
 <h3>
@@ -57,7 +61,6 @@
     })
     .use('boneHand', {
       targetEl: document.body,
-      opacity: 0.3,
       jointColor: new THREE.Color(0xffffff),
       rendererOps: {antialias: true}
     })
@@ -71,17 +74,39 @@
   var renderer = Leap.loopController.plugins.boneHand.renderer;
   camera.position.set( 0, 0.3, 0.6);
 
+  var controls = new THREE.OrbitControls( camera );
 
   var axisHelper = new THREE.AxisHelper( 0.1 );
   scene.add( axisHelper );
 
 
+  var planeGeo = new THREE.PlaneGeometry(0.1, 0.2);
+  var material = new THREE.MeshPhongMaterial({side: THREE.DoubleSide});
+  var planeMesh = new THREE.Mesh(planeGeo, material);
+  planeMesh.rotateY(Math.PI / 4);
+  planeMesh.position.setX(0.05);
+  planeMesh.position.setY(0.1);
+  planeMesh.name = "planeMesh";
 
-  var imgGeometry = new THREE.PlaneGeometry(0.1, 0.2);
-  var material = new THREE.MeshPhongMaterial();
-  var imageMesh = new THREE.Mesh(imgGeometry, material);
-  var image = new InteractablePlane(imageMesh, Leap.loopController, {moveZ: false, moveX: false});
-  scene.add(imageMesh);
+  scene.add(planeMesh);
+
+
+  for (var i = 0; i < 4; i++){
+
+    var sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(0.01),
+      new THREE.MeshPhongMaterial
+    );
+
+    sphere.position.copy(
+      planeMesh.corners(i)
+    );
+
+    scene.add(sphere);
+
+  }
+
+  var plane = new InteractablePlane(planeMesh, Leap.loopController, {moveZ: false});
 
 
 </script>

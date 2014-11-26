@@ -27,7 +27,7 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
   var p0 = worldPosition || this.position; // note that this is local, which would be buggy for nested objects (!)
   var l0 = lineStart;
   // the normal of any face will be the normal of the plane.
-  var n  = this.geometry.faces[0].normal.clone();
+  var n  = this.getWorldDirection();
   var l = lineEnd.clone().sub(lineStart);  // order shouldn't matter here.  And they didn't SAY normalize.
 
   var numerator = p0.clone().sub(l0).dot(n);
@@ -85,12 +85,9 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
   var inverseMatrix = (new THREE.Matrix4).getInverse(this.matrixWorld);
 
   // mesh.corners() does not (currently) memoize values
-  var cornerPositions = this.cornersFromPosition(p0);
+  var cornerPositions = this.corners();
 
   for (var i = 0; i < cornerPositions.length; i++){
-
-    // technically, there's an unused corner inversion here. - the top right.
-    cornerPositions[i].applyMatrix4(inverseMatrix);
 
 //    cornerSpheres[i].position.copy(cornerPositions[i]);
 //    console.assert(cornerPositions[i].z < 0.0001);
