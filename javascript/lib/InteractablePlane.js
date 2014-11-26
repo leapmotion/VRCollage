@@ -166,8 +166,8 @@ window.InteractablePlane.prototype = {
 
   // Usage: pass in an options hash of function(s) keyed x,y,and/or z
   // Functions will be called on every frame when the plane touched, with the new target coordinate in that dimension
-  // Return true if ok, false to prohibit movement.
-  // e.g. plane.constrainMovement({y: function(y){ return y > 0.04 } });
+  // The return value of the function will replace the coordinate passed in
+  // e.g. plane.constrainMovement({y: function(y){ if (y > 0.04) return 0.04; return y; } });
   // Todo - it would be great to have a "bouncy constraint" option, which would act like the scroll limits on OSX
   constrainMovement: function(options){
     if (options['x']) this.movementConstraints.x = options['x'];
