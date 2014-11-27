@@ -41,6 +41,7 @@
   <li>Discs</li>
   <li>Hoverstate</li> <!-- We could do a hoverstate, but it might be much cooler to have glow-in-hand -->
   <li>Scale?</li>
+  <li>Stress Test</li>
 </ul>
 
 <h3>
@@ -62,7 +63,6 @@
     })
     .use('boneHand', {
       targetEl: document.body,
-      opacity: 0.3,
       jointColor: new THREE.Color(0xffffff),
       rendererOps: {antialias: true}
     })
@@ -78,26 +78,33 @@
 
   var controls = new THREE.OrbitControls( camera );
 
+  var axisHelper = new THREE.AxisHelper( 0.1 );
+  scene.add( axisHelper );
+
+  // Add a plane
 
   var planeGeo = new THREE.PlaneGeometry(0.1, 0.2);
   var material = new THREE.MeshPhongMaterial({
-    side: THREE.DoubleSide // necessary for z-movement, which requires raycasting.
+    side: THREE.DoubleSide // necessary for z-movement, which currently requires raycasting.
   });
   var imageMesh = new THREE.Mesh(planeGeo, material);
 
-  imageMesh.position.setY(0.1);
+//  imageMesh.position.setY(0.1);
   imageMesh.name = "button";
 
-  // maybe should move plane constructor args in to pushButton? Maybe not so can do disc?
+  imageMesh.scale.setY(0.5);
+
+
   var button = new PushButton(
     new InteractablePlane(imageMesh, Leap.loopController, {moveZ: true, moveX: false, moveY: false})
   );
 
 
-  var longThrow = button.longThrow;
+  var longThrow = -0.05;
   var base = new THREE.Mesh(new THREE.BoxGeometry(0.1, longThrow, longThrow), new THREE.MeshPhongMaterial({color: 0x222222}));
-  base.position.set(0.1, 0, 0);
-  base.rotateY(Math.PI / 2); // todo - once we can parent.
+//  base.position.set(0.1, 0, 0);
+  base.position.set(0.05, 0, -0.1);
+  base.rotateY(Math.PI / 4); // todo - once we can parent.
 
   imageMesh.position.set(
     0,
@@ -105,9 +112,14 @@
     -longThrow / 2
   );
   button.plane.resetPosition(); // resets the original position, etc to the current one
+
   base.add(imageMesh);
 
   scene.add(base);
+
+  // todo - pushing straight through can cause stick
+  // (probably because constraint says "don't move!"
+
 
 </script>
 

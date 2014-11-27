@@ -160,10 +160,7 @@ THREE.Mesh.prototype.corners = function(num){
 
       for (var i = 0; i < corners.length; i++){
 
-        corners[i] = (
-            new THREE.Vector3( corners[i].x, corners[i].y, 0 )
-              .multiply(this.scale)
-          );
+        corners[i] = new THREE.Vector3( corners[i].x, corners[i].y, 0 );
 
       }
 

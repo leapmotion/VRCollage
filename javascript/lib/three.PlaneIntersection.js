@@ -79,26 +79,20 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
 
 
 
-
   // see if point is on the plane segment.
 
   var inverseMatrix = (new THREE.Matrix4).getInverse(this.matrixWorld);
 
-  // mesh.corners() does not (currently) memoize values
   var cornerPositions = this.corners();
 
-  for (var i = 0; i < cornerPositions.length; i++){
-
-//    cornerSpheres[i].position.copy(cornerPositions[i]);
+//  for (var i = 0; i < cornerPositions.length; i++){
 //    console.assert(cornerPositions[i].z < 0.0001);
-
-  }
+//  }
 
 
   // convert point by multiplying by the inverse of the plane's transformation matrix. hope.
-  var intersectionPoint2d = intersectionPoint.clone().applyMatrix4(inverseMatrix); // clone may be unnecessary here.
+  var intersectionPoint2d = intersectionPoint.clone().applyMatrix4(inverseMatrix);
 
-//  cornerSpheres[4].position.copy(intersectionPoint2d);
 //  console.assert(intersectionPoint2d.z < 0.0001);
 
   // check y bottom up, then x left rightwards
