@@ -1,10 +1,17 @@
 // Never set the rotation of a button
 // All units, such as throw, are designed to go in the negative Z
 // Add it to a parent/pivot, and rotate that.
+// alternatively, we could have it so that constraints themselves are transformed by mesh.matrix
+// are there any potential cases where such a thing would be bad?
+// - if the base shape had to be rotated to appear correct
+// it would be nice to not have to wrap a button, just to rotate it.
 
 var PushButton = function(interactablePlane){
   this.plane = interactablePlane;
   this.plane.returnSpring = this.plane.mass;
+  this.plane.moveX = false;
+  this.plane.moveY = false;
+  this.plane.moveZ = true;
 
   this.longThrow  = -0.05;
   this.shortThrow = -0.03;
