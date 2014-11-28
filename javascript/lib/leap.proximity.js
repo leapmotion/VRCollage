@@ -175,6 +175,7 @@ Leap.plugin('proximity', function(scope){
       return this
     },
 
+    // should be gutted and replaced with EventEmitter
     emit: function(eventName, data1, data2, data3, data4, data5){
 
       // note: not ie-compatible indexOf:
@@ -271,9 +272,9 @@ Leap.plugin('proximity', function(scope){
             if (!point) continue;
 
 
-            console.assert(!isNaN(point.x));
-            console.assert(!isNaN(point.y));
-            console.assert(!isNaN(point.z));
+            //console.assert(!isNaN(point.x));
+            //console.assert(!isNaN(point.y));
+            //console.assert(!isNaN(point.z));
 
             var lengthSq = (new THREE.Vector3).subVectors(point, lastIntersectionPoint).lengthSq();
 

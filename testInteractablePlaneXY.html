@@ -6,12 +6,10 @@
   <script src="javascript/lib/leap-plugins-0.1.11pre.js"></script>
 
   <script src="javascript/lib/three.MeshCorners.js"></script>
-  <script src="javascript/lib/three.PlaneOverlap.js"></script>
   <script src="javascript/lib/three.PlaneIntersection.js"></script>
 
   <script src="javascript/lib/leap.proximity.js"></script>
   <script src="javascript/lib/InteractablePlane.js"></script>
-  <script src="javascript/lib/leap.button.js"></script>
 
   <script src="javascript/lib/OrbitControls.js"></script>
 
@@ -40,9 +38,8 @@
   <li>Parented Plane</li>
   <li>Parented Angled Plane</li>
   <li>Discs</li>
-  <li>Hoverstate</li> <!-- We could do a hoverstate, but it might be much cooler to have glow-in-hand -->
-  <li>Scale?</li>
-  <li>Stress Test</li>
+  <li>Scaled Plane</li>
+  <li>Stress test</li>
 </ul>
 
 <h3>
@@ -75,51 +72,37 @@
   var scene = Leap.loopController.plugins.boneHand.scene;
   var camera = Leap.loopController.plugins.boneHand.camera;
   var renderer = Leap.loopController.plugins.boneHand.renderer;
-  camera.position.set( 0, 0.3, 0.6 );
+  camera.position.set( 0, 0.3, 0.6);
 
   var controls = new THREE.OrbitControls( camera );
 
   var axisHelper = new THREE.AxisHelper( 0.1 );
   scene.add( axisHelper );
 
-  // Add a plane
 
   var planeGeo = new THREE.PlaneGeometry(0.1, 0.2);
-  var material = new THREE.MeshPhongMaterial({
-    side: THREE.DoubleSide // necessary for z-movement, which currently requires raycasting.
-  });
-  var imageMesh = new THREE.Mesh(planeGeo, material);
+  var material = new THREE.MeshPhongMaterial({side: THREE.DoubleSide});
+  var planeMesh = new THREE.Mesh(planeGeo, material);
+  planeMesh.position.setX(0.05);
+  planeMesh.position.setY(0.1);
+  planeMesh.name = "planeMesh";
 
-//  imageMesh.position.setY(0.1);
-  imageMesh.name = "button";
-
-  imageMesh.scale.setY(0.5);
-
-
-  var button = new PushButton(
-    new InteractablePlane(imageMesh, Leap.loopController, {moveZ: true, moveX: false, moveY: false})
-  );
-
-
-  var longThrow = -0.05;
+  longThrow = 0.05;
   var base = new THREE.Mesh(new THREE.BoxGeometry(0.1, longThrow, longThrow), new THREE.MeshPhongMaterial({color: 0x222222}));
-//  base.position.set(0.1, 0, 0);
-  base.position.set(0.05, 0, -0.1);
-  base.rotateY(Math.PI / 4); // todo - once we can parent.
+//  base.position.set(0.05, -0.05, -0.1);
+  base.position.set(0.05, 0.05, -0.1);
+  base.rotateY(Math.PI / 4);
 
-  imageMesh.position.set(
+  planeMesh.position.set(
     0,
-    imageMesh.geometry.parameters.height / 2 - longThrow / 2,
-    -longThrow / 2
+    planeMesh.geometry.parameters.height / 2 - longThrow / 2,
+    longThrow / 2 + 0.0002
   );
-  button.plane.resetPosition(); // resets the original position, etc to the current one
-
-  base.add(imageMesh);
+  base.add(planeMesh);
 
   scene.add(base);
 
-  // todo - pushing straight through can cause stick
-  // (probably because constraint says "don't move!"
+  var plane = new InteractablePlane(planeMesh, Leap.loopController, {moveZ: false});
 
 
 </script>

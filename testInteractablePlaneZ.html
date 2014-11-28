@@ -6,6 +6,7 @@
   <script src="javascript/lib/leap-plugins-0.1.11pre.js"></script>
 
   <script src="javascript/lib/three.MeshCorners.js"></script>
+  <script src="javascript/lib/three.PlaneOverlap.js"></script>
   <script src="javascript/lib/three.PlaneIntersection.js"></script>
 
   <script src="javascript/lib/leap.proximity.js"></script>
@@ -89,7 +90,7 @@
 
   longThrow = 0.05;
   var base = new THREE.Mesh(new THREE.BoxGeometry(0.1, longThrow, longThrow), new THREE.MeshPhongMaterial({color: 0x222222}));
-  base.position.set(0.05, -0.05, -0.1);
+  base.position.set(0.05, 0.05, -0.1);
   base.rotateY(Math.PI / 4);
 
   planeMesh.position.set(
@@ -101,7 +102,7 @@
 
   scene.add(base);
 
-  var plane = new InteractablePlane(planeMesh, Leap.loopController, {moveZ: false});
+  var plane = new InteractablePlane(planeMesh, Leap.loopController, {moveZ: true, moveX: false, moveY: false});
 
 
 </script>

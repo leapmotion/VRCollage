@@ -55,6 +55,7 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.drag = 1 - 0.12;
   this.density = 1;
   this.mass = this.mesh.geometry.parameters.width * this.mesh.geometry.parameters.height * this.density;
+  this.k = this.mass;
 
   // Spring constant of a restoring force
   this.returnSpring = null;
@@ -66,6 +67,7 @@ window.InteractablePlane = function(planeMesh, controller, options){
   // keyed by handId-fingerIndex
   // 1 or -1 to indicate which side of the mesh a finger is "on"
   this.physicalFingerSides = {};
+  this.previousOverlap = {};
 
 
   this.rayCaster = new THREE.Raycaster;
@@ -90,6 +92,7 @@ window.InteractablePlane.prototype = {
 
   },
 
+  // todo - gut these in favor of eventEmitter
   emit: function(eventName, data1, data2, data3, data4, data5){
 
     // note: not ie-compatible indexOf:
@@ -203,7 +206,6 @@ window.InteractablePlane.prototype = {
 
   // Returns the position of the mesh intersected
   // If position is passed in, sets it.
-  // returns false if not enough intersections.
   getPosition: function(position){
     var newPosition = position || new THREE.Vector3, intersectionCount = 0;
 
@@ -236,6 +238,57 @@ window.InteractablePlane.prototype = {
     return newPosition;
   },
 
+  // Takes each of five finger tips
+  // stores which side they are on, if any
+  // If a finger tip moves through the mesh, moves the mesh accordingly
+  // If two fingers fight.. rotate the mesh?
+  // Rotation could be interesting, as it would mean that the x/y/z translation functions should
+  // be updated, to compensate for the mesh's rotation
+  // This would probably work pretty well for flat planes. Not sure about other stuff. (e.g., 3d models which may
+  // need a base rotation. Perhaps they could be childs of a plane).
+  getZForce: function(hands){
+
+    var hand, finger, key, overlap, point = new THREE.Vector3, sumPushthrough = 0;
+
+    // sum pushtrough forces..
+    // f = kx
+    // high k to start with, until we get squeezy effects?
+
+
+    for (var i = 0; i < hands.length; i++) {
+      hand = hands[i];
+
+      for (var j = 0; j < 5; j++) {
+        finger = hand.fingers[j];
+        key = hand.id + "-" + j;
+
+        overlap = this.mesh.pointOverlap(
+          point.fromArray(
+            finger.tipPosition
+          )
+        );
+
+        if (overlap && this.previousOverlap[key] &&
+           overlap * this.previousOverlap[key] < 0 // not same sign, therefore pushthrough
+        ){
+
+          sumPushthrough += overlap;
+
+        }
+
+        // Don't allow changing sign, only allow setting sign/value, or unsetting/nulling it
+        if ( !overlap || !this.previousOverlap[key] ){
+          this.previousOverlap[key] = overlap;
+        }
+
+      }
+
+    }
+
+    return this.k * sumPushthrough;
+
+
+  },
 
   // not as good design as proximity - we'll first build in-place raycasting for finger tip z-depth
   // not sure what the final factoring should be.
@@ -370,6 +423,13 @@ window.InteractablePlane.prototype = {
 
     }
 
+    if (this.forceZ) {
+
+      newPosition.z += this.forceZ / this.mass ;
+      this.forceZ = null;
+
+    }
+
     newPosition.multiplyScalar(this.drag);
 
     newPosition.add(this.mesh.position);
@@ -471,13 +531,15 @@ window.InteractablePlane.prototype = {
 
       if (this.options.moveZ){
 
-        newPosition.z += this.getZReposition(frame.hands);
+        // add force to instantaneous velocity (position delta) divided by mass
+        // eventually, x and y should be converted to this as well.
+        this.forceZ = this.getZForce(frame.hands);
 
       }
 
       if ( newPosition.equals( this.mesh.position ) ) {
 
-        // there's been no change, give it up to inertia and springs
+        // there's been no change, give it up to inertia, forces, and springs
         this.stepPhysics(newPosition);
 
       }
