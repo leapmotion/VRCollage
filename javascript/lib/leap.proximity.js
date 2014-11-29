@@ -227,7 +227,7 @@ Leap.plugin('proximity', function(scope){
           // if two have a cross (e.g., the intersection travels completely through the place), get the minimum distance one
 
           // calc corners
-          var corners = mesh.corners();
+          var corners = mesh.getWorldCorners();
 
           var minLenSq = Infinity;
           var closestEdgeIntersectionPoint = null;
@@ -261,7 +261,7 @@ Leap.plugin('proximity', function(scope){
 
           if (closestEdgeIntersectionPoint) {
 
-//            console.log('edge intersection', closestEdgeIntersectionPoint, "between", intersectionPoint, "and", lastIntersectionPoint);
+            //console.log('edge intersection', closestEdgeIntersectionPoint, "between", intersectionPoint, "and", lastIntersectionPoint);
 
             intersectionPoint = closestEdgeIntersectionPoint;
 
@@ -275,7 +275,7 @@ Leap.plugin('proximity', function(scope){
         // This allows high-speed motions out.
         if ( !intersectionPoint && this.intersectionPoints[key] && mesh.intersectionPoint ) {
 
-//          console.log('found newly lost intersection point');
+          //console.log('found newly lost intersection point');
           intersectionPoint = mesh.intersectionPoint
 
         }

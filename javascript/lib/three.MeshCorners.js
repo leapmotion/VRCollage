@@ -144,7 +144,7 @@ THREE.Mesh.prototype.setCorner = function(cornerNo, newCornerPosition, preserveA
 };
 
 // returns the absolute position in world space, factoring in scale, rotation, and position relative to parent.
-THREE.Mesh.prototype.corners = function(num){
+THREE.Mesh.prototype.getWorldCorners = function(num){
 
   if (!isNaN(num)){
 
@@ -152,26 +152,15 @@ THREE.Mesh.prototype.corners = function(num){
 
   }else{
 
-    this.updateMatrixWorld( true );
+    var corners = this.geometry.corners();
 
-    if (this.geometry instanceof THREE.PlaneGeometry){
+    for (var i = 0; i < corners.length; i++){
 
-      var corners = this.geometry.corners();
-
-      for (var i = 0; i < corners.length; i++){
-
-        corners[i] = new THREE.Vector3( corners[i].x, corners[i].y, 0 );
-
-      }
-
-      return corners;
-
-    }else{
-
-      // todo - support box, etc
-      throw("unsupported geometry");
+      corners[i] = new THREE.Vector3( corners[i].x, corners[i].y, 0).applyMatrix4(this.matrixWorld);
 
     }
+
+    return corners;
 
   }
 
