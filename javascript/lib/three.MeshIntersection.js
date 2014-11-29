@@ -1,6 +1,4 @@
-// Adds a method to a PlaneGeometry which figures out if a line segment intersects it.
-
-
+// Adds a method to THREE.Mesh which figures out if a line segment intersects it.
 
 // http://en.wikipedia.org/wiki/Line-plane_intersection
 // - calculate d (intersection point)
@@ -64,22 +62,13 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
     return false;
   }
 
-  // we're on the line!
+  // we're on the line segment!
 
 
   // store intersection point for later use, whether it's on the segment or not.
   // This will be useful for frame travel of farther than a plane half.
   this.intersectionPoint = intersectionPoint;
 
-
-
-  // see if point is on the plane segment.
-
-  var inverseMatrix = (new THREE.Matrix4).getInverse(this.matrixWorld);
-
-  // convert point by multiplying by the inverse of the plane's transformation matrix. hope.
-  var intersectionPoint2d = intersectionPoint.clone().applyMatrix4(inverseMatrix);
-
-  return this.geometry.pointOverlap(intersectionPoint2d) ? intersectionPoint2d : false;
+  return this.pointOverlap( intersectionPoint.clone() ) ? intersectionPoint : false;
 
 };

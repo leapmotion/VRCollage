@@ -203,7 +203,7 @@ window.InteractablePlane.prototype = {
   // need a base rotation. Perhaps they could be childs of a plane).
   calcZForce: function(hands){
 
-    var hand, finger, key, overlap, point = new THREE.Vector3, sumPushthrough = 0;
+    var hand, finger, key, overlap, overlapPoint = new THREE.Vector3, sumPushthrough = 0;
 
     // todo, make sure there's no frame lag in matrixWorld
     // (corners may be updated matrix world, causing this to coincidentally work)
@@ -216,12 +216,14 @@ window.InteractablePlane.prototype = {
         finger = hand.fingers[j];
         key = hand.id + "-" + j;
 
-        overlap = this.mesh.pointOverlap(
-          point.fromArray(
+        this.mesh.pointOverlap(
+          overlapPoint.fromArray(
             finger.tipPosition
           ),
           inverseMatrix
         );
+
+        overlap = overlapPoint.z;
 
         if (overlap && this.previousOverlap[key] &&
            overlap * this.previousOverlap[key] < 0 // not same sign, therefore pushthrough
