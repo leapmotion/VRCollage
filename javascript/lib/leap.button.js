@@ -8,7 +8,7 @@
 
 var PushButton = function(interactablePlane){
   this.plane = interactablePlane;
-  this.plane.returnSpring = this.plane.mass;
+  this.plane.returnSpringK = this.plane.mass / 25;
   this.plane.moveX = false;
   this.plane.moveY = false;
   this.plane.moveZ = true;

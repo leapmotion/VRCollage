@@ -5,11 +5,11 @@
 // Returns false if not overlapping
 // Or a number distance from plane, in the direction of the plane normal
 // Could also return x and y offset pretty easily, if desired
-THREE.Mesh.prototype.pointOverlap = function(point){
+THREE.Mesh.prototype.pointOverlap = function(point, inverseMatrix){
 
   // todo - find a way to memoize this operation...
   // also, make sure there's no frame lag in matrixWorld
-  var inverseMatrix = (new THREE.Matrix4).getInverse(this.matrixWorld);
+  inverseMatrix || (inverseMatrix = (new THREE.Matrix4).getInverse(this.matrixWorld));
   
   // todo memoize this as well
   var cornerPositions = this.corners();

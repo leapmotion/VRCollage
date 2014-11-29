@@ -58,20 +58,15 @@ window.InteractablePlane = function(planeMesh, controller, options){
   this.k = this.mass;
 
   // Spring constant of a restoring force
-  this.returnSpring = null;
+  this.returnSpringK = null;
+  this.force = new THREE.Vector3; // instantaneous force on a object.
 
   this.lastPosition = new THREE.Vector3;
   this.originalPosition = new THREE.Vector3;
   this.resetPosition();
 
   // keyed by handId-fingerIndex
-  // 1 or -1 to indicate which side of the mesh a finger is "on"
-  this.physicalFingerSides = {};
   this.previousOverlap = {};
-
-
-  this.rayCaster = new THREE.Raycaster;
-  this.rayCasterDirection = new THREE.Vector3();
 
   if (this.options.resize){
     this.bindResize();
@@ -246,14 +241,12 @@ window.InteractablePlane.prototype = {
   // be updated, to compensate for the mesh's rotation
   // This would probably work pretty well for flat planes. Not sure about other stuff. (e.g., 3d models which may
   // need a base rotation. Perhaps they could be childs of a plane).
-  getZForce: function(hands){
+  calcZForce: function(hands){
 
     var hand, finger, key, overlap, point = new THREE.Vector3, sumPushthrough = 0;
 
-    // sum pushtrough forces..
-    // f = kx
-    // high k to start with, until we get squeezy effects?
-
+    // todo, make sure there's no frame lag in matrixWorld
+    var inverseMatrix = (new THREE.Matrix4).getInverse(this.mesh.matrixWorld); // memoize
 
     for (var i = 0; i < hands.length; i++) {
       hand = hands[i];
@@ -265,7 +258,8 @@ window.InteractablePlane.prototype = {
         overlap = this.mesh.pointOverlap(
           point.fromArray(
             finger.tipPosition
-          )
+          ),
+          inverseMatrix
         );
 
         if (overlap && this.previousOverlap[key] &&
@@ -277,132 +271,24 @@ window.InteractablePlane.prototype = {
         }
 
         // Don't allow changing sign, only allow setting sign/value, or unsetting/nulling it
-        if ( !overlap || !this.previousOverlap[key] ){
-          this.previousOverlap[key] = overlap;
-        }
+        if ( !overlap || !this.previousOverlap[key] )this.previousOverlap[key] = overlap;
 
       }
 
     }
+    this.force.z += this.k * sumPushthrough;
 
-    return this.k * sumPushthrough;
+    // note that there can still be significant high-frequency oscillation for large values of returnSpringK.
+    // This probably mean that we just shouldn't support high-k (as a real-world material may fracture).
+    if ( this.returnSpringK ){
 
+      var springDisplacement = this.mesh.position.clone().sub(this.originalPosition);
 
-  },
-
-  // not as good design as proximity - we'll first build in-place raycasting for finger tip z-depth
-  // not sure what the final factoring should be.
-  getZReposition: function(hands){
-    var rayCaster = this.rayCaster;
-    var rayCasterDirection = this.rayCasterDirection;
-    var hand, finger, key, overlap, fingerTipOffset;
-    this.mesh.matrixWorld.needsUpdate = true; // this is a bit of an unnecessary security.
-
-    var averageDistance = 0;
-    var overlappingFingers = 0;
-
-    rayCasterDirection.set(0,0,-1).applyMatrix4(this.mesh.matrixWorld).normalize(); // normalize may not be necessary here?
-
-    // todo IIRC, this is pretty important for histeresis
-    // Ofcourse, this means that it's not great for high-speed application
-    // should revisit.
-    fingerTipOffset = rayCasterDirection.clone().setLength(0.01);
-
-    for (var i =0; i < hands.length; i++){
-      hand = hands[i];
-
-
-      // for each finger tip
-      // if there's no side yet, ray cast both ways until it gets a side
-      // if these is a side, average the distances which have crossed.
-      // later, we should apply moments and get rotations.
-      // there should be a simpler way of doing this
-      // whereby instead of raycasting, we just look to see if the point has cross the plane between this frame and the last.
-      // may be more performant as well.
-      // or, do like proximity
-      // rotate the whole damn thing flat, and then check the x and y of finger points, just like plane intersection
-      // that way, we could check more points for less.
-      for (var j = 0; j < 5; j++){
-
-        finger = hand.fingers[j];
-        key = hand.id + "-" + j;
-
-        rayCaster.set(
-          (new THREE.Vector3).fromArray(finger.tipPosition).add( fingerTipOffset ), // 1cm in front of  fingertip
-          rayCasterDirection
-        );
-
-        if ( this.physicalFingerSides[key] ){
-          // hand in front of plane
-
-          // we always multiply the opposite direction, to figure out how much across we are
-          rayCaster.ray.direction.multiplyScalar( this.physicalFingerSides[key] * -1 );
-          // having some distance between the origin point here prevents low-speed passthrough
-          rayCaster.ray.origin.fromArray(finger.tipPosition).add( fingerTipOffset.clone().multiplyScalar(this.physicalFingerSides[key]) );
-
-          overlap = rayCaster.intersectObject(this.mesh)[0];
-
-          // planes only have one intersection
-          if (overlap){
-
-            overlappingFingers++;
-            averageDistance += (overlap.distance * this.physicalFingerSides[key] * -1);
-
-          } else {
-            // hand behind plane
-
-            // presumably there's a bug in raycasting
-            // where when the origin point is close enough to the object, it doesn't notice
-            // unsure what woudl cause this, compensating:
-            rayCaster.ray.origin.fromArray(finger.tipPosition);
-
-            // check that we're still overlapping.  If not, blow everything up.
-            rayCaster.ray.direction.multiplyScalar( -1 );
-            overlap = rayCaster.intersectObject(this.mesh)[0];
-
-            // could it be that for shared positions, there's no overlap distance either way?
-            if ( !overlap ){
-
-              //console.log('null', this.mesh.name);
-              this.physicalFingerSides[key] = null;
-
-            }
-
-          }
-
-        } else {
-
-          overlap = rayCaster.intersectObject(this.mesh)[0];
-
-          if (overlap){
-
-            this.physicalFingerSides[key] = 1;
-            //console.log('side1', this.mesh.name);
-
-          } else {
-
-            rayCaster.ray.direction.multiplyScalar( -1 );
-            rayCaster.ray.origin.fromArray(finger.tipPosition).sub( fingerTipOffset );
-
-            overlap = rayCaster.intersectObject(this.mesh)[0];
-
-            if (overlap){
-
-              this.physicalFingerSides[key] = -1;
-              //console.log('side -1', this.mesh.name);
-
-            }
-
-          }
-
-        }
-
-
-      }
+      this.force.add(
+        springDisplacement.multiplyScalar( - this.returnSpringK )
+      )
 
     }
-
-    return overlappingFingers > 0 ? averageDistance / overlappingFingers : 0;
 
   },
 
@@ -414,21 +300,8 @@ window.InteractablePlane.prototype = {
     // simple verlet integration
     newPosition.subVectors(this.mesh.position, this.lastPosition);
 
-    // Add a force. f = ma = kx, a = dv/dt -> change in velocity during a time-step. -> kx/m
-    if (this.returnSpring){
-
-      var offset = this.mesh.position.clone().sub(this.originalPosition);
-
-      newPosition.add( offset.multiplyScalar( - this.returnSpring / this.mass ) );
-
-    }
-
-    if (this.forceZ) {
-
-      newPosition.z += this.forceZ / this.mass ;
-      this.forceZ = null;
-
-    }
+    newPosition.add( this.force.divideScalar(this.mass) );
+    this.force.set(0,0,0);
 
     newPosition.multiplyScalar(this.drag);
 
@@ -516,8 +389,9 @@ window.InteractablePlane.prototype = {
     this.controller.on('frame', function(frame){
       if (!this.interactable) return false;
 
-      this.tempVec3.set(0,0,0)
+      this.tempVec3.set(0,0,0);
       var i, moveX = false, moveY = false, moveZ = false, newPosition = this.tempVec3;
+      this.force.set(0,0,0);
 
       if (this.options.moveX || this.options.moveY){
 
@@ -533,7 +407,7 @@ window.InteractablePlane.prototype = {
 
         // add force to instantaneous velocity (position delta) divided by mass
         // eventually, x and y should be converted to this as well.
-        this.forceZ = this.getZForce(frame.hands);
+        this.calcZForce(frame.hands);
 
       }
 
@@ -721,19 +595,16 @@ window.InteractablePlane.prototype = {
 
   // This checks for intersection points before making self interactable
   // If there are any, it will wait for the plane to be untouched before becoming live again.
-  // Note that this may need a little more tuning.  As it is right now, a touch/release may flicker, causing this to be not safe enough.
-  // Thus leaving in console.logs for now.
+  // Note that this may need a little more tuning.  As it is right now, a touch/release may flicker, causing this to be
+  // not safe enough. Thus leaving in console.logs for now.
   safeSetInteractable: function(interactable){
 
     if (!interactable) { this.interactable = false; return }
 
     if ( this.touched ){
 
-//      console.log('deferring interactability', this.mesh.name);
-
       var callback = function(){
 
-//        console.log('making interactable', this.mesh.name);
         this.interactable = true;
         this.unbind('release', callback);
 
@@ -743,7 +614,6 @@ window.InteractablePlane.prototype = {
 
     } else {
 
-//      console.log('instant interactability', this.mesh.name);
       this.interactable = true;
 
     }
