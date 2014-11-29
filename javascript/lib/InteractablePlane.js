@@ -50,7 +50,7 @@ window.InteractablePlane = function(planeMesh, controller, options){
 
   this.drag = 1 - 0.12;
   this.density = 1;
-  this.mass = this.mesh.geometry.parameters.width * this.mesh.geometry.parameters.height * this.density;
+  this.mass = this.mesh.geometry.area() * this.density;
   this.k = this.mass;
 
   // Spring constant of a restoring force
@@ -206,6 +206,7 @@ window.InteractablePlane.prototype = {
     var hand, finger, key, overlap, point = new THREE.Vector3, sumPushthrough = 0;
 
     // todo, make sure there's no frame lag in matrixWorld
+    // (corners may be updated matrix world, causing this to coincidentally work)
     var inverseMatrix = (new THREE.Matrix4).getInverse(this.mesh.matrixWorld); // memoize
 
     for (var i = 0; i < hands.length; i++) {
@@ -236,6 +237,7 @@ window.InteractablePlane.prototype = {
       }
 
     }
+
     this.force.z += this.k * sumPushthrough;
 
     // note that there can still be significant high-frequency oscillation for large values of returnSpringK.
@@ -255,7 +257,6 @@ window.InteractablePlane.prototype = {
   // On a frame where there's no interaction, run the physics engine
   // does spring return and velocity
   stepPhysics: function(newPosition){
-
     // inertia
     // simple verlet integration
     newPosition.subVectors(this.mesh.position, this.lastPosition);
@@ -350,7 +351,7 @@ window.InteractablePlane.prototype = {
       if (!this.interactable) return false;
 
       this.tempVec3.set(0,0,0);
-      var i, moveX = false, moveY = false, moveZ = false, newPosition = this.tempVec3;
+      var moveX = false, moveY = false, moveZ = false, newPosition = this.tempVec3;
       this.force.set(0,0,0);
 
       if (this.options.moveX || this.options.moveY){

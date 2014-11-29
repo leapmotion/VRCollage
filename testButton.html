@@ -1,6 +1,6 @@
 <html>
 <head>
-
+  <meta charset="utf-8">
   <script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r69/three.js"></script>
   <script src="//js.leapmotion.com/leap-0.6.4.js"></script>
   <script src="javascript/lib/leap-plugins-0.1.11pre.js"></script>
@@ -35,13 +35,13 @@
   Todo - set up the following test cases:
 </p>
 <ul>
-  <li>Plane</li>
-  <li>Angled Plane</li>
-  <li>Parented Plane</li>
-  <li>Parented Angled Plane</li>
-  <li>Discs</li>
+  <li>Plane √</li>
+  <li>Angled Plane √</li>
+  <li>Parented Plane √</li>
+  <li>Parented Angled Plane √</li>
+  <li>Discs √</li>
   <li>Hoverstate</li> <!-- We could do a hoverstate, but it might be much cooler to have glow-in-hand -->
-  <li>Scale?</li>
+  <li>Scale? √</li>
   <li>Stress Test</li>
 </ul>
 
@@ -85,41 +85,49 @@
   // Add a plane
 
   var planeGeo = new THREE.PlaneGeometry(0.1, 0.2);
-  var material = new THREE.MeshPhongMaterial({
-    side: THREE.DoubleSide // necessary for z-movement, which currently requires raycasting.
-  });
-  var imageMesh = new THREE.Mesh(planeGeo, material);
+  var material = new THREE.MeshPhongMaterial();
+  var buttonMesh = new THREE.Mesh(planeGeo, material);
 
-//  imageMesh.position.setY(0.1);
-  imageMesh.name = "button";
+  buttonMesh.name = "rectangular button";
 
-  imageMesh.scale.setY(0.5);
+  buttonMesh.scale.setY(0.5);
 
 
   var button = new PushButton(
-    new InteractablePlane(imageMesh, Leap.loopController, {moveZ: true, moveX: false, moveY: false})
+    new InteractablePlane(buttonMesh, Leap.loopController)
   );
 
 
   var longThrow = -0.05;
   var base = new THREE.Mesh(new THREE.BoxGeometry(0.1, longThrow, longThrow), new THREE.MeshPhongMaterial({color: 0x222222}));
-//  base.position.set(0.1, 0, 0);
   base.position.set(0.05, 0, -0.1);
   base.rotateY(Math.PI / 4); // todo - once we can parent.
 
-  imageMesh.position.set(
+  buttonMesh.position.set(
     0,
-    imageMesh.geometry.parameters.height / 2 - longThrow / 2,
+    buttonMesh.geometry.parameters.height / 2 - longThrow / 2,
     -longThrow / 2
   );
   button.plane.resetPosition(); // resets the original position, etc to the current one
 
-  base.add(imageMesh);
+  base.add(buttonMesh);
 
   scene.add(base);
+  
+  
+  // Circular button:
+  
+  var circleGeo = new THREE.CircleGeometry(0.1, 32);
+  buttonMesh = new THREE.Mesh(circleGeo, material.clone());
+  buttonMesh.name = "round button";
 
-  // todo - pushing straight through can cause stick
-  // (probably because constraint says "don't move!"
+  buttonMesh.position.set(-0.12, 0.05, -0.1);
+  scene.add(buttonMesh);
+
+  var button = new PushButton(
+    new InteractablePlane(buttonMesh, Leap.loopController)
+  );
+  
 
 
 </script>

@@ -178,3 +178,16 @@ THREE.Mesh.prototype.corners = function(num){
 };
 
 }).call(this);
+
+
+THREE.PlaneGeometry.prototype.area = function () {
+
+  return this.parameters.height * this.parameters.width;
+
+};
+
+THREE.CircleGeometry.prototype.area = function () {
+
+  return Math.pow(this.parameters.radius, 2) * Math.PI;
+
+};

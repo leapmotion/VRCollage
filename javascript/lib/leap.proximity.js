@@ -200,13 +200,6 @@ Leap.plugin('proximity', function(scope){
     checkLines: function(hand, lines){
       var mesh = this.mesh, state, intersectionPoint, key;
 
-
-      // this could support box as well, if we could decide which face to check.
-      if (! ( mesh.geometry instanceof THREE.PlaneGeometry ) ){
-        console.error("Unsupported geometry", this.mesh.geometry);
-        return
-      }
-
       var worldPosition = (new THREE.Vector3).setFromMatrixPosition( this.mesh.matrixWorld );
 
       // j because this is inside a loop for every hand

@@ -17,10 +17,6 @@
 // This is not calculated here for performance reasons.
 THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosition){
 
-  if ( ! (this.geometry instanceof THREE.PlaneGeometry ) ) {
-    throw "Not sure if geometry is supported"
-  }
-
   this.lastIntersectionPoint || (this.lastIntersectionPoint = new THREE.Vector3);
   this.lastIntersectionPoint = this.intersectionPoint; // reference copy if object, value copy if null.
 
@@ -71,11 +67,9 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
   // we're on the line!
 
 
-
   // store intersection point for later use, whether it's on the segment or not.
   // This will be useful for frame travel of farther than a plane half.
   this.intersectionPoint = intersectionPoint;
-
 
 
 
@@ -83,29 +77,9 @@ THREE.Mesh.prototype.intersectedByLine = function(lineStart, lineEnd, worldPosit
 
   var inverseMatrix = (new THREE.Matrix4).getInverse(this.matrixWorld);
 
-  var cornerPositions = this.corners();
-
-//  for (var i = 0; i < cornerPositions.length; i++){
-//    console.assert(cornerPositions[i].z < 0.0001);
-//  }
-
-
   // convert point by multiplying by the inverse of the plane's transformation matrix. hope.
   var intersectionPoint2d = intersectionPoint.clone().applyMatrix4(inverseMatrix);
 
-//  console.assert(intersectionPoint2d.z < 0.0001);
-
-  // check y bottom up, then x left rightwards
-  if ( cornerPositions[3].y < intersectionPoint2d.y &&
-       intersectionPoint2d.y < cornerPositions[0].y &&
-       cornerPositions[3].x < intersectionPoint2d.x &&
-       intersectionPoint2d.x < cornerPositions[2].x ){
-
-    return intersectionPoint;
-
-  }
-
-
-  return false;
+  return this.geometry.pointOverlap(intersectionPoint2d) ? intersectionPoint2d : false;
 
 };
