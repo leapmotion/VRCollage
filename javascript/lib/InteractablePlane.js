@@ -33,10 +33,6 @@ window.InteractablePlane = function(planeMesh, controller, options){
   // at the time of intersection.
   this.intersections = {}; //keyed by the string: hand.id + handPointIndex
 
-  // Maybe should replace these with some meta-programming to do the same.
-  this.travelCallbacks  = [];
-  this.touchCallbacks  = [];
-  this.releaseCallbacks  = [];
   this.touched = false;
 
   // Usage: pass in an options hash of function(s) keyed x,y,and/or z
@@ -87,45 +83,9 @@ window.InteractablePlane.prototype = {
 
   },
 
-  // todo - gut these in favor of eventEmitter
-  emit: function(eventName, data1, data2, data3, data4, data5){
-
-    // note: not ie-compatible indexOf:
-    if (['travel', 'touch', 'release'].indexOf(eventName) === -1) {
-      console.error("Invalid event name:", eventName);
-      return;
-    }
-
-    var callbacks = this[eventName + "Callbacks"];
-    for (var i = 0; i < callbacks.length; i++){
-
-      // could use arguments.slice here.
-      callbacks[i].call(this, data1, data2, data3, data4, data5);
-
-    }
-
-  },
-
-  unbind: function(eventName, callback) {
-    var callbacks = this[eventName + "Callbacks"];
-
-    for (var i = 0; i < callbacks.length; i++){
-
-      if (callbacks[i] == callback){
-
-        callbacks.splice(i,1);
-        console.log('unbound', callback);
-        return true
-
-      }
-
-    }
-
-  },
-
   // This is analagous to your typical scroll event.
   travel: function(callback){
-    this.travelCallbacks.push(callback);
+    this.on('travel', callback);
     return this;
   },
 
@@ -166,13 +126,13 @@ window.InteractablePlane.prototype = {
 
   // This is analagous to your typical scroll event.
   touch: function(callback){
-    this.touchCallbacks.push(callback);
+    this.on('touch', callback);
     return this
   },
 
   // This is analagous to your typical scroll event.
   release: function(callback){
-    this.releaseCallbacks.push(callback);
+    this.on('release', callback);
     return this
   },
 
@@ -606,7 +566,7 @@ window.InteractablePlane.prototype = {
       var callback = function(){
 
         this.interactable = true;
-        this.unbind('release', callback);
+        this.removeListener('release', callback);
 
       }.bind(this);
 
@@ -663,5 +623,7 @@ window.InteractablePlane.prototype = {
   }
 
 }
+
+Leap._.extend(InteractablePlane.prototype, Leap.EventEmitter.prototype);
 
 }).call(this);

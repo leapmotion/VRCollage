@@ -135,8 +135,6 @@ Leap.plugin('proximity', function(scope){
 
     this.mesh = mesh;
     this.handPoints = handPoints;
-    this.inCallbacks  = [];
-    this.outCallbacks = [];
 
     // These are both keyed by the string: hand.id + handPointIndex
     this.states = {};
@@ -166,32 +164,13 @@ Leap.plugin('proximity', function(scope){
 
     // unlike "over" events, we emit when "in" an object.
     in: function(callback){
-      this.inCallbacks.push(callback);
+      this.on('in', callback);
       return this
     },
 
     out: function(callback){
-      this.outCallbacks.push(callback);
+      this.on('out', callback);
       return this
-    },
-
-    // should be gutted and replaced with EventEmitter
-    emit: function(eventName, data1, data2, data3, data4, data5){
-
-      // note: not ie-compatible indexOf:
-      if (['in', 'out'].indexOf(eventName) === -1) {
-        console.error("Invalid event name:", eventName);
-        return
-      }
-
-      var callbacks = this[eventName + "Callbacks"];
-      for (var i = 0; i < callbacks.length; i++){
-
-        // could use arguments.slice here.
-        callbacks[i].call(this, data1, data2, data3, data4, data5);
-
-      }
-
     },
 
     check: function(hand){
@@ -399,6 +378,8 @@ Leap.plugin('proximity', function(scope){
     }
 
   };
+
+  Leap._.extend(Proximity.prototype, Leap.EventEmitter.prototype);
 
   // can be a sphere or a plane.  Here we'll use an invisible sphere first
   // ideally, we would then emit events off of the object
