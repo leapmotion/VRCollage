@@ -8,6 +8,7 @@
 
   <script src="javascript/lib/three.MeshCorners.js"></script>
   <script src="javascript/lib/three.MeshIntersection.js"></script>
+  <script src="javascript/lib/three.PointOverlap.js"></script>
 
   <script src="javascript/lib/leap.proximity.js"></script>
 
@@ -20,6 +21,10 @@
 </head>
 <body>
 
+<ul>
+  <li>Seems to be not leaving the region correctly.</li>
+</ul>
+
 </body>
 
 <script>
@@ -27,18 +32,20 @@
   // Set up plugins
 
   Leap.loop()
-      .use('boneHand', {
-        targetEl: document.body,
-        opacity: 0.3,
-        jointColor: new THREE.Color(0xffffff)
-      })
-      .use('proximity');
+    .use('boneHand', {
+      targetEl: document.body,
+      opacity: 0.3,
+      jointColor: new THREE.Color(0xffffff)
+    })
+    .use('proximity');
 
 
   // Set up scene
 
   var scene = Leap.loopController.plugins.boneHand.scene;
   var camera = Leap.loopController.plugins.boneHand.camera;
+  camera.position.set( 0, 800, 500 );
+
 
   var plane = new THREE.Mesh(
     new THREE.PlaneGeometry(80,80),
@@ -46,7 +53,8 @@
   );
 
 
-  plane.scale.set(2,2,2);
+//  plane.scale.set(2,2,2);
+  console.log(plane.scale);
   plane.position.set(0,200,-100);
 
   camera.lookAt( plane.position );
@@ -90,11 +98,10 @@
 
     if (!frame.hands.length > 0) return;
 
-    for (var i = 0; i < frame.hands.length && i < 2; i++) {
-
-      lineGeometry.vertices[i].fromArray(frame.hands[i].palmPosition);
-
-    }
+    var hand = frame.hands[0];
+    if (!hand) return;
+    lineGeometry.vertices[0].fromArray(hand.indexFinger.tipPosition);
+    lineGeometry.vertices[1].fromArray(hand.thumb.tipPosition);
 
     lineGeometry.verticesNeedUpdate = true;
 
