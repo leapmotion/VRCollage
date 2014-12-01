@@ -68,7 +68,11 @@ window.InteractablePlane = function(planeMesh, controller, options){
     this.bindResize();
   }
 
-  this.bindMove();
+  if (this.options.moveX || this.options.moveY){
+    this.watchXYIntersection();
+  }
+
+  this.controller.on('frame', this.updatePosition.bind(this));
 
   if (this.options.highlight) this.bindHighlight();
 
@@ -203,7 +207,7 @@ window.InteractablePlane.prototype = {
   // need a base rotation. Perhaps they could be childs of a plane).
   calcZForce: function(hands){
 
-    var hand, finger, key, overlap, overlapPoint = new THREE.Vector3, sumPushthrough = 0;
+    var hand, finger, key, overlap, overlapPoint, sumPushthrough = 0;
 
     // todo, make sure there's no frame lag in matrixWorld
     // (corners may be updated matrix world, causing this to coincidentally work)
@@ -216,14 +220,14 @@ window.InteractablePlane.prototype = {
         finger = hand.fingers[j];
         key = hand.id + "-" + j;
 
-        this.mesh.pointOverlap(
-          overlapPoint.fromArray(
+        overlapPoint = this.mesh.pointOverlap(
+          (new THREE.Vector3).fromArray(
             finger.tipPosition
           ),
           inverseMatrix
         );
 
-        overlap = overlapPoint.z;
+        overlap = (overlapPoint && overlapPoint.z);
 
         if (overlap && this.previousOverlap[key] &&
            overlap * this.previousOverlap[key] < 0 // not same sign, therefore pushthrough
@@ -272,12 +276,7 @@ window.InteractablePlane.prototype = {
 
   },
 
-  // 1: count fingertips past zplace
-  // 2: when more than 4, scroll
-  // 3: when more than 5, move
-  // 4: test/optimize with HMD.
-  // note: this is begging for its own class (see all the local methods defined in the constructor??)
-  bindMove: function(){
+  watchXYIntersection: function(){
 
     // for every 2 index, we want to add (4 - 2).  That will equal the boneMesh index.
     // not sure if there is a clever formula for the following array:
@@ -349,95 +348,99 @@ window.InteractablePlane.prototype = {
 
     }.bind(this) );
 
-    this.controller.on('frame', function(frame){
-      if (!this.interactable) return false;
+  },
 
-      this.tempVec3.set(0,0,0);
-      var moveX = false, moveY = false, moveZ = false, newPosition = this.tempVec3;
-      this.force.set(0,0,0);
+  // 1: count fingertips past zplace
+  // 2: when more than 4, scroll
+  // 3: when more than 5, move
+  // 4: test/optimize with HMD.
+  // note: this is begging for its own class (see all the local methods defined in the constructor??)
+  updatePosition: function(frame){
+    if (!this.interactable) return false;
 
-      if (this.options.moveX || this.options.moveY){
+    this.tempVec3.set(0,0,0);
+    var moveX = false, moveY = false, moveZ = false, newPosition = this.tempVec3;
+    this.force.set(0,0,0);
 
-        this.getPosition( newPosition );
+    if (this.options.moveX || this.options.moveY){
 
-      } else {
+      this.getPosition( newPosition );
 
-        newPosition.copy(this.mesh.position)
+    } else {
 
+      newPosition.copy(this.mesh.position)
+
+    }
+
+    if (this.options.moveZ){
+
+      // add force to instantaneous velocity (position delta) divided by mass
+      // eventually, x and y should be converted to this as well.
+      this.calcZForce(frame.hands);
+
+    }
+
+    if ( newPosition.equals( this.mesh.position ) ) {
+
+      // there's been no change, give it up to inertia, forces, and springs
+      // Todo - intera/physics stepping should probably take place on frame end, not on frame.
+      this.stepPhysics(newPosition);
+
+    }
+
+    this.lastPosition.copy(this.mesh.position);
+
+    // constrain movement to...
+    // for now, let's discard z.
+    // better:
+    // Always move perpendicular to image normal
+    // Then set normal equal to average of intersecting line normals
+    // (Note: this will require some thought with grab.  Perhaps get carpal intersection, stop re-adjusting angle.)
+    // (Note: can't pick just any face normal, so that we can distort the mesh later on.
+    // This will allow (but hopefully not require?) expertise to use.
+
+    if (this.options.moveX ){
+
+      if (this.movementConstraints.x){
+        newPosition.x = this.movementConstraints.x(newPosition.x);
       }
 
-      if (this.options.moveZ){
-
-        // add force to instantaneous velocity (position delta) divided by mass
-        // eventually, x and y should be converted to this as well.
-        this.calcZForce(frame.hands);
-
+      if (newPosition.x != this.mesh.position.x){
+        this.mesh.position.x = newPosition.x;
+        moveX = true;
       }
 
-      if ( newPosition.equals( this.mesh.position ) ) {
+    }
 
-        // there's been no change, give it up to inertia, forces, and springs
-        this.stepPhysics(newPosition);
+    if (this.options.moveY ){
 
+      if (this.movementConstraints.y){
+        newPosition.y = this.movementConstraints.y(newPosition.y);
       }
 
-      this.lastPosition.copy(this.mesh.position);
-
-      // constrain movement to...
-      // for now, let's discard z.
-      // better:
-      // Always move perpendicular to image normal
-      // Then set normal equal to average of intersecting line normals
-      // (Note: this will require some thought with grab.  Perhaps get carpal intersection, stop re-adjusting angle.)
-      // (Note: can't pick just any face normal, so that we can distort the mesh later on.
-      // This will allow (but hopefully not require?) expertise to use.
-
-      if (this.options.moveX ){
-        
-        if (this.movementConstraints.x){
-          newPosition.x = this.movementConstraints.x(newPosition.x);
-        }
-        
-        if (newPosition.x != this.mesh.position.x){
-          this.mesh.position.x = newPosition.x;
-          moveX = true;
-        }
-        
-      }
-      
-      if (this.options.moveY ){
-        
-        if (this.movementConstraints.y){
-          newPosition.y = this.movementConstraints.y(newPosition.y);
-        }
-        
-        if (newPosition.y != this.mesh.position.y){
-          this.mesh.position.y = newPosition.y;
-          moveY = true;
-        }
-        
-      }
-      
-      if (this.options.moveZ ){
-        
-        if (this.movementConstraints.z){
-          newPosition.z = this.movementConstraints.z(newPosition.z);
-        }
-        
-        if (newPosition.z != this.mesh.position.z){
-          this.mesh.position.z = newPosition.z;
-          moveZ = true;
-        }
-        
+      if (newPosition.y != this.mesh.position.y){
+        this.mesh.position.y = newPosition.y;
+        moveY = true;
       }
 
+    }
 
-      // note - include moveZ here when implemented.
-      if ( moveX || moveY || moveZ ) this.emit( 'travel', this, this.mesh );
+    if (this.options.moveZ ){
+
+      if (this.movementConstraints.z){
+        newPosition.z = this.movementConstraints.z(newPosition.z);
+      }
+
+      if (newPosition.z != this.mesh.position.z){
+        this.mesh.position.z = newPosition.z;
+        moveZ = true;
+      }
+
+    }
 
 
-    }.bind(this) );
-
+    // note - include moveZ here when implemented.
+    if ( moveX || moveY || moveZ ) this.emit( 'travel', this, this.mesh );
   },
 
   bindResize: function(){
