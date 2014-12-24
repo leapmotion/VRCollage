@@ -128,7 +128,7 @@ VRCursor.prototype.events = {
 
 // binds mouse events
 VRCursor.prototype.bindEvents = function() {
-  var body = window && window.parent? window.parent.document.body : document.body;
+  var body = document.body;
   var onMouseMoved = this.onMouseMoved.bind(this);
   var onMouseClicked = this.onMouseClicked.bind(this);
 
