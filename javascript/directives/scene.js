@@ -322,6 +322,9 @@ angular.module('directives', [])
         var gridMat = new THREE.MeshPhongMaterial({
           color: 0xffffff,
           specular: 0x000000,
+          // Note: the current gridlines have too much transparency in-grained for this to look good.
+          //transparent: true,
+          //opacity: 1,
           map: THREE.ImageUtils.loadTexture("images/Grid-01.png")
         });
 
