@@ -127,7 +127,6 @@ angular.module('directives', [])
           new THREE.MeshPhongMaterial({
             color: 0xffffff,
             map: THREE.ImageUtils.loadTexture("images/foto-viewer-dark.png"),
-            side: THREE.DoubleSide, // allow reverse raycasting.
             transparent: true,
             opacity: 1
           })
@@ -337,8 +336,6 @@ angular.module('directives', [])
 
         grid.rotation.set(-Math.PI / 2, 0, 0);
         grid.position.set(0, -1.23, zDepth - 0.02);
-
-
 
 
 
