@@ -335,6 +335,7 @@ BaseConnection.prototype.handleData = function(data) {
   } else {
     messageEvent = this.protocol(message);
   }
+  if (messageEvent.type == 'frame' && (messageEvent.id % 10) != 0) return; // reduce FPS
   this.emit(messageEvent.type, messageEvent);
 }
 
