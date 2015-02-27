@@ -222,7 +222,7 @@ angular.module('directives', [])
         );
         backdrop.name = "backdrop";
 //        backdrop.visible = false;
-        scene.add(backdrop);
+//        scene.add(backdrop);
 
         // we use this for checking intersections later.
         window.backdrop = backdrop;
@@ -320,29 +320,29 @@ angular.module('directives', [])
 
 
         // must be global so that blur and focus can access it in app.js
-        window.cursor = new VRCursor();
-
-        // can't customize position of cursor without messing things up.
-        // note: VRCursor will have to be upgraded in order to allow always being in front of mesh.
-        cursor.setMode('centered');
-        cursor.init(renderer.domElement, camera, scene);
-
-        cursor.ready.then(function() {
-          scene.add(cursor.layout);
-          console.log(cursor.layout.position);
-          cursor.cursor.position.setZ(-0.35);
-          cursor.cursor.material.color.setHex(0x81d41d);
-        	cursor.enable();
-        });
-
-        // enable or disable cursor on VRclient focus & blur callbacks
-        VRClient.onBlur = function() {
-        	cursor.disable();
-        };
-
-        VRClient.onFocus = function() {
-        	cursor.enable();
-        };
+        //window.cursor = new VRCursor();
+        //
+        //// can't customize position of cursor without messing things up.
+        //// note: VRCursor will have to be upgraded in order to allow always being in front of mesh.
+        //cursor.setMode('mouseSync');
+        //cursor.init(renderer.domElement, camera, scene);
+        //
+        //cursor.ready.then(function() {
+        //  scene.add(cursor.layout);
+        //  console.log(cursor.layout.position);
+        //  cursor.cursor.position.setZ(-0.35);
+        //  cursor.cursor.material.color.setHex(0x81d41d);
+        //	//cursor.enable();
+        //});
+        //
+        //// enable or disable cursor on VRclient focus & blur callbacks
+        //VRClient.onBlur = function() {
+        //	cursor.disable();
+        //};
+        //
+        //VRClient.onFocus = function() {
+        //	cursor.enable();
+        //};
 
 
 
@@ -433,7 +433,7 @@ angular.module('directives', [])
         // By controlling render from frameEnd, we make sure that rendering happens immediately after frame processing.
         Leap.loopController.on('frameEnd', function(timeStamp) {
           TWEEN.update();
-          cursor.update();
+          window['cursor'] && cursor.update();
           Arrows.update();
           vrControls.update();
           vrEffect.render(scene, camera);
