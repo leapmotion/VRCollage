@@ -49,12 +49,108 @@ var images = [
 
 
 
+
+
+
+
 angular.module('directives', [])
   .directive('scene', function() {
     return {
       restrict: 'E',
       template: '<canvas></canvas>',
       link: function(scope, element, attrs){
+
+        var initBackdrop = function(){
+
+          // these are on a plane covering everything up...
+          var zOffset = 0.01;
+          var backdropDepth = zDepth + zOffset;
+          var dialogHeight = 0.09;
+
+          var backdrop = new THREE.Mesh(
+            new THREE.PlaneGeometry(10, 10),
+            new THREE.MeshPhongMaterial({
+              color: 0x000000,
+              specular: 0x000000
+            })
+          );
+          backdrop.name = "backdrop";
+          scene.add(backdrop);
+
+          // we use this for checking intersections later.  In VRCursor.js. -.-
+          window.backdrop = backdrop;
+
+          backdrop.position.set(0, 0, backdropDepth);
+
+
+          var pluginLeap = new THREEDialog({
+            name: 'pluginLeap-ui',
+            height: 0.36,
+            bg:    'images/intro/plug-in-leap.png',
+            onClick: function(){
+              console.log('pluginLeap click');
+              cursor.cursor.visible = false;
+              backdrop.visible = false;
+              ga('send', 'event', 'Click', 'pluginLeap');
+            }
+          });
+          pluginLeap.mesh.position.set(-0.2, dialogHeight, zOffset);
+          backdrop.add(pluginLeap.mesh);
+
+
+          var playback = new THREEDialog({
+            name: 'playback-ui',
+            height: 0.18,
+            bg:    'images/intro/auto-play.png',
+            hover: 'images/intro/auto-play-ok.png',
+            click: 'images/intro/auto-play-ok.png',
+            onClick: function(){
+              console.log('playback click');
+              backdrop.visible = false;
+              cursor.cursor.visible = false;
+
+              useDesktopMode();
+              player.setRecording(recordings.p1);
+              player.play();
+              ga('send', 'event', 'Click', 'autoplay');
+            }
+          });
+          playback.mesh.position.set(0.2, dialogHeight, zOffset);
+          backdrop.add(playback.mesh);
+
+          Leap.loopController.on('streamingStarted', function(){
+
+            pluginLeap.mesh.dispatchEvent({type: 'click'});
+
+          });
+        };
+
+        var initCursor = function(){
+          // must be global so that blur and focus can access it in app.js
+          window.cursor = new VRCursor();
+
+          // can't customize position of cursor without messing things up.
+          // note: VRCursor will have to be upgraded in order to allow always being in front of mesh.
+          cursor.setMode('mouseSync');
+          cursor.init(renderer.domElement, camera, scene);
+
+          cursor.ready.then(function() {
+            scene.add(cursor.layout);
+            console.log(cursor.layout.position);
+            cursor.cursor.position.setZ(-0.35);
+            cursor.cursor.material.color.setHex(0x81d41d);
+            cursor.enable();
+          });
+
+          // enable or disable cursor on VRclient focus & blur callbacks
+          VRClient.onBlur = function() {
+            cursor.disable();
+          };
+
+          VRClient.onFocus = function() {
+            cursor.enable();
+          };
+        }
 
         window.plotter = new LeapDataPlotter();
 
@@ -146,10 +242,6 @@ angular.module('directives', [])
           highlight: false
         });
 
-//        dock.pushImage("images/trains/" + images[0]);
-//        dock.pushImage("images/trains/" + images[1]);
-//        dock.pushImage("images/trains/" + images[2]);
-//        dock.pushImage("images/trains/" + images[3]);
         dock.pushImage("images/landscapes/landscape1.jpg");
         dock.pushImage("images/landscapes/landscape2.jpg");
         dock.pushImage("images/landscapes/landscape3.jpg");
@@ -205,144 +297,9 @@ angular.module('directives', [])
 //        text.position.setY(120);
 //        scene.add(text);
 
+        initBackdrop();
 
-        // these should be on a plane covering everything up...
-
-        var zOffset = 0.01;
-        var backdropDepth = zDepth + zOffset;
-        var dialogHeight = 0.09;
-
-        var backdrop = new THREE.Mesh(
-          new THREE.PlaneGeometry(10, 10),
-          new THREE.MeshPhongMaterial({
-            color: 0x000000,
-            specular: 0x000000
-          })
-        );
-        backdrop.name = "backdrop";
-//        backdrop.visible = false;
-//        scene.add(backdrop);
-
-        // we use this for checking intersections later.
-        window.backdrop = backdrop;
-
-        backdrop.position.set(0, 0, backdropDepth);
-
-
-        var pluginLeap = new THREEDialog({
-          name: 'pluginLeap-ui',
-          height: 0.36,
-          bg:    'images/intro/plug-in-leap.png',
-          onClick: function(){
-            console.log('pluginLeap click');
-            ga('send', 'event', 'Click', 'pluginLeap');
-          }
-        });
-        pluginLeap.mesh.position.set(-0.2, dialogHeight, zOffset);
-        backdrop.add(pluginLeap.mesh);
-//        scene.add(pluginLeap.mesh);
-
-
-        var playback = new THREEDialog({
-          name: 'playback-ui',
-          height: 0.18,
-          bg:    'images/intro/auto-play.png',
-          hover: 'images/intro/auto-play-ok.png',
-          click: 'images/intro/auto-play-ok.png',
-          onClick: function(){
-            console.log('playback click');
-            backdrop.visible = false;
-            cursor.cursor.visible = false;
-
-            useDesktopMode();
-            player.setRecording(recordings.p1);
-            player.play();
-            ga('send', 'event', 'Click', 'autoplay');
-          }
-        });
-        playback.mesh.position.set(0.2, dialogHeight, zOffset);
-        backdrop.add(playback.mesh);
-
-
-        var HMDMode = new THREEDialog({
-          name: 'HMDMode-ui',
-          height: 0.2,
-          bg:    'images/intro/hmd.png',
-          hover: 'images/intro/hmd-ok.png',
-          click: 'images/intro/hmd-ok.png',
-          onClick: function(){
-            console.log('hmd click');
-            backdrop.visible = false;
-            cursor.cursor.visible = false;
-            window.useHMDMode();
-            ga('send', 'event', 'Click', 'HMDMode');
-          }
-        });
-        HMDMode.mesh.position.set(-0.15, dialogHeight, zOffset);
-        HMDMode.mesh.visible = false;
-        backdrop.add(HMDMode.mesh);
-
-
-        var desktopMode = new THREEDialog({
-          name: 'DesktopMode-ui',
-          height: 0.2,
-          bg:    'images/intro/desktop.png',
-          hover: 'images/intro/desktop-ok.png',
-          click: 'images/intro/desktop-ok.png',
-          onClick: function(){
-            backdrop.visible = false;
-            cursor.cursor.visible = false;
-            window.useDesktopMode();
-            ga('send', 'event', 'Click', 'DesktopMode');
-          }
-        });
-        desktopMode.mesh.position.set(0.15, dialogHeight, zOffset);
-        desktopMode.mesh.visible = false;
-        backdrop.add(desktopMode.mesh);
-
-
-
-        Leap.loopController.on('streamingStarted', function(){
-
-          pluginLeap.mesh.visible = false;
-          playback.mesh.visible = false;
-
-          pluginLeap.mesh.dispatchEvent({type: 'click'});
-
-          desktopMode.mesh.visible = true;
-          HMDMode.mesh.visible = true;
-
-          document.getElementById('desktopVsHMDMode').className = '';
-          document.getElementById('controllerStatusMessage').className = 'hidden';
-
-        });
-
-
-        // must be global so that blur and focus can access it in app.js
-        //window.cursor = new VRCursor();
-        //
-        //// can't customize position of cursor without messing things up.
-        //// note: VRCursor will have to be upgraded in order to allow always being in front of mesh.
-        //cursor.setMode('mouseSync');
-        //cursor.init(renderer.domElement, camera, scene);
-        //
-        //cursor.ready.then(function() {
-        //  scene.add(cursor.layout);
-        //  console.log(cursor.layout.position);
-        //  cursor.cursor.position.setZ(-0.35);
-        //  cursor.cursor.material.color.setHex(0x81d41d);
-        //	//cursor.enable();
-        //});
-        //
-        //// enable or disable cursor on VRclient focus & blur callbacks
-        //VRClient.onBlur = function() {
-        //	cursor.disable();
-        //};
-        //
-        //VRClient.onFocus = function() {
-        //	cursor.enable();
-        //};
-
+        initCursor();
 
 
         var gridMat = new THREE.MeshPhongMaterial({

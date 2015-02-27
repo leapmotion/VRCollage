@@ -67,82 +67,33 @@
 
   <scene></scene>
 
-  <p>
-    Press 'f' to go fullscreen
-  </p>
-
-  <!--<div id="noLeapWarning" class="hidden">-->
-  <div id="noLeapWarning" class="hidden">
-    <p>
-      <span id="controllerStatusMessage">Please plug in your Leap Motion Controller.</span>
-      <span id="desktopVsHMDMode" class="hidden">
-        Is Controller on your <a href="#" id="selectDesktop">Desktop</a> or mounted to your <a href="#" id="selectOculus" class="active">Oculus rift</a>?
-      </span>
-    </p>
-    <p>
-      No Controller? Try automatic mode: <a href="#" id="auto-part1-link">Select Photos</a>.
-    </p>
-    <!-- <ol>
-      <li>.</li>
-      <li id="auto-part2-span" class="hidden"><a href="#" id="auto-part2-link">Stack Photos</a>.</li>
-      <li id="auto-part3-span" class="hidden"><a href="#" id="auto-part3-link">Spread Photos</a>.</li>
-    </ol> -->
-  </div>
-
 
   <script>
+    var transform = Leap.loopController.plugins.transform;
 
+    var HMDTransforms = {
+      quaternion: transform.quaternion,
+      scale: transform.scale,
+      position: transform.position
+    };
 
-var transform = Leap.loopController.plugins.transform;
+    var DesktopTransforms = {
+      quaternion: new THREE.Quaternion,
+      scale: transform.scale, // stay in m
+      position: new THREE.Vector3(0,-0.3,-0.3)
+    };
 
-var HMDTransforms = {
-  quaternion: transform.quaternion,
-  scale: transform.scale,
-  position: transform.position
-};
+    useDesktopMode = function(){
+      console.log('use desktop');
 
-var DesktopTransforms = {
-  quaternion: new THREE.Quaternion,
-  scale: transform.scale, // stay in m
-  position: new THREE.Vector3(0,-0.3,-0.3)
-};
+      transform.quaternion = DesktopTransforms.quaternion;
+      transform.scale      = DesktopTransforms.scale;
+      transform.position   = DesktopTransforms.position;
 
-useDesktopMode = function(){
-  console.log('use desktop');
+      transform.effectiveParent = null;
 
-  transform.quaternion = DesktopTransforms.quaternion;
-  transform.scale      = DesktopTransforms.scale;
-  transform.position   = DesktopTransforms.position;
-
-  transform.effectiveParent = null;
-
-  Leap.loopController.setOptimizeHMD(false);
-
-  document.getElementById('selectDesktop').className = "active";
-  document.getElementById('selectOculus').className = "";
-
-
-};
-
-useHMDMode = function(){
-  console.log('use hmd');
-
-  transform.quaternion = HMDTransforms.quaternion;
-  transform.scale      = HMDTransforms.scale;
-  transform.position   = HMDTransforms.position;
-
-  transform.effectiveParent = window.camera;
-
-  Leap.loopController.setOptimizeHMD(true);
-
-  document.getElementById('selectDesktop').className = "";
-  document.getElementById('selectOculus').className = "active";
-
-};
-
-document.getElementById('selectDesktop').onclick = useDesktopMode;
-document.getElementById('selectOculus').onclick = useHMDMode;
-
+      Leap.loopController.setOptimizeHMD(false);
+    };
   </script>
 
 
