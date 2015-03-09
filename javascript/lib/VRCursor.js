@@ -182,7 +182,8 @@ VRCursor.prototype.onMouseMoved = function(e) {
 
   // get vectors for 2d mono mouse
   if (this.mode == this.modes.mono) {
-    var mouse = new THREE.Vector3( ( e.clientX / window.innerWidth ) * 2 - 1,   //x
+    var mouse = new THREE.Vector3(
+       ( e.clientX / window.innerWidth  ) * 2 - 1,   //x
       -( e.clientY / window.innerHeight ) * 2 + 1,  //y
       0.5 );
     mouse.unproject(this.camera)

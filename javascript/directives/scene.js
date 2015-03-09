@@ -131,7 +131,7 @@ angular.module('directives', [])
 
           // can't customize position of cursor without messing things up.
           // note: VRCursor will have to be upgraded in order to allow always being in front of mesh.
-          cursor.setMode('mouseSync');
+          //cursor.setMode('mouseSync');
           cursor.init(renderer.domElement, camera, scene);
 
           cursor.ready.then(function() {
