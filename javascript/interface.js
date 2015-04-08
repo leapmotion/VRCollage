@@ -10,5 +10,10 @@
   };
 
   window.addEventListener("keypress", onkey, true);
+  window.addEventListener("dblclick", function(){
+    // TODO: add a toggleFullScreen method to VREffect
+    var isFullscreen = document.mozFullScreenElement || document.webkitFullscreenElement;
+    vrEffect.setFullScreen(!isFullscreen);
+  });
 
 }).call(this);
