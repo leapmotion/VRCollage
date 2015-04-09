@@ -46,6 +46,8 @@ window.Dock.prototype = {
 
         var imageMesh = new THREE.Mesh(imgGeometry, material);
         imageMesh.name = url;
+        imageMesh.receiveShadow = true;
+        this.mesh.receiveShadow = true;
 
         imageMesh.position.set(0, this.imageMinHeight, (this.images.length + 1) * 0.001);
         this.mesh.add(imageMesh);

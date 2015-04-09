@@ -1,8 +1,8 @@
 /*    
- * LeapJS-Plugins  - v0.1.11pre - 2014-11-25    
+ * LeapJS-Plugins  - v0.1.11pre - 2015-04-08    
  * http://github.com/leapmotion/leapjs-plugins/    
  *    
- * Copyright 2014 LeapMotion, Inc    
+ * Copyright 2015 LeapMotion, Inc    
  *    
  * Licensed under the Apache License, Version 2.0 (the "License");    
  * you may not use this file except in compliance with the License.    
@@ -25,26 +25,21 @@
   scope = null;
 
   initScene = function(targetEl, scale) {
-    var camera, directionalLight, far, height, near, renderer, width;
+    var camera, far, height, near, renderer, width;
     scope.scene = new THREE.Scene();
-    scope.renderer = renderer = new THREE.WebGLRenderer({
-      alpha: true
-    });
-    width = window.innerWidth;
-    height = window.innerHeight;
+    scope.rendererOps || (scope.rendererOps = {});
+    if (scope.rendererOps.alpha === void 0) {
+      scope.rendererOps.alpha = true;
+    }
+    scope.renderer = renderer = new THREE.WebGLRenderer(scope.rendererOps);
+    width = scope.width || window.innerWidth;
+    height = scope.height || window.innerHeight;
     renderer.setClearColor(0x000000, 0);
     renderer.setSize(width, height);
     renderer.domElement.className = "leap-boneHand";
+    renderer.shadowMapEnabled = true;
+    renderer.shadowMapType = THREE.PCFSoftShadowMap;
     targetEl.appendChild(renderer.domElement);
-    directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(0, 0.5, 1);
-    scope.scene.add(directionalLight);
-    directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(0.5, -0.5, -1);
-    scope.scene.add(directionalLight);
-    directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    directionalLight.position.set(-0.5, 0, -0.2);
-    scope.scene.add(directionalLight);
     near = 1;
     far = 10000;
     if (scale) {
@@ -52,17 +47,19 @@
       far *= scale;
     }
     scope.camera = camera = new THREE.PerspectiveCamera(45, width / height, near, far);
-    camera.position.fromArray([0, 300, 500]);
+    camera.position.set(0, 300, 500);
     camera.lookAt(new THREE.Vector3(0, 160, 0));
     scope.scene.add(camera);
-    window.addEventListener('resize', function() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-      return renderer.render(scope.scene, camera);
-    }, false);
+    if (!scope.width && !scope.height) {
+      window.addEventListener('resize', function() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+        return renderer.render(scope.scene, camera);
+      }, false);
+    }
     scope.render || (scope.render = function(timestamp) {
       return renderer.render(scope.scene, scope.camera);
     });
@@ -110,6 +107,9 @@
       mesh = new HandMesh;
       mesh.setVisibility(false);
       HandMesh.unusedHandMeshes.push(mesh);
+      if (HandMesh.onMeshCreated) {
+        HandMesh.onMeshCreated(mesh);
+      }
       return mesh;
     };
 
@@ -133,17 +133,20 @@
           mesh.name = "hand-bone-" + j;
           mesh.material.color.copy(jointColor);
           mesh.renderDepth = ((i * 9) + (2 * j)) / 36;
+          mesh.castShadow = true;
           scope.scene.add(mesh);
           finger.push(mesh);
           mesh = new THREE.Mesh(new THREE.CylinderGeometry(boneRadius, boneRadius, 40, 32), material.clone());
           mesh.name = "hand-joint-" + j;
           mesh.material.color.copy(boneColor);
           mesh.renderDepth = ((i * 9) + (2 * j) + 1) / 36;
+          mesh.castShadow = true;
           scope.scene.add(mesh);
           finger.push(mesh);
         }
         mesh = new THREE.Mesh(new THREE.SphereGeometry(jointRadius, 32, 32), material.clone());
         mesh.material.color.copy(jointColor);
+        mesh.castShadow = true;
         scope.scene.add(mesh);
         finger.push(mesh);
         this.fingerMeshes.push(finger);
@@ -155,6 +158,8 @@
         for (i = _k = 0; _k <= 3; i = ++_k) {
           this.armBones.push(new THREE.Mesh(new THREE.CylinderGeometry(boneRadius, boneRadius, (i < 2 ? 1000 : 100), 32), material.clone()));
           this.armBones[i].material.color.copy(boneColor);
+          this.armBones[i].castShadow = true;
+          this.armBones[i].name = "ArmBone" + i;
           if (i > 1) {
             this.armBones[i].quaternion.multiply(armTopAndBottomRotation);
           }
@@ -164,11 +169,25 @@
         for (i = _l = 0; _l <= 3; i = ++_l) {
           this.armSpheres.push(new THREE.Mesh(new THREE.SphereGeometry(jointRadius, 32, 32), material.clone()));
           this.armSpheres[i].material.color.copy(jointColor);
+          this.armSpheres[i].castShadow = true;
+          this.armSpheres[i].name = "ArmSphere" + i;
           this.armMesh.add(this.armSpheres[i]);
         }
         scope.scene.add(this.armMesh);
       }
     }
+
+    HandMesh.prototype.traverse = function(callback) {
+      var i, mesh, _i, _j, _len, _ref;
+      for (i = _i = 0; _i < 5; i = ++_i) {
+        _ref = this.fingerMeshes[i];
+        for (_j = 0, _len = _ref.length; _j < _len; _j++) {
+          mesh = _ref[_j];
+          callback(mesh);
+        }
+      }
+      return this.armMesh && this.armMesh.traverse(callback);
+    };
 
     HandMesh.prototype.scaleTo = function(hand) {
       var armLenScale, armWidthScale, baseScale, bone, boneXOffset, finger, fingerBoneLengthScale, halfArmLength, i, j, mesh, _i, _j;
@@ -286,6 +305,9 @@
     if (!handMesh) {
       handMesh = HandMesh.get().scaleTo(hand);
       hand.data('handMesh', handMesh);
+      if (HandMesh.onMeshUsed) {
+        HandMesh.onMeshUsed(handMesh);
+      }
     }
     return handMesh.formTo(hand);
   };
@@ -300,25 +322,61 @@
   };
 
   Leap.plugin('boneHand', function(options) {
-    var scale;
+    var controller, scale;
     if (options == null) {
       options = {};
     }
     scope = options;
+    controller = this;
+    jointColor = (new THREE.Color).setHex(0x5daa00);
+    boneColor = (new THREE.Color).setHex(0xffffff);
     scope.boneScale && (boneScale = scope.boneScale);
     scope.jointScale && (jointScale = scope.jointScale);
     scope.boneColor && (boneColor = scope.boneColor);
     scope.jointColor && (jointColor = scope.jointColor);
     scope.HandMesh = HandMesh;
+    scope.addShadowCamera = function() {
+      scope.light = new THREE.SpotLight(0xffffff, 1);
+      scope.light.castShadow = true;
+      scope.light.shadowDarkness = 0.8;
+      scope.light.shadowMapWidth = 1024;
+      scope.light.shadowMapHeight = 1024;
+      scope.light.shadowCameraNear = 0.5 / 0.001;
+      scope.light.shadowCameraFar = 3 / 0.001;
+      window.light = scope.light;
+      scope.light.position.set(0, 1000, 1000);
+      scope.light.target.position.set(0, 0, -1000);
+      scope.camera.add(scope.light.target);
+      scope.camera.add(scope.light);
+      if (controller.plugins.transform) {
+        if (controller.plugins.transform.getScale()) {
+          console.log("scaling shadow mechanism by " + controller.plugins.transform.scale.x);
+          scope.light.shadowCameraNear *= controller.plugins.transform.scale.x;
+          scope.light.shadowCameraFar *= controller.plugins.transform.scale.x;
+          scope.light.target.position.multiply(controller.plugins.transform.scale);
+          scope.light.position.multiply(controller.plugins.transform.scale);
+        }
+        if (controller.plugins.transform.vr === true) {
+          scope.camera.position.set(0, 0, 0);
+        }
+        if (controller.plugins.transform.vr === 'desktop') {
+          return scope.camera.position.set(0, 0.15, 0.3);
+        }
+      }
+    };
     baseBoneRotation = (new THREE.Quaternion).setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0));
-    jointColor = (new THREE.Color).setHex(0x5daa00);
-    boneColor = (new THREE.Color).setHex(0xffffff);
     boneScale = 1 / 6;
     jointScale = 1 / 5;
     boneRadius = null;
     jointRadius = null;
     material = null;
     armTopAndBottomRotation = (new THREE.Quaternion).setFromEuler(new THREE.Euler(0, 0, Math.PI / 2));
+    HandMesh.onMeshCreated = function(mesh) {
+      return controller.emit('handMeshCreated', mesh);
+    };
+    HandMesh.onMeshUsed = function(mesh) {
+      return controller.emit('handMeshUsed', mesh);
+    };
     this.use('handEntry');
     this.use('handHold');
     if (scope.scene === void 0) {
@@ -327,12 +385,7 @@
         scale = this.plugins.transform.scale.x;
       }
       initScene(scope.targetEl, scale);
-      if (this.plugins.transform && this.plugins.transform.vr === true) {
-        scope.camera.position.set(0, 0, 0);
-      }
-      if (this.plugins.transform && this.plugins.transform.vr === 'desktop') {
-        scope.camera.position.set(0, 0.15, 0.3);
-      }
+      scope.addShadowCamera();
     }
     if (scope.scene) {
       HandMesh.create();
@@ -2427,8 +2480,6 @@ More info on vec3 can be found, here: http://glmatrix.net/docs/2.2.0/symbols/vec
 
 //CoffeeScript generated from main/transform/leap.transform.coffee
 (function() {
-  var __slice = [].slice;
-
   Leap.plugin('transform', function(scope) {
     var noop, transformDirections, transformMat4Implicit0, transformPositions, transformWithMatrices, _directionTransform;
     if (scope == null) {
@@ -2477,9 +2528,8 @@ More info on vec3 can be found, here: http://glmatrix.net/docs/2.2.0/symbols/vec
         return scope.scale;
       }
     };
-    transformPositions = function() {
-      var matrix, vec3, vec3s, _i, _len, _results;
-      matrix = arguments[0], vec3s = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    transformPositions = function(matrix, vec3s) {
+      var vec3, _i, _len, _results;
       _results = [];
       for (_i = 0, _len = vec3s.length; _i < _len; _i++) {
         vec3 = vec3s[_i];
@@ -2501,9 +2551,8 @@ More info on vec3 can be found, here: http://glmatrix.net/docs/2.2.0/symbols/vec
       out[2] = m[2] * x + m[6] * y + m[10] * z;
       return out;
     };
-    transformDirections = function() {
-      var matrix, vec3, vec3s, _i, _len, _results;
-      matrix = arguments[0], vec3s = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    transformDirections = function(matrix, vec3s) {
+      var vec3, _i, _len, _results;
       _results = [];
       for (_i = 0, _len = vec3s.length; _i < _len; _i++) {
         vec3 = vec3s[_i];
@@ -2517,18 +2566,18 @@ More info on vec3 can be found, here: http://glmatrix.net/docs/2.2.0/symbols/vec
     };
     transformWithMatrices = function(hand, transform, scale) {
       var finger, scalarScale, _i, _j, _len, _len1, _ref, _ref1;
-      transformDirections(transform, hand.direction, hand.palmNormal, hand.palmVelocity, hand.arm.basis[0], hand.arm.basis[1], hand.arm.basis[2]);
+      transformDirections(transform, [hand.direction, hand.palmNormal, hand.palmVelocity, hand.arm.basis[0], hand.arm.basis[1], hand.arm.basis[2]]);
       _ref = hand.fingers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         finger = _ref[_i];
-        transformDirections(transform, finger.direction, finger.metacarpal.basis[0], finger.metacarpal.basis[1], finger.metacarpal.basis[2], finger.proximal.basis[0], finger.proximal.basis[1], finger.proximal.basis[2], finger.medial.basis[0], finger.medial.basis[1], finger.medial.basis[2], finger.distal.basis[0], finger.distal.basis[1], finger.distal.basis[2]);
+        transformDirections(transform, [finger.direction, finger.metacarpal.basis[0], finger.metacarpal.basis[1], finger.metacarpal.basis[2], finger.proximal.basis[0], finger.proximal.basis[1], finger.proximal.basis[2], finger.medial.basis[0], finger.medial.basis[1], finger.medial.basis[2], finger.distal.basis[0], finger.distal.basis[1], finger.distal.basis[2]]);
       }
       Leap.glMatrix.mat4.scale(transform, transform, scale);
-      transformPositions(transform, hand.palmPosition, hand.stabilizedPalmPosition, hand.sphereCenter, hand.arm.nextJoint, hand.arm.prevJoint);
+      transformPositions(transform, [hand.palmPosition, hand.stabilizedPalmPosition, hand.sphereCenter, hand.arm.nextJoint, hand.arm.prevJoint]);
       _ref1 = hand.fingers;
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         finger = _ref1[_j];
-        transformPositions(transform, finger.carpPosition, finger.mcpPosition, finger.pipPosition, finger.dipPosition, finger.distal.nextJoint, finger.tipPosition);
+        transformPositions(transform, [finger.carpPosition, finger.mcpPosition, finger.pipPosition, finger.dipPosition, finger.distal.nextJoint, finger.tipPosition]);
       }
       scalarScale = (scale[0] + scale[1] + scale[2]) / 3;
       return hand.arm.width *= scalarScale;

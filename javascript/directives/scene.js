@@ -174,6 +174,10 @@ angular.module('directives', [])
         boneHand.HandMesh.create();
         boneHand.HandMesh.create();
 
+        boneHand.camera = camera;
+        boneHand.addShadowCamera();
+        boneHand.light.intensity = 0.1;
+
         Leap.loopController.plugins.transform.effectiveParent = camera;
         window.camera = camera;
 
@@ -187,7 +191,8 @@ angular.module('directives', [])
           antialias: true,
           canvas: canvas
         });
-        renderer.shadowMapEnabled = false;
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapType = THREE.PCFSoftShadowMap;
         renderer.setClearColor(0x000000, 0);
 
         renderer.setSize(window.innerWidth, window.innerHeight);
