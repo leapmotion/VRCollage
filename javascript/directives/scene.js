@@ -165,9 +165,6 @@ angular.module('directives', [])
         );
         scene.add( camera ); // so that we can add things to it later.
 
-        //we don't actually want the leap hand as child of the camera, as we want the data itself properly transformed.
-        // on every frame, we combine the base transformation with the camera transformation to the leap data
-        // this is used in grab, proximity, etc.
         boneHand = Leap.loopController.plugins.boneHand;
         boneHand.scene = scene;
         // preload two hands in to the scene
@@ -178,6 +175,9 @@ angular.module('directives', [])
         boneHand.addShadowCamera();
         boneHand.light.intensity = 0.1;
 
+        //we don't actually want the leap hand as child of the camera, as we want the data itself properly transformed.
+        // on every frame, we combine the base transformation with the camera transformation to the leap data
+        // this is used in grab, proximity, etc.
         Leap.loopController.plugins.transform.effectiveParent = camera;
         window.camera = camera;
 
